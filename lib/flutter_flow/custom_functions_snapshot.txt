@@ -1,0 +1,868 @@
+import 'dart:convert';
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'lat_lng.dart';
+import 'place.dart';
+import 'uploaded_file.dart';
+import '/backend/schema/structs/index.dart';
+import '/auth/custom_auth/auth_util.dart';
+
+Color? colorDefect(String? value) {
+  Color color = Colors.black;
+  if (value == 'workable') {
+    color = Color(0xFF1AB759);
+  } else if (value == 'unworkable') {
+    color = Color(0xFFFFE001);
+  } else {
+    color = Color(0xFFFF3B30);
+  }
+
+  return color;
+}
+
+String? jsonToStringCopy(dynamic resulttitle) {
+  String dataConvertedToJSON = json.encode(resulttitle);
+  // print(dataConvertedToJSON);
+  return dataConvertedToJSON;
+}
+
+int? stringToInt(String? name) {
+  if (name == null) {
+    return null;
+  } else {
+    int num = int.parse(name);
+    return num;
+  }
+}
+
+String? statusToRus(String? status) {
+  if (status == 'fixed') {
+    return 'Исправен';
+  } else if (status == 'new') {
+    return 'Новый дефект';
+  } else if (status == 'reject') {
+    return 'Отклонен';
+  } else {
+    return 'Неисправен';
+  }
+}
+
+Color? colorDefectCopy(String? value) {
+  Color color = Colors.black;
+  if (value == 'open') {
+    color = Color(0xFFFF3B2F);
+  } else if (value == 'contractor_appointed') {
+    color = Color(0xFF460092);
+  } else if (value == 'at_performer') {
+    color = Color(0xFFBE6500);
+  } else if (value == 'postponed') {
+    color = Color(0xFF757575);
+  } else if (value == 'contractor_accept') {
+    color = Color(0xFFBC00D9);
+  } else if (value == 'in_progress') {
+    color = Color(0xFFCF8700);
+  } else if (value == 'completed') {
+    color = Color(0xFF1234E1);
+  } else if (value == 'under_review') {
+    color = Color(0xFF1976D2);
+  } else {
+    color = Color(0xFF04A856);
+  }
+
+  return color;
+}
+
+List<dynamic> combineArrays(
+  List<dynamic>? array1,
+  List<dynamic>? array2,
+) {
+  List<dynamic> combinedArray = [];
+
+  if (array1 != null) {
+    combinedArray.addAll(array1); // Добавляем первый массив, если не null
+  }
+
+  if (array2 != null) {
+    combinedArray.addAll(array2); // Добавляем второй массив, если не null
+  }
+
+  return combinedArray;
+}
+
+String? formatDateTime(String? datetime) {
+  var parsedDate = DateTime.parse(datetime!);
+  final DateTime now = parsedDate;
+  final DateFormat formatter = DateFormat('dd MM yyyy');
+  final String formatted = formatter.format(now);
+  return formatted;
+}
+
+String? statusToEng(String? status) {
+  if (status == 'Работоспособное') {
+    return 'workable';
+  } else if (status == 'Нерабоспособное') {
+    return 'unworkable';
+  } else {
+    return 'critical';
+  }
+}
+
+int? boolToInt(bool boolean) {
+  if (boolean == true) {
+    return 1;
+  } else if (boolean == false) {
+    return 0;
+  }
+  return null;
+}
+
+List<dynamic> filterFinishedInspections(List<dynamic> jsonData) {
+  return jsonData.where((item) => item["finished_on"] != null).toList();
+}
+
+bool? intToBool(int num) {
+  if (num == 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+dynamic findJsonByBarcode(
+  String idd,
+  List<dynamic> jsonData,
+) {
+  try {
+    // Используем firstWhere для поиска элемента с нужным id
+    return jsonData.firstWhere((json) => json['barcode'] == idd,
+        orElse: () => null // Возвращаем null, если элемент не найден
+        );
+  } catch (e) {
+    // Обрабатываем исключение, если что-то пошло не так
+    print('Error: $e');
+    return null;
+  }
+}
+
+String? extractResponsesCopy(
+  List<dynamic> jsonData,
+  int index,
+) {
+  // Проверяем, что индекс находится в пределах диапазона списка
+  if (index >= 0 && index < jsonData.length) {
+    var item = jsonData[index];
+    if (item.containsKey('started_on')) {
+      return item[
+          'started_on']; // Возвращаем список responses, если он существует
+    }
+  }
+  return null; // Возвращаем null, если индекс вне диапазона или нет ключа 'responses'
+}
+
+String? jsonToString(List<dynamic> resulttitle) {
+  var dataConvertedToJSON = json.encode(resulttitle);
+  // print(dataConvertedToJSON);
+  return dataConvertedToJSON;
+}
+
+int listlength(List<dynamic> listt) {
+  return listt.length;
+}
+
+String defectorNormal(String isNormal) {
+  if (isNormal == 'normal') {
+    return 'defect';
+  } else {
+    return 'normal';
+  }
+}
+
+int indexOf(
+  List<dynamic> listt,
+  dynamic item,
+) {
+  int index = listt.indexWhere((map) =>
+      map.keys.every((key) => item.containsKey(key) && map[key] == item[key]) &&
+      item.keys.every((key) => map.containsKey(key) && map[key] == item[key]));
+  return index;
+}
+
+List<dynamic> filterDefectiveDefect(dynamic jsonData) {
+  return jsonData.where((item) => item["status"] != "fixed").toList();
+}
+
+String searchFromList(
+  List<dynamic> listt,
+  String item,
+) {
+  for (var map in listt) {
+    if (map.containsKey(item)) {
+      return map[item] ?? ''; // Возвращаем значение, если ключ найден
+    }
+  }
+  return '';
+}
+
+String findWithIndexFromList(
+  List<String> listt,
+  int index,
+) {
+  return listt[index];
+}
+
+int? findWithIndexFromINTList(
+  List<dynamic> listt,
+  int index,
+) {
+  return listt[index];
+}
+
+dynamic findWithIndexFromListJson(
+  List<dynamic> listt,
+  int index,
+) {
+  return listt[index];
+}
+
+int plus(
+  int a,
+  int b,
+) {
+  return a + b;
+}
+
+List<dynamic> findJsonByEquipment(
+  int idd,
+  List<dynamic> jsonData,
+) {
+  return jsonData.where((item) => item["equipment"] == idd).toList();
+}
+
+dynamic stringToJson(String jsonString) {
+  return jsonDecode(jsonString);
+}
+
+dynamic deleteJsonByKey(
+  List<dynamic> list,
+  int value,
+) {
+  // Проверяем, найден ли элемент
+
+  // Если элемент найден, удаляем его
+  print(list);
+  list.removeAt(value);
+  print(list);
+  return list;
+}
+
+bool containsItem(
+  List<RadiobuttondataStruct> list,
+  String search1,
+  String search2,
+  String search3,
+) {
+  return list.any((item) =>
+      item.equiptitle == search1 &&
+      item.datatitle == search2 &&
+      item.response == search3);
+}
+
+List<dynamic> findResponsesByTechnicalPlace(
+  List<dynamic> jsonData,
+  int technicalPlaceId,
+) {
+  List<dynamic> foundResponses = [];
+
+  for (var item in jsonData) {
+    // Проверяем наличие regulation_info и соответствие technical_place
+    if (item['regulation_info'] != null &&
+        item['regulation_info']['technical_place'] == technicalPlaceId) {
+      // Проверяем наличие responses
+      if (item['responses'] != null) {
+        List<dynamic> responses = [];
+
+        // Собираем все responses для данного technical_place
+        for (var response in item['responses']) {
+          responses.add(response);
+        }
+
+        // Если responses найдены, добавляем элемент в результат
+        if (responses.isNotEmpty) {
+          var newItem =
+              Map<String, dynamic>.from(item); // Создание копии элемента
+          newItem['responses'] = responses;
+          foundResponses.add(newItem);
+        }
+      }
+    }
+  }
+
+  return foundResponses;
+}
+
+int findIxdexOfDataType(
+  List<RadiobuttondataStruct> list,
+  String search1,
+  String search2,
+  String search3,
+) {
+  for (int i = 0; i < list.length; i++) {
+    if (list[i].equiptitle == search1 &&
+        list[i].datatitle == search2 &&
+        list[i].response == search3) {
+      // Возвращаем индекс, если нашли совпадение
+      return i;
+    }
+  }
+  return -1;
+}
+
+String? searchFromDataTypeList2Enters(
+  List<RadiobuttondataStruct> data,
+  String search1,
+  String search2,
+) {
+  try {
+    // Используем firstWhere без orElse и обрабатываем исключение, если элемент не найден
+    final item = data.firstWhere(
+      (item) => item.equiptitle == search1 && item.datatitle == search2,
+    );
+
+    // Возвращаем response, если элемент найден
+    return item.response;
+  } catch (e) {
+    // Возвращаем null, если элемент не найден
+    return null;
+  }
+}
+
+List<dynamic> filterUnfinishedInspections(List<dynamic> jsonData) {
+  return jsonData.where((item) => item["finished_on"] == null).toList();
+}
+
+List<dynamic> filterEquipments(
+  List<dynamic> jsonData,
+  int idd,
+) {
+  return jsonData.where((item) => item["id"] == idd).toList();
+}
+
+dynamic findJsonByID(
+  int idd,
+  List<dynamic> jsonData,
+) {
+  try {
+    // Используем firstWhere для поиска элемента с нужным id
+    return jsonData.firstWhere((json) => json['id'] == idd,
+        orElse: () => null // Возвращаем null, если элемент не найден
+        );
+  } catch (e) {
+    // Обрабатываем исключение, если что-то пошло не так
+    print('Error: $e');
+    return null;
+  }
+}
+
+String roleToRus(String text) {
+  if (text == 'operational_duty') {
+    return "Оперативный дежурный";
+  } else if (text == 'engineer') {
+    return "Инженер";
+  } else if (text == 'head') {
+    return "Начальник";
+  } else if (text == 'electrician') {
+    return "Электрослесарь";
+  } else if (text == 'electrician_underground') {
+    return "Подземный электрослесарь";
+  } else if (text == 'lead_engineer') {
+    return "Ведущий инженер";
+  } else if (text == 'director') {
+    return "Директор";
+  } else {
+    return text;
+  }
+}
+
+List<dynamic> notNewDefects(List<dynamic> jsonData) {
+  return jsonData.where((item) => item["status"] != "new").toList();
+}
+
+List<dynamic> filterChildEquips(
+  List<dynamic> jsonData,
+  int parentId,
+) {
+  return jsonData.where((item) {
+    // Получаем словарь parent_info и сравниваем его элемент parentId с заданным parentId
+    if (item.containsKey('parent_info') &&
+        item['parent_info'] is Map<String, dynamic>) {
+      return item['parent_info']['id'] == parentId;
+    }
+    return false; // Если нет ключа parent_info или он не соответствует структуре, возвращаем false
+  }).toList();
+}
+
+DateTime? stringToDateTime(String date) {
+  try {
+    // Пробуем преобразовать строку в DateTime
+    return DateTime.parse(date);
+  } catch (e) {
+    // В случае ошибки выводим информацию об ошибке и возвращаем null
+    print('Error parsing date string: $e');
+    return null;
+  }
+}
+
+DateTime? dateTimeNow() {
+  return DateTime.now();
+}
+
+bool imageNull(dynamic inputJson) {
+  const Map<String, dynamic> targetJson = {
+    'data': "data:image/jpeg;base64,",
+    'extension': 'jpeg',
+    'size': 0,
+    'title': null
+  };
+
+  // Проверяем, что inputJson является Map
+  if (inputJson is! Map) {
+    return false;
+  }
+
+  // Проверяем, что количество ключей совпадает
+  if (inputJson.length != targetJson.length) {
+    return false;
+  }
+
+  // Сравниваем ключи и значения
+  for (final key in targetJson.keys) {
+    if (!inputJson.containsKey(key) || inputJson[key] != targetJson[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+List<dynamic>? extractResponses(
+  List<dynamic> jsonData,
+  int index,
+) {
+  // Проверяем, что индекс находится в пределах диапазона списка
+  if (index >= 0 && index < jsonData.length) {
+    var item = jsonData[index];
+    if (item.containsKey('responses')) {
+      return item[
+          'responses']; // Возвращаем список responses, если он существует
+    }
+  }
+  return null; // Возвращаем null, если индекс вне диапазона или нет ключа 'responses'
+}
+
+String? imageNullList() {
+  List<String> encodedFiles = [];
+  Map<String, dynamic> newJson = {
+    'data': "data:image/jpeg;base64,",
+    'extension': 'jpg',
+    'size': 0, // размер файла равен длине массива байтов
+    'title': null
+  };
+
+  String finalJsonString = jsonEncode(newJson);
+  print(finalJsonString);
+  encodedFiles.add(finalJsonString);
+  return encodedFiles.toString();
+}
+
+List<dynamic> filterFixedDefect(dynamic jsonData) {
+  return jsonData.where((item) => item["status"] == "fixed").toList();
+}
+
+dynamic sortUsers(
+  dynamic jsonData,
+  int departmentId,
+) {
+  var filteredData = (jsonData['data'] as List)
+      .where((item) => item['department'] == departmentId)
+      .toList();
+  return {'data': filteredData};
+}
+
+bool hasStuff(
+  dynamic jsonData,
+  int? departmentId,
+) {
+  var filteredData = (jsonData['data'] as List)
+      .where((item) => item['department'] == departmentId)
+      .toList();
+
+  return filteredData
+      .isNotEmpty; // Return true if filtered list is not empty, false otherwise.
+}
+
+int newDefectsSum(
+  dynamic jsonData,
+  DateTime inputDate,
+) {
+  var filteredData = (jsonData as List).where((item) {
+    var createdOn = DateTime.parse(item['created_on']);
+
+    // Сравнение даты без времени
+    return item['status'] == 'not_confirmed' &&
+        createdOn.year == inputDate.year &&
+        createdOn.month == inputDate.month &&
+        createdOn.day == inputDate.day;
+  }).toList();
+
+  return filteredData.length;
+}
+
+List<dynamic> newDefects(dynamic jsonData) {
+  return jsonData.where((item) => item["status"] == "new").toList();
+}
+
+List<dynamic> filterdoprasxody(
+  List<dynamic> jsonData,
+  String technic,
+) {
+  return jsonData.where((item) => item["technic"] == technic).toList();
+}
+
+List<dynamic> findResponsesByEquipment(
+  List<dynamic> jsonData,
+  int equipmentId,
+) {
+  List<dynamic> foundResponses = [];
+
+  for (var item in jsonData) {
+    if (item['responses'] != null) {
+      List<dynamic> responses = [];
+      for (var response in item['responses']) {
+        if (response['regulation_work_info'] != null &&
+            response['regulation_work_info']['equipment_info'] != null &&
+            response['regulation_work_info']['equipment_info']['id'] ==
+                equipmentId) {
+          responses.add(response);
+          break; // Остановка поиска, если оборудование найдено в данном осмотре
+        }
+      }
+      if (responses.isNotEmpty) {
+        var newItem =
+            Map<String, dynamic>.from(item); // Создание копии элемента
+        newItem['responses'] = responses;
+        foundResponses.add(newItem);
+      }
+    }
+  }
+
+  return foundResponses;
+}
+
+List<dynamic> filterInspectionsByTitle(
+  List<dynamic> data,
+  String title,
+) {
+  return data
+      .where((item) => item['regulation_info']['title'] == title)
+      .toList();
+}
+
+List<dynamic> findUniqueRegulationAndEquipmentTitles(List<dynamic> data) {
+  Set<String> uniqueTitles = Set();
+
+  // Создаем список для хранения данных с уникальными заголовками
+  List<dynamic> uniqueInspections = [];
+
+  // Проходим по всем осмотрам
+  for (var inspection in data) {
+    var title = inspection['regulation_info']['title'];
+
+    // Проверяем, есть ли этот заголовок в множестве уникальных заголовков
+    if (!uniqueTitles.contains(title)) {
+      // Если заголовка еще нет, добавляем его в множество уникальных заголовков
+      uniqueTitles.add(title);
+
+      // Добавляем данные с этим уникальным заголовком в список уникальных данных
+      uniqueInspections.add(inspection);
+    }
+  }
+  return uniqueInspections;
+}
+
+String checkInspectionStatus(
+  String availableFrom,
+  String availableTo,
+) {
+  DateTime now = DateTime.now();
+  DateTime from = DateTime.parse(availableFrom);
+  DateTime to = DateTime.parse(availableTo);
+
+  if (now.isBefore(from)) {
+    return "Запланировано";
+  } else if (now.isAfter(from) && now.isBefore(to)) {
+    return "Текущее";
+  } else {
+    return "Просрочено";
+  }
+}
+
+dynamic findJsonElementByID(
+  List<dynamic> jsonData,
+  int id,
+) {
+  for (var item in jsonData) {
+    if (item['id'] == id) {
+      return item; // Return the matching element
+    }
+  }
+  return null;
+}
+
+bool isJsonInList(
+  int searchId,
+  List<dynamic> jsonList,
+) {
+  for (var item in jsonList) {
+    if (item['id'] == searchId) {
+      return true;
+    }
+  }
+  return false;
+}
+
+String? statusToRuss(String? status) {
+  if (status == 'workable') {
+    return 'Работоспособное';
+  } else if (status == 'unworkable') {
+    return 'Нерабоспособное';
+  } else if (status == 'critical') {
+    return 'Предельное';
+  } else {
+    return null;
+  }
+}
+
+String getMondayOfCurrentWeek() {
+  DateTime now = DateTime.now();
+  int currentWeekday = now.weekday;
+  DateTime monday =
+      now.subtract(Duration(days: currentWeekday - DateTime.monday));
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  return formatter.format(monday);
+}
+
+String getSundayOfCurrentWeek() {
+  DateTime now = DateTime.now();
+  int currentWeekday = now.weekday;
+  DateTime sunday = now.add(Duration(days: DateTime.sunday - currentWeekday));
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  return formatter.format(sunday);
+}
+
+List<dynamic> filterByDate(
+  List<dynamic>? data,
+  DateTime date,
+) {
+  if (data == null) {
+    return [];
+  }
+  // Преобразуем выбранную дату в строку для сравнения
+  String selectedDateString = DateFormat('yyyy-MM-dd').format(date);
+
+  // Фильтруем данные, чтобы выбрать записи на выбранную дату
+  List<dynamic> filteredData = data.where((entry) {
+    DateTime availableFrom = DateTime.parse(entry['available_from']);
+    String availableFromDateString =
+        DateFormat('yyyy-MM-dd').format(availableFrom);
+
+    return availableFromDateString == selectedDateString;
+  }).toList();
+
+  return filteredData;
+}
+
+String getTomorrow() {
+  DateTime now = DateTime.now();
+  DateTime tomorrow = now.add(Duration(days: 1));
+  DateFormat formatter = DateFormat('yyyy-MM-dd');
+  return formatter.format(tomorrow);
+}
+
+String removeBase64Prefix(String base64Data) {
+  const String prefix = 'data:image/jpeg;base64,';
+  if (base64Data.startsWith(prefix)) {
+    return base64Data.replaceFirst(prefix, '');
+  }
+  return base64Data;
+}
+
+String? statusRequest(String? status) {
+  if (status == 'open') {
+    return 'Открыта';
+  } else if (status == 'contractor_appointed') {
+    return 'Подрядчик назначен';
+  } else if (status == 'at_performer') {
+    return 'У исполнителя';
+  } else if (status == 'postponed') {
+    return 'Отложена';
+  } else if (status == 'contractor_accept') {
+    return 'Принят подрядчиком';
+  } else if (status == 'in_progress') {
+    return 'В работе';
+  } else if (status == 'completed') {
+    return 'Выполнен';
+  } else if (status == 'under_review') {
+    return 'На проверке';
+  } else {
+    return 'Закрыта';
+  }
+}
+
+int? getNextInspectionId(
+  List<dynamic> inspections,
+  int currentIndex,
+) {
+  if (currentIndex < inspections.length - 1) {
+    return inspections[currentIndex - 1]['id'];
+  } else {
+    // Если текущий индекс последний, возвращаем null
+    return null;
+  }
+}
+
+double? stringToDouble(String? name) {
+  if (name == null) {
+    return null;
+  } else {
+    double num = double.parse(name);
+    return num;
+  }
+}
+
+String? getResponseByIdZamery(
+  List<dynamic> jsonData,
+  int searchId,
+  int equipmentId,
+  String formTitle,
+) {
+  for (var item in jsonData) {
+    if (item['id'] == searchId) {
+      // Проверяем, соответствует ли ID искомому
+      print('Found matching ID: $searchId');
+      if (item.containsKey('responses')) {
+        for (var response in item['responses']) {
+          if (response['regulation_work_info']['equipment'] == equipmentId) {
+            for (var formResult in response['form_result']) {
+              if (formResult['data']['title'] == formTitle) {
+                var currentResponse = formResult['result']['response'];
+                print('Current response for $formTitle: $currentResponse');
+                return currentResponse; // Возвращаем текущее значение ответа
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Если не найдено совпадений
+  print('No matching data found.');
+  return null; // Возвращаем null, если данные не найдены
+}
+
+String stringtoBase64(String base64String) {
+  // Проверяем, содержит ли строка префикс "data:image/png;base64,"
+  if (base64String.startsWith('data:image/png;base64,')) {
+    // Убираем префикс и возвращаем только часть с base64
+    return base64String.replaceFirst('data:image/png;base64,', '');
+  }
+  // Если префикса нет, возвращаем оригинальную строку
+  return base64String;
+}
+
+bool? emptyList(List<dynamic>? list) {
+  return list?.isEmpty;
+}
+
+List<FilesStruct> combineArraysfiles(
+  List<FilesStruct>? array1,
+  List<FilesStruct>? array2,
+) {
+  List<FilesStruct> combinedArray = [];
+
+  if (array1 != null) {
+    combinedArray.addAll(array1); // Добавляем первый массив, если не null
+  }
+
+  if (array2 != null) {
+    combinedArray.addAll(array2); // Добавляем второй массив, если не null
+  }
+
+  return combinedArray;
+}
+
+List<int> inttolist(int value) {
+  return [value];
+}
+
+List<int> inttoarray(int number) {
+  return [number];
+}
+
+List<dynamic> addJsonToList(
+  List<dynamic> jsonList,
+  double lat,
+  double lon,
+  String datetime,
+  String title,
+) {
+  jsonList ??= [];
+
+  // Создаем новый JSON на основе входных параметров
+  Map<String, dynamic> newJson = {
+    'lat': lat,
+    'lon': lon,
+    'datetime': datetime,
+    'title': title,
+  };
+
+  // Добавляем новый JSON в список
+  jsonList.add(newJson);
+
+  // Возвращаем обновленный список
+  return jsonList;
+}
+
+String removePTags(String input) {
+  return input.replaceAll(RegExp(r'<\/?p>'), '');
+}
+
+String yesorno(bool boool) {
+  if (boool == true) {
+    return "Да";
+  } else {
+    return "Нет";
+  }
+}
+
+dynamic returnNull() {
+  return null;
+}
+
+dynamic addImg(dynamic json) {
+  return {...json, "img": null};
+}
+
+List<dynamic> jsonToList(dynamic jsonData) {
+  return jsonData.toList();
+}
+
+String trimString(String input) {
+  if (input.length <= 4)
+    return ''; // Если строка слишком короткая, возвращаем пустую строку
+  return input.substring(1, input.length - 3);
+}

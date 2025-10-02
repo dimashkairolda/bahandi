@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "476556544507",
+    "project_id": "bahandi-etry",
+    "storage_bucket": "bahandi-etry.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476556544507:android:3de41d31776170e6a8635e",
+        "android_client_info": {
+          "package_name": "com.etry.bahandi1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIDsAdT97ypxZmDz-hQXAWSQ8dP3RVR_Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

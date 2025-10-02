@@ -1,0 +1,198 @@
+{
+  "upload_file_and_convert_to_base64.dart": {
+    "old_identifier_name": "uploadFileAndConvertToBase64",
+    "new_identifier_name": "uploadFileAndConvertToBase64",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "909d3fc3c5f06568044e1a38058ce5a7cbf0dae8b2b44673ca89ba484fe15fbb",
+    "original_checksum": "27daa27a686f5b246805e57894b3eff2034735a1b0c037064c7ea8ee0414fb72"
+  },
+  "update_response_by_id.dart": {
+    "old_identifier_name": "updateResponseById",
+    "new_identifier_name": "updateResponseById",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "47258579f2d85961003ca8ba1d1274b43ef63fd0fd268f49db22d787f1ffa1c5",
+    "original_checksum": "bd6bffb5553ded8bf7ddb9eddbed8c5f6b9d5ca28fa8368c66348728d61d2d15"
+  },
+  "update_defect_by_id_without_image1.dart": {
+    "old_identifier_name": "updateDefectByIdWithoutImage1",
+    "new_identifier_name": "updateDefectByIdWithoutImage1",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "ee945c0550646330056358fa0648ea3a79f2b73864a82b7e14e7877217fd7bb0",
+    "original_checksum": "17e9dfec4dbed808e6414389cdd621c3cf26bfe54d329852fdf61385025dc5dd"
+  },
+  "upload_file_and_convert_to_base64to_list.dart": {
+    "old_identifier_name": "uploadFileAndConvertToBase64toList",
+    "new_identifier_name": "uploadFileAndConvertToBase64toList",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "ad0e9631701ebbbeea283bfd1c67bc6ba3c278524f0c492c404b37ee70f57be1",
+    "original_checksum": "8ce1a9b2fef9a20c7eecf79119f57676a627a9f7957dd97e84e0e1f5c89bcaa7"
+  },
+  "update_response_by_id_zamery.dart": {
+    "old_identifier_name": "updateResponseByIdZamery",
+    "new_identifier_name": "updateResponseByIdZamery",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "17e16efacc5002a1c4272fd243e5214cf9e415eac6a85d7b7c66635ed292e1fd",
+    "original_checksum": "594d7fa20a2a5a74a4442c6fb58d2eaf6c439310f7ee96e39a11412dc070bf05"
+  },
+  "update_defect_by_id_with_image.dart": {
+    "old_identifier_name": "updateDefectByIdWithImage",
+    "new_identifier_name": "updateDefectByIdWithImage",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "3a68a30991b9d9f67f428dafa4b5b0499fcf814feef10637d1fa03b2bbaa6dc2",
+    "original_checksum": "7315ba0bbd02543c1fb13c6cc0588be9b808e0089519b56ae04cd3f721c17efe"
+  },
+  "update_finished_on.dart": {
+    "old_identifier_name": "updateFinishedOn",
+    "new_identifier_name": "updateFinishedOn",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "8c8a41ab2f9df7e035eab801f90e2eb3c008d566446287cb3f741aa10e737a54",
+    "original_checksum": "d48d16159680f9c7aa62cfd9b9f0a2cc46730aea5b765751f344a2a0ded9f981"
+  },
+  "parse_jwt_token.dart": {
+    "old_identifier_name": "parseJwtToken",
+    "new_identifier_name": "parseJwtToken",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "720eec17b895739359cb2e0654502200885e25937ae8d5e7f339d3d7db83f439",
+    "original_checksum": "227e1122a459bf1f9a117ef4a24461d630fd934b5e67edf83ad156ca55e64ff1"
+  },
+  "convert_to_base64.dart": {
+    "old_identifier_name": "convertToBase64",
+    "new_identifier_name": "convertToBase64",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "4cffd8d692aee0594d8d0d73480e8d7df97acfb790f7e9c9e27d0be14ab0c199",
+    "original_checksum": "8471cda8c47469df39fd3d9e47731e63d0b63c6705f7aed18a625be674a45c42"
+  },
+  "update_all_responses_by_id.dart": {
+    "old_identifier_name": "updateAllResponsesById",
+    "new_identifier_name": "updateAllResponsesById",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "33f9e64d34a9d30d8fe4012031211b13258f09cb929bad63904058090a517905",
+    "original_checksum": "eb68fdb20d2cd8bb548ea847c2f1ecab13f9ff1dc57a21c1b4086a0cb17faa01"
+  },
+  "read_nfc_data.dart": {
+    "old_identifier_name": "readNfcData",
+    "new_identifier_name": "readNfcData",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "3c73831c25dd2ab80de8b955d4d477f99e3e745c00debf4df66adbbda6cea528",
+    "original_checksum": "2dc8d1bdc9c831dd5e482c3ee6586ecf2c6dfefc3c84cab86f1effefaf3ea739"
+  },
+  "update_response_by_id_radio.dart": {
+    "old_identifier_name": "updateResponseByIdRadio",
+    "new_identifier_name": "updateResponseByIdRadio",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "d35557982cfd0afaf803a0ac3bc53308dc14bccc6b1aca5b2e26682e30e1c43e",
+    "original_checksum": "447dcfb01446452cfacbb8727fd912e9d1458b2efea2e4372e13303c61ae7932"
+  },
+  "update_response_by_id_checkbox.dart": {
+    "old_identifier_name": "updateResponseByIdCheckbox",
+    "new_identifier_name": "updateResponseByIdCheckbox",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "8f78a2c27234e4b12156851d1494c9df197479ec96a0ff667cee86d543cf722b",
+    "original_checksum": "8d166dde930aa02bdff20cf181e5663c150a36052f08bdc697c8df1cea5c98f6"
+  },
+  "update_response_by_id_shkala.dart": {
+    "old_identifier_name": "updateResponseByIdShkala",
+    "new_identifier_name": "updateResponseByIdShkala",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "2a7f9f765d9d060c607b9ddc19d56f0ba98caab8f367793f76a3719c0c6b154c",
+    "original_checksum": "8a9d7f3d99a9bf015221235b39d5ae84f842bb6e520aedd1eac795ae65e4ee92"
+  },
+  "check_internet_connectivity.dart": {
+    "old_identifier_name": "checkInternetConnectivity",
+    "new_identifier_name": "checkInternetConnectivity",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "bf5d33891debf32a2a4bafca06d028a1dbd7b2aa5c601c6331b210dae88a899e",
+    "original_checksum": "348c72f166bce55d5d3ed41f869706a95b1a4e4d0da98664e0cd1e5c54cf6869"
+  },
+  "update_started_on.dart": {
+    "old_identifier_name": "updateStartedOn",
+    "new_identifier_name": "updateStartedOn",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "7d8aa5a5404f4cd936a70261b754b1a6e6ae58c66f8edce75bd12a6e5dfb7e20",
+    "original_checksum": "c70f055d120a98c4371c03fe0219835dd8c1547d801c3c6986191d68b4ea9586"
+  },
+  "show_notification_snackbar.dart": {
+    "old_identifier_name": "showNotificationSnackbar",
+    "new_identifier_name": "showNotificationSnackbar",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "d2f6b8c51c61e1b3b86b49d1ab4e74746ec1be34652e94851bbbf927225296bc",
+    "original_checksum": "beaea3cff8d67635792ae096655eca693b8ce40ea87764d780902276bdd369b1"
+  },
+  "add_location_data.dart": {
+    "old_identifier_name": "addLocationData",
+    "new_identifier_name": "addLocationData",
+    "type": "A",
+    "is_deleted": false,
+    "current_checksum": "3d548a7f5135592ccd9e8b13ee5eb6ef6247e9a1437bfdf390fe01b3dd9bc3a3",
+    "original_checksum": "33e058a9a8872f1baaed0ed189253c07ba640c9d16049bd36c373ddf3417e61f"
+  },
+  "base64_image.dart": {
+    "old_identifier_name": "Base64Image",
+    "new_identifier_name": "Base64Media",
+    "type": "W",
+    "is_deleted": true,
+    "current_checksum": "83b6c157c5bc87433c4eca9774d299516ca175b4acc90ea881bf1e13368de3f6",
+    "original_checksum": "d862e7e7112d24a582e2d8fcb8e9c347bec0cef43bada7fc85b26290223c4383"
+  },
+  "pdf_viewer_and_downloader_widget.dart": {
+    "old_identifier_name": "PdfViewerAndDownloaderWidget",
+    "new_identifier_name": "PdfViewerAndDownloaderWidget",
+    "type": "W",
+    "is_deleted": false,
+    "current_checksum": "deed08656e25b0690420a9b3157abacc6182556fb7815f6e95305113bfc91deb",
+    "original_checksum": "3ddd268b88fe03a6891a511b5f6da7fafcbe805f4bb4b1f785d7aa0621adb054"
+  },
+  "custom_functions.dart": {
+    "old_identifier_name": "CustomFunctions",
+    "new_identifier_name": "CustomFunctions",
+    "type": "F",
+    "is_deleted": false,
+    "current_checksum": "458a1606c0868d8c8df7f76c6a987bc43af560e6d14a8aa205b682f43a20b4f4",
+    "original_checksum": "d25940de8d318f7aff93f21fe9e1a2dbc0a0fce266467d579dea82f838761e1c"
+  },
+  "pubspec.yaml": {
+    "old_identifier_name": "pubspec.yaml",
+    "new_identifier_name": "pubspec.yaml",
+    "type": "D",
+    "is_deleted": false,
+    "current_checksum": "f15b986babf3710943a9c388b4ff39bc11ba00d5bf9e9e84711dbb915d3c8464",
+    "original_checksum": "f15b986babf3710943a9c388b4ff39bc11ba00d5bf9e9e84711dbb915d3c8464"
+  },
+  "base64_Media.dart": {
+    "old_identifier_name": "Base64Media",
+    "new_identifier_name": "Base64Media",
+    "type": "W",
+    "is_deleted": true,
+    "current_checksum": "83b6c157c5bc87433c4eca9774d299516ca175b4acc90ea881bf1e13368de3f6"
+  },
+  "base64_media.dart": {
+    "old_identifier_name": "Base64Media",
+    "new_identifier_name": "Base64Media",
+    "type": "W",
+    "is_deleted": true
+  },
+  "base64Media.dart": {
+    "old_identifier_name": "Base64Media",
+    "new_identifier_name": "Base64Media",
+    "type": "W",
+    "is_deleted": false,
+    "current_checksum": "3b86b8247d3a76e104ed23f907de53293ae0a918a8e5e9daa50e8f097d3a49c1"
+  }
+}
