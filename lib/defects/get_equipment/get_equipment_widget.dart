@@ -2,12 +2,8 @@ import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_checkbox_group.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'get_equipment_model.dart';
 export 'get_equipment_model.dart';
 
@@ -103,7 +99,7 @@ class _GetEquipmentWidgetState extends State<GetEquipmentWidget> {
               padding: EdgeInsetsDirectional.fromSTEB(15.0, 10.0, 15.0, 0.0),
               child: FlutterFlowCheckboxGroup(
                 options: (getJsonField(
-                  widget!.json,
+                  widget.json,
                   r'''$[:].title''',
                   true,
                 ) as List?)!
@@ -115,11 +111,11 @@ class _GetEquipmentWidgetState extends State<GetEquipmentWidget> {
                   safeSetState(() => _model.checkboxGroupValues = val);
                   FFAppState().CreateDefectEquip = GetAreaStruct(
                     id: getJsonField(
-                      widget!.json,
+                      widget.json,
                       r'''$[:].id''',
                     ),
                     title: getJsonField(
-                      widget!.json,
+                      widget.json,
                       r'''$[:].title''',
                     ).toString(),
                   );

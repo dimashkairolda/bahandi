@@ -1,14 +1,8 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/index.dart';
-import 'package:flutter/foundation.dart';
+import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'date_model.dart';
 export 'date_model.dart';
 
@@ -16,19 +10,13 @@ class DateWidget extends StatefulWidget {
   const DateWidget({
     super.key,
     required this.data,
-    required this.searchID,
-    required this.equipmentId,
-    required this.name,
     required this.index,
-    required this.nextIndex,
+    required this.old,
   });
 
   final dynamic data;
-  final int? searchID;
-  final int? equipmentId;
-  final dynamic name;
   final int? index;
-  final int? nextIndex;
+  final bool? old;
 
   @override
   State<DateWidget> createState() => _DateWidgetState();
@@ -58,8 +46,6 @@ class _DateWidgetState extends State<DateWidget> {
 
   @override
   Widget build(BuildContext context) {
-    context.watch<FFAppState>();
-
     return Align(
       alignment: AlignmentDirectional(0.0, 0.0),
       child: Container(
@@ -75,19 +61,48 @@ class _DateWidgetState extends State<DateWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
-                child: Text(
-                  getJsonField(
-                    widget!.data,
-                    r'''$.data.title''',
-                  ).toString(),
-                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                        fontFamily: 'SFProText',
-                        fontSize: 14.0,
-                        letterSpacing: 0.0,
-                        fontWeight: FontWeight.w500,
+              Container(
+                width: MediaQuery.sizeOf(context).width * 0.83,
+                decoration: BoxDecoration(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
+                      child: Text(
+                        getJsonField(
+                          widget.data,
+                          r'''$.data.title''',
+                        ).toString(),
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily: 'SFProText',
+                              fontSize: 14.0,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                            ),
                       ),
+                    ),
+                    if (functions.jsonToStringCopy(getJsonField(
+                          widget.data,
+                          r'''$.data.description''',
+                        )) !=
+                        '\"\"')
+                      Text(
+                        getJsonField(
+                          widget.data,
+                          r'''$.data.description''',
+                        ).toString(),
+                        textAlign: TextAlign.start,
+                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                              fontFamily: 'SFProText',
+                              color: FlutterFlowTheme.of(context).secondaryText,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.normal,
+                            ),
+                      ),
+                  ],
                 ),
               ),
               InkWell(
@@ -152,30 +167,24 @@ class _DateWidgetState extends State<DateWidget> {
                       _model.datePicked = getCurrentTimestamp;
                     });
                   }
-                  await actions.updateResponseByIdZamery(
-                    FFAppState().checkCache,
-                    widget!.searchID!,
-                    widget!.equipmentId!,
-                    getJsonField(
-                      widget!.data,
-                      r'''$.data.title''',
-                    ).toString(),
-                    valueOrDefault<String>(
-                      dateTimeFormat(
-                        "y-MM-d",
-                        _model.datePicked,
-                        locale: FFLocalizations.of(context).languageCode,
+                  FFAppState().updateFormresult1AtIndex(
+                    widget.index!,
+                    (e) => e
+                      ..updateResult(
+                        (e) => e
+                          ..response = dateTimeFormat(
+                            "y-MM-dd",
+                            _model.datePicked,
+                            locale: FFLocalizations.of(context).languageCode,
+                          ),
                       ),
-                      'Время исправления',
-                    ),
                   );
+                  FFAppState().update(() {});
                 },
                 child: Container(
                   decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primaryBackground,
                     borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(
-                      color: FlutterFlowTheme.of(context).alternate,
-                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
@@ -189,19 +198,19 @@ class _DateWidgetState extends State<DateWidget> {
                             child: Text(
                               valueOrDefault<String>(
                                 dateTimeFormat(
-                                  "y-MM-d",
+                                  "dd.MM.y",
                                   _model.datePicked,
                                   locale:
                                       FFLocalizations.of(context).languageCode,
                                 ),
-                                'Время исправления',
+                                'Выберите дату',
                               ),
                               style: FlutterFlowTheme.of(context)
                                   .bodyMedium
                                   .override(
                                     fontFamily: 'SFProText',
                                     color: FlutterFlowTheme.of(context)
-                                        .primaryText,
+                                        .secondaryText,
                                     fontSize: 16.0,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
@@ -213,252 +222,6 @@ class _DateWidgetState extends State<DateWidget> {
                     ],
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 5.0),
-                child: FFButtonWidget(
-                  onPressed: () async {
-                    context.pushNamed(
-                      CreateDefectFromInspectionWidget.routeName,
-                      queryParameters: {
-                        'searchid': serializeParam(
-                          widget!.searchID,
-                          ParamType.int,
-                        ),
-                        'equipid': serializeParam(
-                          widget!.equipmentId,
-                          ParamType.int,
-                        ),
-                        'formTitle': serializeParam(
-                          getJsonField(
-                            widget!.data,
-                            r'''$.data.title''',
-                          ).toString(),
-                          ParamType.String,
-                        ),
-                        'text': serializeParam(
-                          getJsonField(
-                            widget!.data,
-                            r'''$.data.title''',
-                          ).toString(),
-                          ParamType.String,
-                        ),
-                        'title': serializeParam(
-                          '',
-                          ParamType.String,
-                        ),
-                        'reason': serializeParam(
-                          '',
-                          ParamType.String,
-                        ),
-                        'event': serializeParam(
-                          '',
-                          ParamType.String,
-                        ),
-                        'type': serializeParam(
-                          '',
-                          ParamType.String,
-                        ),
-                        'isfixedonplace': serializeParam(
-                          0,
-                          ParamType.int,
-                        ),
-                        'isemergencysituation': serializeParam(
-                          0,
-                          ParamType.int,
-                        ),
-                        'name': serializeParam(
-                          widget!.name,
-                          ParamType.JSON,
-                        ),
-                        'index': serializeParam(
-                          widget!.index,
-                          ParamType.int,
-                        ),
-                      }.withoutNulls,
-                    );
-                  },
-                  text: '+ Добавить дефект',
-                  options: FFButtonOptions(
-                    width: MediaQuery.sizeOf(context).width * 1.0,
-                    height: 40.0,
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-                    iconPadding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                    color: Color(0xFF2A61ED),
-                    textStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                          fontFamily: 'SFProText',
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          fontSize: 12.0,
-                          letterSpacing: 0.0,
-                          fontWeight: FontWeight.w500,
-                        ),
-                    elevation: 3.0,
-                    borderSide: BorderSide(
-                      color: Colors.transparent,
-                      width: 1.0,
-                    ),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              Builder(
-                builder: (context) {
-                  if (getJsonField(
-                        widget!.data,
-                        r'''$.result.defect''',
-                      ) ==
-                      null) {
-                    return Container(
-                      width: MediaQuery.sizeOf(context).width * 1.0,
-                      height: 0.0,
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                      ),
-                    );
-                  } else {
-                    return InkWell(
-                      splashColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      onTap: () async {
-                        context.pushNamed(
-                          CreateDefectFromInspectionWidget.routeName,
-                          queryParameters: {
-                            'searchid': serializeParam(
-                              widget!.searchID,
-                              ParamType.int,
-                            ),
-                            'equipid': serializeParam(
-                              widget!.equipmentId,
-                              ParamType.int,
-                            ),
-                            'formTitle': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.data.title''',
-                              ).toString(),
-                              ParamType.String,
-                            ),
-                            'text': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.data.title''',
-                              ).toString(),
-                              ParamType.String,
-                            ),
-                            'title': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.result.defect.title''',
-                              ).toString(),
-                              ParamType.String,
-                            ),
-                            'reason': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.result.defect.reason''',
-                              ).toString(),
-                              ParamType.String,
-                            ),
-                            'event': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.result.defect.event''',
-                              ).toString(),
-                              ParamType.String,
-                            ),
-                            'type': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.result.defect.type''',
-                              ).toString(),
-                              ParamType.String,
-                            ),
-                            'isfixedonplace': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.result.defect.isFixedOnPlace''',
-                              ),
-                              ParamType.int,
-                            ),
-                            'isemergencysituation': serializeParam(
-                              getJsonField(
-                                widget!.data,
-                                r'''$.result.defect.isEmergencySituation''',
-                              ),
-                              ParamType.int,
-                            ),
-                            'name': serializeParam(
-                              widget!.name,
-                              ParamType.JSON,
-                            ),
-                            'index': serializeParam(
-                              widget!.index,
-                              ParamType.int,
-                            ),
-                          }.withoutNulls,
-                        );
-                      },
-                      child: Container(
-                        width: MediaQuery.sizeOf(context).width * 1.0,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(
-                            color: FlutterFlowTheme.of(context).error,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              15.0, 0.0, 15.0, 0.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                getJsonField(
-                                  widget!.data,
-                                  r'''$.result.defect.title''',
-                                ).toString(),
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      font: GoogleFonts.readexPro(
-                                        fontWeight: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontWeight,
-                                        fontStyle: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .fontStyle,
-                                      ),
-                                      letterSpacing: 0.0,
-                                      fontWeight: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontWeight,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .fontStyle,
-                                    ),
-                              ),
-                              Icon(
-                                Icons.remove_red_eye,
-                                color:
-                                    FlutterFlowTheme.of(context).secondaryText,
-                                size: 24.0,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                },
               ),
             ].divide(SizedBox(height: 10.0)),
           ),

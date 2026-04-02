@@ -4,56 +4,84 @@
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-Future<void> updateResponseByIdRadio(List<dynamic> jsonData, int searchId,
-    int equipmentId, String formTitle, String selectedRadioText) async {
-  bool updated = false; // Флаг для отслеживания, было ли обновление выполнено
+// Имя функции изменено для ясности
+Future<void> updateResponseByIdRadio(
+  dynamic inspectionJson, // <-- ИЗМЕНЕНО: Теперь это один JSON-объект
+  // List<dynamic> jsonData, // <-- УДАЛЕНО
+  // int searchId, // <-- УДАЛЕНО
+  int equipmentId,
+  String formTitle,
+  String selectedRadioText,
+) async {
+  bool updated = false; // Флаг для отслеживания обновления
 
-  // Проходим по массиву JSON, чтобы найти соответствующий элемент
-  for (var item in jsonData) {
-    if (item['id'] == searchId) {
-      // Проверяем, соответствует ли ID искомому
-      print('Found matching ID: $searchId');
-      if (item.containsKey('responses')) {
-        for (var response in item['responses']) {
-          if (response['regulation_work_info']['equipment'] == equipmentId) {
-            for (var formResult in response['form_result']) {
-              if (formResult['data']['title'] == formTitle) {
-                // Проверяем, есть ли в форме радиокнопки
-                if (formResult['data'].containsKey('radios')) {
-                  List<dynamic> radios = formResult['data']['radios'];
-                  int selectedIndex = radios.indexWhere(
-                      (radio) => radio['text'] == selectedRadioText);
+  // Проверяем, что нам передали не пустой JSON
+  if (inspectionJson == null || inspectionJson is! Map<String, dynamic>) {
+    print('Ошибка: На вход подан пустой или некорректный JSON (не Map).');
+    return;
+  }
 
-                  if (selectedIndex != -1) {
+  // Самый внешний цикл и проверка по searchId УДАЛЕНЫ.
+  // Сразу работаем с 'responses' внутри 'inspectionJson'.
+
+  if (inspectionJson.containsKey('responses') &&
+      inspectionJson['responses'] is List) {
+    for (var response in inspectionJson['responses']) {
+      // Проверяем, что 'response' - это Map и ID совпадает
+      if (response is Map &&
+          response.containsKey('regulation_work_info') &&
+          response['regulation_work_info'] is Map &&
+          response['regulation_work_info']['equipment'] == equipmentId) {
+        // Проверяем наличие 'form_result'
+        if (response.containsKey('form_result') &&
+            response['form_result'] is List) {
+          for (var formResult in response['form_result']) {
+            // Проверяем, что 'formResult' - это Map, 'data' - это Map и title совпадает
+            if (formResult is Map &&
+                formResult.containsKey('data') &&
+                formResult['data'] is Map &&
+                formResult['data']['title'] == formTitle) {
+              // Проверяем, есть ли в форме радиокнопки
+              if (formResult['data'].containsKey('radios') &&
+                  formResult['data']['radios'] is List) {
+                List<dynamic> radios = formResult['data']['radios'];
+
+                // Ищем индекс по тексту
+                int selectedIndex = -1;
+                for (int i = 0; i < radios.length; i++) {
+                  if (radios[i] is Map &&
+                      radios[i]['text'] == selectedRadioText) {
+                    selectedIndex = i;
+                    break;
+                  }
+                }
+
+                if (selectedIndex != -1) {
+                  // Убедимся, что структура 'result' правильная
+                  if (formResult.containsKey('result') &&
+                      formResult['result'] is Map) {
                     // Если элемент найден, обновляем значение ответа
                     formResult['result']['response'] = selectedIndex.toString();
                     print(
-                        'Radio button "$selectedRadioText" found and updated to index $selectedIndex');
+                        'Radio (в форме "$formTitle") обновлен: "$selectedRadioText" (индекс $selectedIndex)');
                     updated = true;
-                    break; // Прерываем цикл после успешного обновления
-                  } else {
-                    print('Radio button "$selectedRadioText" not found');
+                    break; // Прерываем цикл 'form_result'
                   }
+                } else {
+                  print(
+                      'Radio кнопка с текстом "$selectedRadioText" не найдена в форме "$formTitle"');
                 }
               }
-              if (updated) break; // Если обновление выполнено, прерываем цикл
             }
-          }
-          if (updated) {
-            break; // Если обновление выполнено, прерываем внешний цикл
           }
         }
       }
-      if (updated) {
-        break; // Если обновление выполнено, прерываем самый внешний цикл
-      }
+      if (updated) break; // Если обновление выполнено, прерываем 'responses'
     }
   }
 
   if (!updated) {
     print(
-        'No matching data found to update.'); // Выводим сообщение, если обновление не выполнено
+        'Обновление не выполнено. Не найдено совпадение для: [EquipmentID: $equipmentId, FormTitle: "$formTitle"]');
   }
 }
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!

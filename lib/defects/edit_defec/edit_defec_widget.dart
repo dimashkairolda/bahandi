@@ -1,18 +1,19 @@
+import 'package:Etry/media_viewer/media_viewer_widget.dart';
+
 import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
 import '/defects/add_t_m_c/add_t_m_c_widget.dart';
 import '/defects/add_works/add_works_widget.dart';
+import '/defects/photo_or_video/photo_or_video_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
+import '/flutter_flow/flutter_flow_expanded_image_view.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_video_player.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import '/flutter_flow/upload_data.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       _model.photos123 = getJsonField(
-        widget!.json,
+        widget.json,
         r'''$.files''',
         true,
       )!
@@ -66,7 +67,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
 
     _model.nameTextController ??= TextEditingController(
         text: getJsonField(
-      widget!.json,
+      widget.json,
       r'''$.title''',
     ).toString());
     _model.nameFocusNode ??= FocusNode();
@@ -109,7 +110,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                 DetailedDefectsOfflineWidget.routeName,
                 queryParameters: {
                   'id': serializeParam(
-                    widget!.id,
+                    widget.id,
                     ParamType.int,
                   ),
                 }.withoutNulls,
@@ -121,7 +122,10 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
             },
           ),
           title: Text(
-            'Редактировать заявку',
+            FFLocalizations.of(context).getVariableText(
+              ruText: 'Редактировать заявку',
+              kkText: 'Өтінімді өңдеу',
+            ),
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   fontFamily: 'SFProText',
                   color: FlutterFlowTheme.of(context).primary,
@@ -197,8 +201,10 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                       controller:
                                           _model.dropDownValueController ??=
                                               FormFieldController<String>(
-                                        _model.dropDownValue ??=
-                                            widget!.id?.toString(),
+                                        _model.dropDownValue ??= getJsonField(
+                                          widget.json,
+                                          r'''$.equipment_info.id''',
+                                        ).toString(),
                                       ),
                                       options: List<String>.from((getJsonField(
                                         dropDownEquipmentsResponse.jsonBody,
@@ -396,72 +402,32 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                 children: [
                                   FFButtonWidget(
                                     onPressed: () async {
-                                      safeSetState(() {
-                                        _model.isDataUploading_uploadDataTbt50 =
-                                            false;
-                                        _model.uploadedLocalFile_uploadDataTbt50 =
-                                            FFUploadedFile(
-                                                bytes: Uint8List.fromList([]));
-                                      });
-
-                                      final selectedMedia =
-                                          await selectMediaWithSourceBottomSheet(
+                                      await showModalBottomSheet(
+                                        isScrollControlled: true,
+                                        backgroundColor: Color(0xFF5E6A70),
+                                        enableDrag: false,
                                         context: context,
-                                        maxWidth: 1000.00,
-                                        maxHeight: 1300.00,
-                                        imageQuality: 71,
-                                        allowPhoto: true,
-                                      );
-                                      if (selectedMedia != null &&
-                                          selectedMedia.every((m) =>
-                                              validateFileFormat(
-                                                  m.storagePath, context))) {
-                                        safeSetState(() => _model
-                                                .isDataUploading_uploadDataTbt50 =
-                                            true);
-                                        var selectedUploadedFiles =
-                                            <FFUploadedFile>[];
-
-                                        try {
-                                          selectedUploadedFiles = selectedMedia
-                                              .map((m) => FFUploadedFile(
-                                                    name: m.storagePath
-                                                        .split('/')
-                                                        .last,
-                                                    bytes: m.bytes,
-                                                    height:
-                                                        m.dimensions?.height,
-                                                    width: m.dimensions?.width,
-                                                    blurHash: m.blurHash,
-                                                  ))
-                                              .toList();
-                                        } finally {
-                                          _model.isDataUploading_uploadDataTbt50 =
-                                              false;
-                                        }
-                                        if (selectedUploadedFiles.length ==
-                                            selectedMedia.length) {
-                                          safeSetState(() {
-                                            _model.uploadedLocalFile_uploadDataTbt50 =
-                                                selectedUploadedFiles.first;
-                                          });
-                                        } else {
-                                          safeSetState(() {});
-                                          return;
-                                        }
-                                      }
-
-                                      _model.qq = await actions
-                                          .uploadFileAndConvertToBase64toList(
-                                        _model
-                                            .uploadedLocalFile_uploadDataTbt50,
-                                      );
-                                      if (!functions.imageNull(_model.qq!)) {
-                                        FFAppState().addToPhotos(_model.qq!);
-                                        safeSetState(() {});
-                                      }
-
-                                      safeSetState(() {});
+                                        builder: (context) {
+                                          return GestureDetector(
+                                            onTap: () {
+                                              FocusScope.of(context).unfocus();
+                                              FocusManager.instance.primaryFocus
+                                                  ?.unfocus();
+                                            },
+                                            child: Padding(
+                                              padding: MediaQuery.viewInsetsOf(
+                                                  context),
+                                              child: Container(
+                                                height:
+                                                    MediaQuery.sizeOf(context)
+                                                            .height *
+                                                        0.25,
+                                                child: PhotoOrVideoWidget(),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ).then((value) => safeSetState(() {}));
                                     },
                                     text: 'Медиафайл',
                                     icon: Icon(
@@ -509,70 +475,184 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                           child: Row(
                             mainAxisSize: MainAxisSize.max,
                             children: [
-                              Builder(
-                                builder: (context) {
-                                  final files = _model.photos123.toList();
+                              Align(
+                                alignment: AlignmentDirectional(0.0, 0.0),
+                                child: Builder(
+                                  builder: (context) {
+                                    final fotki = _model.photos123.toList();
 
-                                  return Row(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: List.generate(files.length,
-                                        (filesIndex) {
-                                      final filesItem = files[filesIndex];
-                                      return Stack(
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 10.0, 0.0, 0.0),
-                                            child: Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  0.2,
-                                              height: MediaQuery.sizeOf(context)
-                                                      .height *
-                                                  0.1,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(12.0),
-                                                border: Border.all(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondary,
-                                                ),
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(12.0),
-                                                child: Image.network(
-                                                  'https://magnum.etry.kz${getJsonField(
-                                                    filesItem,
-                                                    r'''$.url''',
-                                                  ).toString()}',
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.2,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.1,
-                                                  fit: BoxFit.cover,
+                                    return Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: List.generate(fotki.length,
+                                          (fotkiIndex) {
+                                        final fotkiItem = fotki[fotkiIndex];
+                                        return Stack(
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(
+                                                      0.0, 10.0, 0.0, 0.0),
+                                              child: InkWell(
+                                                splashColor: Colors.transparent,
+                                                focusColor: Colors.transparent,
+                                                hoverColor: Colors.transparent,
+                                                highlightColor:
+                                                    Colors.transparent,
+                                                onTap: () async {
+                                                  context.pushNamed(
+                                                    MediaViewerWidget.routeName,
+                                                    queryParameters: {
+                                                      'data': serializeParam(
+                                                        functions
+                                                            .removeBase64Prefix(
+                                                                getJsonField(
+                                                          fotkiItem,
+                                                          r'''$.data''',
+                                                        )),
+                                                        ParamType.String,
+                                                      ),
+                                                    }.withoutNulls,
+                                                  );
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12.0),
+                                                    border: Border.all(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .secondary,
+                                                    ),
+                                                  ),
+                                                  child: Builder(
+                                                    builder: (context) {
+                                                      if ((functions.getFileExtension(
+                                                                  getJsonField(
+                                                                fotkiItem,
+                                                                r'''$.url''',
+                                                              ).toString()) ==
+                                                              'MOV') ||
+                                                          (functions.getFileExtension(
+                                                                  getJsonField(
+                                                                fotkiItem,
+                                                                r'''$.url''',
+                                                              ).toString()) ==
+                                                              'MP4')) {
+                                                        return FlutterFlowVideoPlayer(
+                                                          path:
+                                                              'https://app.etry.kz${getJsonField(
+                                                            fotkiItem,
+                                                            r'''$.url''',
+                                                          ).toString()}',
+                                                          videoType:
+                                                              VideoType.network,
+                                                          width:
+                                                              MediaQuery.sizeOf(
+                                                                          context)
+                                                                      .width *
+                                                                  0.3,
+                                                          height:
+                                                              MediaQuery.sizeOf(
+                                                                          context)
+                                                                      .height *
+                                                                  0.15,
+                                                          autoPlay: false,
+                                                          looping: false,
+                                                          showControls: true,
+                                                          allowFullScreen: true,
+                                                          allowPlaybackSpeedMenu:
+                                                              false,
+                                                          lazyLoad: true,
+                                                        );
+                                                      } else {
+                                                        return InkWell(
+                                                          splashColor: Colors
+                                                              .transparent,
+                                                          focusColor: Colors
+                                                              .transparent,
+                                                          hoverColor: Colors
+                                                              .transparent,
+                                                          highlightColor: Colors
+                                                              .transparent,
+                                                          onTap: () async {
+                                                            await Navigator
+                                                                .push(
+                                                              context,
+                                                              PageTransition(
+                                                                type:
+                                                                    PageTransitionType
+                                                                        .fade,
+                                                                child:
+                                                                    FlutterFlowExpandedImageView(
+                                                                  image: Image
+                                                                      .network(
+                                                                    'https://app.etry.kz${getJsonField(
+                                                                      fotkiItem,
+                                                                      r'''$.url''',
+                                                                    ).toString()}',
+                                                                    fit: BoxFit
+                                                                        .contain,
+                                                                  ),
+                                                                  allowRotation:
+                                                                      false,
+                                                                  tag:
+                                                                      'https://app.etry.kz${getJsonField(
+                                                                    fotkiItem,
+                                                                    r'''$.url''',
+                                                                  ).toString()}',
+                                                                  useHeroAnimation:
+                                                                      true,
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                          child: Hero(
+                                                            tag:
+                                                                'https://app.etry.kz${getJsonField(
+                                                              fotkiItem,
+                                                              r'''$.url''',
+                                                            ).toString()}',
+                                                            transitionOnUserGestures:
+                                                                true,
+                                                            child: ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          8.0),
+                                                              child:
+                                                                  Image.network(
+                                                                'https://app.etry.kz${getJsonField(
+                                                                  fotkiItem,
+                                                                  r'''$.url''',
+                                                                ).toString()}',
+                                                                width: MediaQuery.sizeOf(
+                                                                            context)
+                                                                        .width *
+                                                                    0.3,
+                                                                height: MediaQuery.sizeOf(
+                                                                            context)
+                                                                        .height *
+                                                                    0.15,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    65.0, 0.0, 0.0, 0.0),
-                                            child: Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  0.05,
-                                              height: MediaQuery.sizeOf(context)
-                                                      .height *
-                                                  0.025,
-                                              decoration: BoxDecoration(),
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(
+                                                      115.0, 0.0, 0.0, 0.0),
                                               child: InkWell(
                                                 splashColor: Colors.transparent,
                                                 focusColor: Colors.transparent,
@@ -582,24 +662,35 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                                 onTap: () async {
                                                   _model
                                                       .removeAtIndexFromPhotos123(
-                                                          filesIndex);
+                                                          fotkiIndex);
                                                   safeSetState(() {});
                                                 },
-                                                child: Icon(
-                                                  Icons.close,
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  size: 24.0,
+                                                child: Container(
+                                                  width:
+                                                      MediaQuery.sizeOf(context)
+                                                              .width *
+                                                          0.05,
+                                                  height:
+                                                      MediaQuery.sizeOf(context)
+                                                              .height *
+                                                          0.025,
+                                                  decoration: BoxDecoration(),
+                                                  child: Icon(
+                                                    Icons.close,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryText,
+                                                    size: 24.0,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      );
-                                    }),
-                                  );
-                                },
+                                          ],
+                                        );
+                                      }).divide(SizedBox(width: 5.0)),
+                                    );
+                                  },
+                                ),
                               ),
                               Align(
                                 alignment: AlignmentDirectional(0.0, 0.0),
@@ -631,39 +722,132 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                                         .secondary,
                                                   ),
                                                 ),
-                                                child: Container(
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.2,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.1,
-                                                  child: custom_widgets
-                                                      .Base64Media(
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.2,
-                                                    height: MediaQuery.sizeOf(
-                                                                context)
-                                                            .height *
-                                                        0.1,
-                                                    base64Data: functions
-                                                        .removeBase64Prefix(
-                                                            getJsonField(
-                                                      fotkiItem,
-                                                      r'''$.data''',
-                                                    ).toString()),
-                                                  ),
+                                                child: Builder(
+                                                  builder: (context) {
+                                                    if ((functions
+                                                                .getFileExtension(
+                                                                    getJsonField(
+                                                              fotkiItem,
+                                                              r'''$.url''',
+                                                            ).toString()) ==
+                                                            'MOV') ||
+                                                        (functions
+                                                                .getFileExtension(
+                                                                    getJsonField(
+                                                              fotkiItem,
+                                                              r'''$.url''',
+                                                            ).toString()) ==
+                                                            'MP4')) {
+                                                      return FlutterFlowVideoPlayer(
+                                                        path:
+                                                            'https://app.etry.kz${getJsonField(
+                                                          fotkiItem,
+                                                          r'''$.url''',
+                                                        ).toString()}',
+                                                        videoType:
+                                                            VideoType.network,
+                                                        width:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .width *
+                                                                0.3,
+                                                        height:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .height *
+                                                                0.15,
+                                                        autoPlay: false,
+                                                        looping: false,
+                                                        showControls: true,
+                                                        allowFullScreen: true,
+                                                        allowPlaybackSpeedMenu:
+                                                            false,
+                                                        lazyLoad: true,
+                                                      );
+                                                    } else {
+                                                      return InkWell(
+                                                        splashColor:
+                                                            Colors.transparent,
+                                                        focusColor:
+                                                            Colors.transparent,
+                                                        hoverColor:
+                                                            Colors.transparent,
+                                                        highlightColor:
+                                                            Colors.transparent,
+                                                        onTap: () async {
+                                                          await Navigator.push(
+                                                            context,
+                                                            PageTransition(
+                                                              type:
+                                                                  PageTransitionType
+                                                                      .fade,
+                                                              child:
+                                                                  FlutterFlowExpandedImageView(
+                                                                image: Image
+                                                                    .network(
+                                                                  'https://app.etry.kz${getJsonField(
+                                                                    fotkiItem,
+                                                                    r'''$.url''',
+                                                                  ).toString()}',
+                                                                  fit: BoxFit
+                                                                      .contain,
+                                                                ),
+                                                                allowRotation:
+                                                                    false,
+                                                                tag:
+                                                                    'https://app.etry.kz${getJsonField(
+                                                                  fotkiItem,
+                                                                  r'''$.url''',
+                                                                ).toString()}',
+                                                                useHeroAnimation:
+                                                                    true,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Hero(
+                                                          tag:
+                                                              'https://app.etry.kz${getJsonField(
+                                                            fotkiItem,
+                                                            r'''$.url''',
+                                                          ).toString()}',
+                                                          transitionOnUserGestures:
+                                                              true,
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                            child:
+                                                                Image.network(
+                                                              'https://app.etry.kz${getJsonField(
+                                                                fotkiItem,
+                                                                r'''$.url''',
+                                                              ).toString()}',
+                                                              width: MediaQuery
+                                                                          .sizeOf(
+                                                                              context)
+                                                                      .width *
+                                                                  0.3,
+                                                              height: MediaQuery
+                                                                          .sizeOf(
+                                                                              context)
+                                                                      .height *
+                                                                  0.15,
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
                                                 ),
                                               ),
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
                                                   .fromSTEB(
-                                                      65.0, 0.0, 0.0, 0.0),
+                                                      115.0, 0.0, 0.0, 0.0),
                                               child: InkWell(
                                                 splashColor: Colors.transparent,
                                                 focusColor: Colors.transparent,
@@ -906,7 +1090,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                   Builder(
                                     builder: (context) {
                                       final wworks = getJsonField(
-                                        widget!.json,
+                                        widget.json,
                                         r'''$.works''',
                                       ).toList();
 
@@ -1373,7 +1557,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                   Builder(
                                     builder: (context) {
                                       final spareparts = getJsonField(
-                                        widget!.json,
+                                        widget.json,
                                         r'''$.spare_parts''',
                                       ).toList();
 
@@ -1740,7 +1924,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                                             width: 2,
                                                             color: FlutterFlowTheme
                                                                     .of(context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                           )
                                                         : null,
                                                     activeColor:
@@ -1783,33 +1967,15 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                         _model.apiResultg8zCopy =
                             await UpdateDefectsByIdCall.call(
                           access: currentAuthenticationToken,
-                          id: widget!.id,
+                          id: widget.id,
                           bodyJson: EditDefectStruct(
                             equipment:
                                 functions.stringToInt(_model.dropDownValue),
                             title: _model.nameTextController.text,
-                            files: functions.combineArraysfiles(
-                                FFAppState()
-                                    .photos
-                                    .map((e) =>
-                                        FilesStruct.maybeFromMap(getJsonField(
-                                          e,
-                                          r'''$''',
-                                        )))
-                                    .withoutNulls
-                                    .toList(),
-                                _model.photos123
-                                    .map((e) =>
-                                        FilesStruct.maybeFromMap(getJsonField(
-                                          e,
-                                          r'''$''',
-                                        )))
-                                    .withoutNulls
-                                    .toList()),
                             spareParts: functions
                                 .combineArrays(
                                     getJsonField(
-                                      widget!.json,
+                                      widget.json,
                                       r'''$.spare_parts''',
                                       true,
                                     ),
@@ -1830,7 +1996,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                             works: functions
                                 .combineArrays(
                                     getJsonField(
-                                      widget!.json,
+                                      widget.json,
                                       r'''$.works''',
                                       true,
                                     ),
@@ -1840,6 +2006,19 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                         .toList())
                                 .map((e) => WorksStruct.maybeFromMap(e))
                                 .withoutNulls
+                                .toList(),
+                            fileIds: functions
+                                .combineArraysfiles(
+                                    _model.photos123
+                                        .map((e) => FilesStruct.maybeFromMap(e))
+                                        .withoutNulls
+                                        .toList(),
+                                    FFAppState()
+                                        .photos
+                                        .map((e) => FilesStruct.maybeFromMap(e))
+                                        .withoutNulls
+                                        .toList())
+                                .map((e) => e.id)
                                 .toList(),
                           ).toMap(),
                         );
@@ -1884,7 +2063,7 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                           DetailedDefectsOfflineWidget.routeName,
                           queryParameters: {
                             'id': serializeParam(
-                              widget!.id,
+                              widget.id,
                               ParamType.int,
                             ),
                           }.withoutNulls,

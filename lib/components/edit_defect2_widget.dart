@@ -1,13 +1,9 @@
 import '/defects/add_comment/add_comment_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'edit_defect2_model.dart';
 export 'edit_defect2_model.dart';
@@ -92,7 +88,7 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       if (functions.statusRequest(getJsonField(
-                            widget!.json,
+                            widget.json,
                             r'''$.status''',
                           ).toString()) ==
                           'Открыта')
@@ -109,14 +105,14 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                                 queryParameters: {
                                   'title': serializeParam(
                                     getJsonField(
-                                      widget!.json,
+                                      widget.json,
                                       r'''$.title''',
                                     ).toString(),
                                     ParamType.String,
                                   ),
                                   'id': serializeParam(
                                     getJsonField(
-                                      widget!.json,
+                                      widget.json,
                                       r'''$.id''',
                                     ),
                                     ParamType.int,
@@ -175,15 +171,118 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                           ),
                         ),
                       if ((functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
+                                r'''$.status''',
+                              ).toString()) ==
+                              'Открыта') ||
+                          (functions.statusRequest(getJsonField(
+                                widget.json,
+                                r'''$.status''',
+                              ).toString()) ==
+                              'У исполнителя') ||
+                          (functions.statusRequest(getJsonField(
+                                widget.json,
+                                r'''$.status''',
+                              ).toString()) ==
+                              'Отклонена') ||
+                          (functions.statusRequest(getJsonField(
+                                widget.json,
+                                r'''$.status''',
+                              ).toString()) ==
+                              'В работе'))
+                        Align(
+                          alignment: AlignmentDirectional(0.0, 0.0),
+                          child: InkWell(
+                            splashColor: Colors.transparent,
+                            focusColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            onTap: () async {
+                              context.pushNamed(
+                                SelectIspolnitelWidget.routeName,
+                                queryParameters: {
+                                  'title': serializeParam(
+                                    getJsonField(
+                                      widget.json,
+                                      r'''$.title''',
+                                    ).toString(),
+                                    ParamType.String,
+                                  ),
+                                  'id': serializeParam(
+                                    getJsonField(
+                                      widget.json,
+                                      r'''$.id''',
+                                    ),
+                                    ParamType.int,
+                                  ),
+                                }.withoutNulls,
+                              );
+                            },
+                            child: Container(
+                              width: MediaQuery.sizeOf(context).width * 0.9,
+                              height: 50.0,
+                              decoration: BoxDecoration(
+                                color: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            0.0, 0.0, 10.0, 0.0),
+                                        child: Icon(
+                                          Icons.person_add_sharp,
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          size: 24.0,
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment:
+                                            AlignmentDirectional(-1.0, 0.0),
+                                        child: Text(
+                                          'Назначить исполнителя',
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'SFProText',
+                                                fontSize: 16.0,
+                                                letterSpacing: 0.0,
+                                              ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Divider(
+                                    thickness: 1.0,
+                                    color: Color(0xFFE9ECEF),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      if ((functions.statusRequest(getJsonField(
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) !=
                               'Закрыта') &&
                           (functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) !=
-                              'На проверке'))
+                              'На проверке') &&
+                          (functions.statusRequest(getJsonField(
+                                widget.json,
+                                r'''$.status''',
+                              ).toString()) !=
+                              'Отклонена'))
                         Align(
                           alignment: AlignmentDirectional(0.0, 0.0),
                           child: InkWell(
@@ -196,11 +295,11 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                                 EditDefecWidget.routeName,
                                 queryParameters: {
                                   'id': serializeParam(
-                                    widget!.id,
+                                    widget.id,
                                     ParamType.int,
                                   ),
                                   'json': serializeParam(
-                                    widget!.json,
+                                    widget.json,
                                     ParamType.JSON,
                                   ),
                                 }.withoutNulls,
@@ -270,22 +369,22 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       if ((functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) ==
                               'Принят подрядчиком') ||
                           (functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) ==
                               'Отложена') ||
                           (functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) ==
                               'У исполнителя') ||
                           (functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) ==
                               'Открыта'))
@@ -302,14 +401,14 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                                 queryParameters: {
                                   'title': serializeParam(
                                     getJsonField(
-                                      widget!.json,
+                                      widget.json,
                                       r'''$.title''',
                                     ).toString(),
                                     ParamType.String,
                                   ),
                                   'id': serializeParam(
                                     getJsonField(
-                                      widget!.json,
+                                      widget.json,
                                       r'''$.id''',
                                     ),
                                     ParamType.int,
@@ -368,12 +467,12 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                           ),
                         ),
                       if ((functions.statusRequest(getJsonField(
-                                widget!.json,
+                                widget.json,
                                 r'''$.status''',
                               ).toString()) ==
                               'Принят подрядчиком') &&
                           !getJsonField(
-                            widget!.json,
+                            widget.json,
                             r'''$.priority''',
                           ))
                         Align(
@@ -402,7 +501,7 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                                             MediaQuery.sizeOf(context).width *
                                                 0.95,
                                         child: AddCommentWidget(
-                                          id: widget!.id!,
+                                          id: widget.id!,
                                         ),
                                       ),
                                     );
@@ -475,11 +574,11 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                               EditDefecWidget.routeName,
                               queryParameters: {
                                 'id': serializeParam(
-                                  widget!.id,
+                                  widget.id,
                                   ParamType.int,
                                 ),
                                 'json': serializeParam(
-                                  widget!.json,
+                                  widget.json,
                                   ParamType.JSON,
                                 ),
                               }.withoutNulls,
@@ -549,7 +648,7 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       if (functions.statusRequest(getJsonField(
-                            widget!.json,
+                            widget.json,
                             r'''$.status''',
                           ).toString()) ==
                           'В работе')
@@ -565,11 +664,11 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                                 EditDefecWidget.routeName,
                                 queryParameters: {
                                   'id': serializeParam(
-                                    widget!.id,
+                                    widget.id,
                                     ParamType.int,
                                   ),
                                   'json': serializeParam(
-                                    widget!.json,
+                                    widget.json,
                                     ParamType.JSON,
                                   ),
                                 }.withoutNulls,
@@ -639,7 +738,7 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       if (functions.statusRequest(getJsonField(
-                            widget!.json,
+                            widget.json,
                             r'''$.status''',
                           ).toString()) ==
                           'Открыта')
@@ -655,11 +754,11 @@ class _EditDefect2WidgetState extends State<EditDefect2Widget> {
                                 EditDefecWidget.routeName,
                                 queryParameters: {
                                   'id': serializeParam(
-                                    widget!.id,
+                                    widget.id,
                                     ParamType.int,
                                   ),
                                   'json': serializeParam(
-                                    widget!.json,
+                                    widget.json,
                                     ParamType.JSON,
                                   ),
                                 }.withoutNulls,

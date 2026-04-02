@@ -1,12 +1,14 @@
 import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/backend/schema/structs/index.dart';
+import '/defects/choose_user/choose_user_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'dart:ui';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'dart:async';
@@ -16,13 +18,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class DefectsModel extends FlutterFlowModel<DefectsWidget> {
   ///  Local state fields for this page.
 
-  int page = 10;
+  int page = 1;
+
+  List<dynamic> defectsItems = [];
+
+  int totalPages = 1;
 
   bool isEdited = false;
 
@@ -30,12 +37,17 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
 
   ///  State fields for stateful widgets in this page.
 
-  // Stores action output result for [Backend Call - API (Auth)] action in Defects widget.
-  ApiCallResponse? authResponse1;
-  // Stores action output result for [Backend Call - API (UpdateFCMToken)] action in Defects widget.
-  ApiCallResponse? test;
+  // Stores action output result for [Custom Action - showNotificationSnackbar] action in Defects widget.
+  bool? aaa;
   bool apiRequestCompleted = false;
   String? apiRequestLastUniqueKey;
+  // Stores action output result for [Backend Call - API (Auth)] action in Defects widget.
+  ApiCallResponse? authResponse1;
+  var aa = '';
+  // Stores action output result for [Backend Call - API (GetEquipmentsBarcode)] action in Button widget.
+  ApiCallResponse? qq;
+  // Stores action output result for [Backend Call - API (GetDefectsForm)] action in Button widget.
+  ApiCallResponse? zz;
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode;
   TextEditingController? textController;
@@ -47,12 +59,12 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
   // State field(s) for filial widget.
   String? filialValue;
   FormFieldController<String>? filialValueController;
-  // State field(s) for contractor widget.
-  String? contractorValue;
-  FormFieldController<String>? contractorValueController;
   // State field(s) for type widget.
   String? typeValue;
   FormFieldController<String>? typeValueController;
+  // State field(s) for contractor widget.
+  String? contractorValue;
+  FormFieldController<String>? contractorValueController;
 
   @override
   void initState(BuildContext context) {}
@@ -77,5 +89,23 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
         break;
       }
     }
+  }
+
+  void applyDefectsPage({
+    required String uniqueKey,
+    required int pageNumber,
+    required List<dynamic> items,
+    required int totalPagesValue,
+  }) {
+    if (apiRequestLastUniqueKey == uniqueKey) {
+      return;
+    }
+    apiRequestLastUniqueKey = uniqueKey;
+    totalPages = totalPagesValue;
+    if (pageNumber <= 1) {
+      defectsItems = List<dynamic>.from(items);
+      return;
+    }
+    defectsItems = [...defectsItems, ...items];
   }
 }

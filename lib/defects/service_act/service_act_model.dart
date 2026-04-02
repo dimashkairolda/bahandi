@@ -1,24 +1,12 @@
-import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/flutter_flow/request_manager.dart';
 
 import '/index.dart';
 import 'dart:async';
 import 'service_act_widget.dart' show ServiceActWidget;
-import 'package:easy_debounce/easy_debounce.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class ServiceActModel extends FlutterFlowModel<ServiceActWidget> {
   ///  Local state fields for this page.
@@ -31,12 +19,12 @@ class ServiceActModel extends FlutterFlowModel<ServiceActWidget> {
 
   // Stores action output result for [Backend Call - API (Auth)] action in ServiceAct widget.
   ApiCallResponse? authResponse1;
+  bool apiRequestCompleted = false;
+  String? apiRequestLastUniqueKey;
   // State field(s) for TextField widget.
   FocusNode? textFieldFocusNode;
   TextEditingController? textController;
   String? Function(BuildContext, String?)? textControllerValidator;
-  bool apiRequestCompleted = false;
-  String? apiRequestLastUniqueKey;
   DateTime? datePicked;
   // State field(s) for filial widget.
   String? filialValue;

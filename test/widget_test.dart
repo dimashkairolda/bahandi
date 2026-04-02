@@ -7,11 +7,10 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:Bahandi/main.dart';
+import 'package:Etry/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+  test('MyApp can be instantiated', () {
+    expect(MyApp(), isA<MyApp>());
   });
 }

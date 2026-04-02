@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'auth_login_model.dart';
 export 'auth_login_model.dart';
 
@@ -67,17 +68,17 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
           automaticallyImplyLeading: false,
           actions: [],
           centerTitle: false,
-          elevation: 0.0,
+          elevation: 0,
         ),
         body: SafeArea(
           top: true,
           child: Align(
-            alignment: AlignmentDirectional(0.0, 0.0),
+            alignment: AlignmentDirectional(0, 0),
             child: Container(
               width: double.infinity,
               height: MediaQuery.sizeOf(context).height * 0.9,
               constraints: BoxConstraints(
-                maxWidth: 670.0,
+                maxWidth: 670,
               ),
               decoration: BoxDecoration(
                 color: FlutterFlowTheme.of(context).secondaryBackground,
@@ -88,19 +89,18 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding:
-                          EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+                      padding: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
                       child: SingleChildScrollView(
                         child: Column(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
+                              alignment: AlignmentDirectional(0, 0),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8.0),
+                                borderRadius: BorderRadius.circular(8),
                                 child: Image.asset(
-                                  'assets/images/Welcome_page.png',
+                                  'assets/images/Adobe_Express_-_file.png',
                                   width: MediaQuery.sizeOf(context).width * 0.5,
                                   height:
                                       MediaQuery.sizeOf(context).height * 0.2,
@@ -109,15 +109,19 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 12.0, 16.0, 0.0),
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
                               child: TextFormField(
                                 controller: _model.emailAddressTextController,
                                 focusNode: _model.emailAddressFocusNode,
                                 autofocus: false,
                                 obscureText: false,
                                 decoration: InputDecoration(
-                                  labelText: 'Адрес электронной почты',
+                                  labelText: FFLocalizations.of(context)
+                                      .getVariableText(
+                                    ruText: 'Адрес электронной почты',
+                                    kkText: 'Электрондық пошта',
+                                  ),
                                   labelStyle: FlutterFlowTheme.of(context)
                                       .labelLarge
                                       .override(
@@ -155,7 +159,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context)
                                           .alternate,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -166,7 +170,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                     borderSide: BorderSide(
                                       color:
                                           FlutterFlowTheme.of(context).primary,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -176,7 +180,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                   errorBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context).error,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -186,7 +190,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                   focusedErrorBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context).error,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -198,7 +202,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                       .secondaryBackground,
                                   contentPadding:
                                       EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 16.0, 16.0, 8.0),
+                                          0, 16, 16, 8),
                                 ),
                                 style: FlutterFlowTheme.of(context)
                                     .headlineMedium
@@ -218,8 +222,8 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  16.0, 12.0, 16.0, 0.0),
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
                               child: TextFormField(
                                 controller: _model.passwordTextController,
                                 focusNode: _model.passwordFocusNode,
@@ -227,7 +231,11 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                 textCapitalization: TextCapitalization.none,
                                 obscureText: !_model.passwordVisibility,
                                 decoration: InputDecoration(
-                                  labelText: 'Пароль',
+                                  labelText: FFLocalizations.of(context)
+                                      .getVariableText(
+                                    ruText: 'Пароль',
+                                    kkText: 'Құпиясөз',
+                                  ),
                                   labelStyle: FlutterFlowTheme.of(context)
                                       .labelLarge
                                       .override(
@@ -265,7 +273,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context)
                                           .alternate,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -276,7 +284,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                     borderSide: BorderSide(
                                       color:
                                           FlutterFlowTheme.of(context).primary,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -286,7 +294,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                   errorBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context).error,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -296,7 +304,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                   focusedErrorBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
                                       color: FlutterFlowTheme.of(context).error,
-                                      width: 2.0,
+                                      width: 2,
                                     ),
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(4.0),
@@ -308,7 +316,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                       .secondaryBackground,
                                   contentPadding:
                                       EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 16.0, 16.0, 8.0),
+                                          0, 16, 16, 8),
                                   suffixIcon: InkWell(
                                     onTap: () => safeSetState(
                                       () => _model.passwordVisibility =
@@ -321,7 +329,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                           : Icons.visibility_off_outlined,
                                       color: FlutterFlowTheme.of(context)
                                           .primaryText,
-                                      size: 24.0,
+                                      size: 24,
                                     ),
                                   ),
                                 ),
@@ -354,8 +362,8 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 10.0, 0.0, 0.0),
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                               child: Material(
                                 color: Colors.transparent,
                                 child: Theme(
@@ -391,12 +399,16 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                       }
                                     },
                                     title: Text(
-                                      'Запомнить меня',
+                                      FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Запомнить меня',
+                                        kkText: 'Мені есте сақтау',
+                                      ),
                                       style: FlutterFlowTheme.of(context)
                                           .titleLarge
                                           .override(
                                             fontFamily: 'SFProText',
-                                            fontSize: 16.0,
+                                            fontSize: 16,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -420,8 +432,7 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(16.0, 0.0, 16.0, 12.0),
+                    padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 12),
                     child: FFButtonWidget(
                       onPressed: () async {
                         var _shouldSetState = false;
@@ -508,21 +519,38 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                             }),
                           ]);
 
-                          context.pushNamedAuth(
+                          context.goNamedAuth(
                               DefectsWidget.routeName, context.mounted);
                         } else {
                           await showDialog(
                             context: context,
                             builder: (alertDialogContext) {
                               return AlertDialog(
-                                title: Text('Ошибка'),
+                                title: Text(
+                                  FFLocalizations.of(context).getVariableText(
+                                    ruText: 'Ошибка',
+                                    kkText: 'Қате',
+                                  ),
+                                ),
                                 content: Text(
-                                    'Неправильный логин или пароль! Попробуйте еще раз, либо обратитесь администратору.'),
+                                    FFLocalizations.of(context)
+                                        .getVariableText(
+                                      ruText:
+                                          'Неправильный логин или пароль! Попробуйте еще раз, либо обратитесь администратору.',
+                                      kkText:
+                                          'Логин немесе құпиясөз қате! Қайта көріңіз немесе әкімшіге хабарласыңыз.',
+                                    )),
                                 actions: [
                                   TextButton(
                                     onPressed: () =>
                                         Navigator.pop(alertDialogContext),
-                                    child: Text('Закрыть'),
+                                    child: Text(
+                                      FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Закрыть',
+                                        kkText: 'Жабу',
+                                      ),
+                                    ),
                                   ),
                                 ],
                               );
@@ -534,14 +562,15 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
 
                         if (_shouldSetState) safeSetState(() {});
                       },
-                      text: 'Войти',
+                      text: FFLocalizations.of(context).getVariableText(
+                        ruText: 'Войти',
+                        kkText: 'Кіру',
+                      ),
                       options: FFButtonOptions(
                         width: double.infinity,
-                        height: 60.0,
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                        iconPadding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                        height: 60,
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                        iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleMedium.override(
@@ -551,12 +580,12 @@ class _AuthLoginWidgetState extends State<AuthLoginWidget> {
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w500,
                                 ),
-                        elevation: 4.0,
+                        elevation: 4,
                         borderSide: BorderSide(
                           color: Colors.transparent,
-                          width: 1.0,
+                          width: 1,
                         ),
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(8),
                         hoverColor: FlutterFlowTheme.of(context).primaryText,
                       ),
                     ),

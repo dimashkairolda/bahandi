@@ -4,43 +4,63 @@
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-Future<void> updateResponseByIdShkala(List<dynamic> jsonData, int searchId,
-    int equipmentId, String formTitle, double newResponse) async {
-  bool updated = false; // Флаг для отслеживания, было ли обновление выполнено
+// Имя функции изменено для ясности
+Future<void> updateResponseByIdShkala(
+  dynamic inspectionJson, // <-- ИЗМЕНЕНО: Теперь это один JSON-объект
+  // List<dynamic> jsonData, // <-- УДАЛЕНО
+  // int searchId, // <-- УДАЛЕНО
+  int equipmentId,
+  String formTitle,
+  double newResponse, // Тип double - это корректно, JSON его поддерживает
+) async {
+  bool updated = false; // Флаг для отслеживания обновления
 
-  // Проходим по массиву JSON, чтобы найти соответствующий элемент
-  for (var item in jsonData) {
-    if (item['id'] == searchId) {
-      // Проверяем, соответствует ли ID искомому
-      print('Found matching ID: $searchId');
-      if (item.containsKey('responses')) {
-        for (var response in item['responses']) {
-          if (response['regulation_work_info']['equipment'] == equipmentId) {
-            for (var formResult in response['form_result']) {
-              if (formResult['data']['title'] == formTitle) {
-                formResult['result']['response'] =
-                    newResponse; // Обновляем значение
-                print('Response updated for $formTitle to $newResponse');
+  // Проверяем, что нам передали не пустой JSON
+  if (inspectionJson == null || inspectionJson is! Map<String, dynamic>) {
+    print('Ошибка: На вход подан пустой или некорректный JSON (не Map).');
+    return;
+  }
+
+  // Самый внешний цикл и проверка по searchId УДАЛЕНЫ.
+  // Сразу работаем с 'responses' внутри 'inspectionJson'.
+
+  if (inspectionJson.containsKey('responses') &&
+      inspectionJson['responses'] is List) {
+    for (var response in inspectionJson['responses']) {
+      // Проверяем, что 'response' - это Map и ID совпадает
+      if (response is Map &&
+          response.containsKey('regulation_work_info') &&
+          response['regulation_work_info'] is Map &&
+          response['regulation_work_info']['equipment'] == equipmentId) {
+        // Проверяем наличие 'form_result'
+        if (response.containsKey('form_result') &&
+            response['form_result'] is List) {
+          for (var formResult in response['form_result']) {
+            // Проверяем, что 'formResult' - это Map, 'data' - это Map и title совпадает
+            if (formResult is Map &&
+                formResult.containsKey('data') &&
+                formResult['data'] is Map &&
+                formResult['data']['title'] == formTitle) {
+              // Убедимся, что структура 'result' правильная
+              if (formResult.containsKey('result') &&
+                  formResult['result'] is Map) {
+                // Обновляем значение (типа double)
+                formResult['result']['response'] = newResponse;
+                print(
+                    'Response (shkala) для "$formTitle" обновлен на $newResponse');
                 updated = true;
-                break; // Прерываем цикл после успешного обновления
+                break; // Прерываем цикл 'form_result'
               }
             }
           }
-          if (updated) {
-            break; // Если обновление выполнено, прерываем внешний цикл
-          }
         }
       }
-      if (updated) {
-        break; // Если обновление выполнено, прерываем самый внешний цикл
-      }
+      if (updated) break; // Если обновление выполнено, прерываем 'responses'
     }
   }
 
   if (!updated) {
     print(
-        'No matching data found to update.'); // Выводим сообщение, если обновление не выполнено
+        'Обновление не выполнено. Не найдено совпадение для: [EquipmentID: $equipmentId, FormTitle: "$formTitle"]');
   }
 }
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!

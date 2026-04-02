@@ -1,3 +1,4 @@
+import '/api/firebase_api.dart';
 import '/auth/custom_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -1182,6 +1183,7 @@ class _CreateAccount1WidgetState extends State<CreateAccount1Widget> {
                                     highlightColor: Colors.transparent,
                                     onTap: () async {
                                       GoRouter.of(context).prepareAuthEvent();
+                                      await FirebaseApi().logoutNotifications();
                                       await authManager.signOut();
                                       GoRouter.of(context)
                                           .clearRedirectLocation();

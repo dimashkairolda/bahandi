@@ -101,7 +101,7 @@ class _PdfviewerWidgetState extends State<PdfviewerWidget> {
                 builder: (context) {
                   if (widget!.extension == 'pdf') {
                     return FlutterFlowPdfViewer(
-                      networkPath: 'https://magnum.etry.kz${widget!.viewer}',
+                      networkPath: 'https://app.etry.kz${widget!.viewer}',
                       width: MediaQuery.sizeOf(context).width * 1.0,
                       height: MediaQuery.sizeOf(context).height * 1.0,
                       horizontalScroll: false,
@@ -121,23 +121,23 @@ class _PdfviewerWidgetState extends State<PdfviewerWidget> {
                             type: PageTransitionType.fade,
                             child: FlutterFlowExpandedImageView(
                               image: Image.network(
-                                'https://magnum.etry.kz${widget!.viewer}',
+                                'https://app.etry.kz${widget!.viewer}',
                                 fit: BoxFit.contain,
                               ),
                               allowRotation: false,
-                              tag: 'https://magnum.etry.kz${widget!.viewer}',
+                              tag: 'https://app.etry.kz${widget!.viewer}',
                               useHeroAnimation: true,
                             ),
                           ),
                         );
                       },
                       child: Hero(
-                        tag: 'https://magnum.etry.kz${widget!.viewer}',
+                        tag: 'https://app.etry.kz${widget!.viewer}',
                         transitionOnUserGestures: true,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8.0),
                           child: Image.network(
-                            'https://magnum.etry.kz${widget!.viewer}',
+                            'https://app.etry.kz${widget!.viewer}',
                             width: MediaQuery.sizeOf(context).width * 1.0,
                             height: 300.0,
                             fit: BoxFit.fill,

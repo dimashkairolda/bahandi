@@ -3,13 +3,9 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'add_comment_model.dart';
 export 'add_comment_model.dart';
 
@@ -75,7 +71,10 @@ class _AddCommentWidgetState extends State<AddCommentWidget> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Оставить комментарий',
+                  FFLocalizations.of(context).getVariableText(
+                    ruText: 'Оставить комментарий',
+                    kkText: 'Пікір қалдыру',
+                  ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'SFProText',
                         fontSize: 20.0,
@@ -307,7 +306,7 @@ class _AddCommentWidgetState extends State<AddCommentWidget> {
                           _model.apiResusdsdf =
                               await UpdateDefectsByIdCall.call(
                             access: currentAuthenticationToken,
-                            id: widget!.id,
+                            id: widget.id,
                             bodyJson: RequestStruct(
                               status: 'postponed',
                               comment: _model.nameTextController.text,
@@ -325,7 +324,7 @@ class _AddCommentWidgetState extends State<AddCommentWidget> {
                               DetailedDefectsOfflineWidget.routeName,
                               queryParameters: {
                                 'id': serializeParam(
-                                  widget!.id,
+                                  widget.id,
                                   ParamType.int,
                                 ),
                               }.withoutNulls,

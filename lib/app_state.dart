@@ -4,7 +4,6 @@ import '/backend/schema/structs/index.dart';
 import '/backend/api_requests/api_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'flutter_flow/flutter_flow_util.dart';
-import 'dart:convert';
 
 class FFAppState extends ChangeNotifier {
   static FFAppState _instance = FFAppState._internal();
@@ -232,6 +231,21 @@ class FFAppState extends ChangeNotifier {
     });
     _safeInit(() {
       _secondFcmToken = prefs.getString('ff_secondFcmToken') ?? _secondFcmToken;
+    });
+    _safeInit(() {
+      _frequentlyUsedEquipment = prefs
+              .getStringList('ff_frequentlyUsedEquipment')
+              ?.map((x) {
+                try {
+                  return EquipmentStruct.fromSerializableMap(jsonDecode(x));
+                } catch (e) {
+                  print("Can't decode persisted data type. Error: $e.");
+                  return null;
+                }
+              })
+              .withoutNulls
+              .toList() ??
+          _frequentlyUsedEquipment;
     });
   }
 
@@ -1303,6 +1317,48 @@ class FFAppState extends ChangeNotifier {
 
   void updateAaStruct(Function(InventarizationStruct) updateFn) {
     updateFn(_aa);
+  }
+
+  List<EquipmentStruct> _frequentlyUsedEquipment = [];
+  List<EquipmentStruct> get frequentlyUsedEquipment => _frequentlyUsedEquipment;
+  set frequentlyUsedEquipment(List<EquipmentStruct> value) {
+    _frequentlyUsedEquipment = value;
+    prefs.setStringList(
+        'ff_frequentlyUsedEquipment', value.map((x) => x.serialize()).toList());
+  }
+
+  void addToFrequentlyUsedEquipment(EquipmentStruct value) {
+    frequentlyUsedEquipment.add(value);
+    prefs.setStringList('ff_frequentlyUsedEquipment',
+        _frequentlyUsedEquipment.map((x) => x.serialize()).toList());
+  }
+
+  void removeFromFrequentlyUsedEquipment(EquipmentStruct value) {
+    frequentlyUsedEquipment.remove(value);
+    prefs.setStringList('ff_frequentlyUsedEquipment',
+        _frequentlyUsedEquipment.map((x) => x.serialize()).toList());
+  }
+
+  void removeAtIndexFromFrequentlyUsedEquipment(int index) {
+    frequentlyUsedEquipment.removeAt(index);
+    prefs.setStringList('ff_frequentlyUsedEquipment',
+        _frequentlyUsedEquipment.map((x) => x.serialize()).toList());
+  }
+
+  void updateFrequentlyUsedEquipmentAtIndex(
+    int index,
+    EquipmentStruct Function(EquipmentStruct) updateFn,
+  ) {
+    frequentlyUsedEquipment[index] = updateFn(_frequentlyUsedEquipment[index]);
+    prefs.setStringList('ff_frequentlyUsedEquipment',
+        _frequentlyUsedEquipment.map((x) => x.serialize()).toList());
+  }
+
+  void insertAtIndexInFrequentlyUsedEquipment(
+      int index, EquipmentStruct value) {
+    frequentlyUsedEquipment.insert(index, value);
+    prefs.setStringList('ff_frequentlyUsedEquipment',
+        _frequentlyUsedEquipment.map((x) => x.serialize()).toList());
   }
 
   final _defectManager = FutureRequestManager<ApiCallResponse>();

@@ -11,32 +11,16 @@ export '/equipments/equipments_tree/equipments_tree_widget.dart'
     show EquipmentsTreeWidget;
 export '/equipments/equipments_detailed/equipments_detailed_widget.dart'
     show EquipmentsDetailedWidget;
-export '/inspections/inspections/inspections_widget.dart'
-    show InspectionsWidget;
-export '/inspections/detailed_inspections/detailed_inspections_widget.dart'
-    show DetailedInspectionsWidget;
-export '/inspections/detailed_inspections_copy_copy/detailed_inspections_copy_copy_widget.dart'
-    show DetailedInspectionsCopyCopyWidget;
-export '/inspections/detailed_inspections_copy_copy2/detailed_inspections_copy_copy2_widget.dart'
-    show DetailedInspectionsCopyCopy2Widget;
+
 export '/main_page/main_page_widget.dart' show MainPageWidget;
 export '/draft/draft_widget.dart' show DraftWidget;
-export '/inspections/create_defect_from_inspection/create_defect_from_inspection_widget.dart'
-    show CreateDefectFromInspectionWidget;
+
 export '/equipments/inspections_copy/inspections_copy_widget.dart'
     show InspectionsCopyWidget;
-export '/inspections/inspections_time_list/inspections_time_list_widget.dart'
-    show InspectionsTimeListWidget;
+
 export '/pdfviewer/pdfviewer_widget.dart' show PdfviewerWidget;
 export '/chooseasset/chooseasset_widget.dart' show ChooseassetWidget;
-export '/inspections/detailed_inspections2/detailed_inspections2_widget.dart'
-    show DetailedInspections2Widget;
-export '/inspections/inspections_time_list_done/inspections_time_list_done_widget.dart'
-    show InspectionsTimeListDoneWidget;
-export '/inspections/detailed_inspections_ended/detailed_inspections_ended_widget.dart'
-    show DetailedInspectionsEndedWidget;
-export '/inspections/create_defect_from_inspection_copy/create_defect_from_inspection_copy_widget.dart'
-    show CreateDefectFromInspectionCopyWidget;
+
 export '/barcode/barcode_widget.dart' show BarcodeWidget;
 export '/defects/edit_defec/edit_defec_widget.dart' show EditDefecWidget;
 export '/auth/create_account1/create_account1_widget.dart'
@@ -59,3 +43,16 @@ export '/pdfviewer_copy/pdfviewer_copy_widget.dart' show PdfviewerCopyWidget;
 export '/chooseequip/chooseequip_widget.dart' show ChooseequipWidget;
 export '/create_equipment/create_equipment_widget.dart'
     show CreateEquipmentWidget;
+export '/site_equipment/sites_list/sites_list_widget.dart'
+    show SitesListWidget;
+export '/site_equipment/site_equipment_list/site_equipment_list_widget.dart'
+    show SiteEquipmentListWidget;
+export '/site_equipment/add_equipment/add_equipment_widget.dart'
+    show AddEquipmentSimpleWidget;
+export '/site_equipment/edit_equipment/edit_equipment_widget.dart'
+    show EditEquipmentSimpleWidget;
+export '/objects_areas/objects_areas_widget.dart' show ObjectsAreasWidget;
+export '/objects_areas/area_equipments_select_widget.dart'
+    show AreaEquipmentsSelectWidget;
+export '/objects_areas/area_responsibles_select_widget.dart'
+    show AreaResponsiblesSelectWidget;

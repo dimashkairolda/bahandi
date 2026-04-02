@@ -1,14 +1,25 @@
+import 'package:Etry/media_viewer/media_viewer_widget.dart';
+
 import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
 import '/defects/add_t_m_c/add_t_m_c_widget.dart';
 import '/defects/add_works/add_works_widget.dart';
+import '/defects/photo_or_video/photo_or_video_widget.dart';
+import '/flutter_flow/flutter_flow_expanded_image_view.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_video_player.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/upload_data.dart';
-import 'dart:ui';
+import '/inspections/checkboxes/checkboxes_widget.dart';
+import '/inspections/date/date_widget.dart';
+import '/inspections/diapason/diapason_widget.dart';
+import '/inspections/instruction/instruction_widget.dart';
+import '/inspections/iz_spiska/iz_spiska_widget.dart';
+import '/inspections/radio_defect/radio_defect_widget.dart';
+import '/inspections/short_text/short_text_widget.dart';
+import '/inspections/zamery/zamery_widget.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/custom_code/widgets/index.dart' as custom_widgets;
 import '/flutter_flow/custom_functions.dart' as functions;
@@ -17,7 +28,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
 import 'create_defect_copy_model.dart';
 export 'create_defect_copy_model.dart';
 
@@ -31,6 +41,8 @@ class CreateDefectCopyWidget extends StatefulWidget {
     this.files,
     this.ispravil,
     this.priority,
+    this.typeId,
+    this.formId,
   });
 
   final List<String>? workable;
@@ -40,6 +52,8 @@ class CreateDefectCopyWidget extends StatefulWidget {
   final List<dynamic>? files;
   final bool? ispravil;
   final bool? priority;
+  final int? typeId;
+  final int? formId;
 
   static String routeName = 'CreateDefectCopy';
   static String routePath = '/createDefectCopy';
@@ -60,7 +74,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
-      _model.photos123 = widget!.files!.toList().cast<dynamic>();
+      _model.photos123 = widget.files!.toList().cast<dynamic>();
       _model.dd = 1;
       safeSetState(() {});
     });
@@ -93,42 +107,42 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
-            borderRadius: 30,
-            borderWidth: 1,
-            buttonSize: 60,
+            borderRadius: 30.0,
+            borderWidth: 1.0,
+            buttonSize: 60.0,
             icon: Icon(
               Icons.arrow_back_rounded,
               color: FlutterFlowTheme.of(context).primary,
-              size: 30,
+              size: 30.0,
             ),
             onPressed: () async {
-              context.safePop();
               FFAppState().spareparts = [];
               FFAppState().works = [];
               FFAppState().photos = [];
-              safeSetState(() {});
+              FFAppState().update(() {});
+              context.safePop();
             },
           ),
           title: Text(
             valueOrDefault<String>(
-              widget!.title,
+              widget.title,
               '-',
             ),
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   fontFamily: 'SFProText',
                   color: FlutterFlowTheme.of(context).primary,
-                  fontSize: 18,
+                  fontSize: 18.0,
                   letterSpacing: 0.0,
                 ),
           ),
           actions: [],
           centerTitle: false,
-          elevation: 0,
+          elevation: 0.0,
         ),
         body: SafeArea(
           top: true,
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+            padding: EdgeInsetsDirectional.fromSTEB(16.0, 12.0, 16.0, 0.0),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.max,
@@ -141,12 +155,218 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                       mainAxisSize: MainAxisSize.max,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (!functions.emptyList(FFAppState()
+                            .formresult1
+                            .map((e) => e.data.toMap())
+                            .toList())!)
+                          Container(
+                            width: MediaQuery.sizeOf(context).width * 1.0,
+                            decoration: BoxDecoration(
+                              color: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      16.0, 0.0, 0.0, 0.0),
+                                  child: Text(
+                                    'Чеклист проверки',
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'SFProText',
+                                          letterSpacing: 0.0,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                  ),
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    final questions =
+                                        FFAppState().formresult1.toList();
+
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: List.generate(questions.length,
+                                              (questionsIndex) {
+                                        final questionsItem =
+                                            questions[questionsIndex];
+                                        return Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  11.5, 8.0, 11.5, 0.0),
+                                          child: Container(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                1.0,
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                              borderRadius:
+                                                  BorderRadius.circular(10.0),
+                                            ),
+                                            child: Builder(
+                                              builder: (context) {
+                                                if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"radio_defect\"')
+                                                        .toString()) {
+                                                  return RadioDefectWidget(
+                                                    key: Key(
+                                                        'Keyz6u_${questionsIndex}_of_${questions.length}'),
+                                                    data: questionsItem.toMap(),
+                                                    index: questionsIndex,
+                                                    old: false,
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"checkbox\"')
+                                                        .toString()) {
+                                                  return CheckboxesWidget(
+                                                    key: Key(
+                                                        'Keysof_${questionsIndex}_of_${questions.length}'),
+                                                    index: questionsIndex,
+                                                    data: questionsItem.toMap(),
+                                                    old: false,
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"radio\"')
+                                                        .toString()) {
+                                                  return IzSpiskaWidget(
+                                                    key: Key(
+                                                        'Keydzy_${questionsIndex}_of_${questions.length}'),
+                                                    index: questionsIndex,
+                                                    data: questionsItem.toMap(),
+                                                    old: false,
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"instruction\"')
+                                                        .toString()) {
+                                                  return InstructionWidget(
+                                                    key: Key(
+                                                        'Key75p_${questionsIndex}_of_${questions.length}'),
+                                                    data: questionsItem.toMap(),
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"date\"')
+                                                        .toString()) {
+                                                  return DateWidget(
+                                                    key: Key(
+                                                        'Keym4i_${questionsIndex}_of_${questions.length}'),
+                                                    index: questionsIndex,
+                                                    data: questionsItem.toMap(),
+                                                    old: false,
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"measurement\"')
+                                                        .toString()) {
+                                                  return ZameryWidget(
+                                                    key: Key(
+                                                        'Keyo4y_${questionsIndex}_of_${questions.length}'),
+                                                    index: questionsIndex,
+                                                    data: questionsItem.toMap(),
+                                                    old: false,
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"range\"')
+                                                        .toString()) {
+                                                  return DiapasonWidget(
+                                                    key: Key(
+                                                        'Keygqz_${questionsIndex}_of_${questions.length}'),
+                                                    index: questionsIndex,
+                                                    data: questionsItem.toMap(),
+                                                    old: false,
+                                                  );
+                                                } else if (questionsItem.type ==
+                                                    functions
+                                                        .stringToJson(
+                                                            '\"short_text\"')
+                                                        .toString()) {
+                                                  return ShortTextWidget(
+                                                    key: Key(
+                                                        'Keyiix_${questionsIndex}_of_${questions.length}'),
+                                                    index: questionsIndex,
+                                                    data: questionsItem.toMap(),
+                                                    old: false,
+                                                  );
+                                                } else {
+                                                  return Container(
+                                                    width: MediaQuery.sizeOf(
+                                                                context)
+                                                            .width *
+                                                        0.657,
+                                                    decoration: BoxDecoration(),
+                                                    child: Text(
+                                                      'Ошибка! Пожалуйста обратитесь к администратору!',
+                                                      style:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                font: GoogleFonts
+                                                                    .readexPro(
+                                                                  fontWeight: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontWeight,
+                                                                  fontStyle: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .fontStyle,
+                                                                ),
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .fontWeight,
+                                                                fontStyle: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .fontStyle,
+                                                              ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      })
+                                          .divide(SizedBox(height: 5.0))
+                                          .addToStart(SizedBox(height: 10.0))
+                                          .addToEnd(SizedBox(height: 10.0)),
+                                    );
+                                  },
+                                ),
+                              ]
+                                  .addToStart(SizedBox(height: 5.0))
+                                  .addToEnd(SizedBox(height: 5.0)),
+                            ),
+                          ),
                         Container(
-                          width: MediaQuery.sizeOf(context).width,
+                          width: MediaQuery.sizeOf(context).width * 1.0,
                           decoration: BoxDecoration(
                             color: FlutterFlowTheme.of(context)
                                 .secondaryBackground,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(10.0),
                           ),
                           child: Column(
                             mainAxisSize: MainAxisSize.max,
@@ -167,7 +387,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                             fontFamily: 'SFProText',
                                             color: FlutterFlowTheme.of(context)
                                                 .primaryText,
-                                            fontSize: 16,
+                                            fontSize: 16.0,
                                             letterSpacing: 0.0,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -199,7 +419,8 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                           color: Color(0x00000000),
                                           width: 1.0,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -207,7 +428,8 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                               .primary,
                                           width: 1.0,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
                                       errorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -215,7 +437,8 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                               .error,
                                           width: 1.0,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
                                       focusedErrorBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
@@ -223,11 +446,12 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                               .error,
                                           width: 1.0,
                                         ),
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius:
+                                            BorderRadius.circular(12.0),
                                       ),
                                       contentPadding:
                                           EdgeInsetsDirectional.fromSTEB(
-                                              16, 12, 16, 12),
+                                              16.0, 12.0, 16.0, 12.0),
                                     ),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
@@ -261,7 +485,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                         .asValidator(context),
                                   ),
                                   Divider(
-                                    thickness: 1,
+                                    thickness: 1.0,
                                     color: FlutterFlowTheme.of(context).warning,
                                   ),
                                   Row(
@@ -270,101 +494,53 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                     children: [
                                       FFButtonWidget(
                                         onPressed: () async {
-                                          safeSetState(() {
-                                            _model.isDataUploading_uploadDataTbt501 =
-                                                false;
-                                            _model.uploadedLocalFile_uploadDataTbt501 =
-                                                FFUploadedFile(
-                                                    bytes:
-                                                        Uint8List.fromList([]));
-                                          });
-
-                                          final selectedMedia =
-                                              await selectMediaWithSourceBottomSheet(
+                                          await showModalBottomSheet(
+                                            isScrollControlled: true,
+                                            backgroundColor: Color(0xFF5E6A70),
+                                            enableDrag: false,
                                             context: context,
-                                            maxWidth: 1000.00,
-                                            maxHeight: 1300.00,
-                                            imageQuality: 71,
-                                            allowPhoto: true,
-                                            allowVideo: true,
-                                          );
-                                          if (selectedMedia != null &&
-                                              selectedMedia.every((m) =>
-                                                  validateFileFormat(
-                                                      m.storagePath,
-                                                      context))) {
-                                            safeSetState(() => _model
-                                                    .isDataUploading_uploadDataTbt501 =
-                                                true);
-                                            var selectedUploadedFiles =
-                                                <FFUploadedFile>[];
-
-                                            try {
-                                              selectedUploadedFiles =
-                                                  selectedMedia
-                                                      .map(
-                                                          (m) => FFUploadedFile(
-                                                                name: m
-                                                                    .storagePath
-                                                                    .split('/')
-                                                                    .last,
-                                                                bytes: m.bytes,
-                                                                height: m
-                                                                    .dimensions
-                                                                    ?.height,
-                                                                width: m
-                                                                    .dimensions
-                                                                    ?.width,
-                                                                blurHash:
-                                                                    m.blurHash,
-                                                              ))
-                                                      .toList();
-                                            } finally {
-                                              _model.isDataUploading_uploadDataTbt501 =
-                                                  false;
-                                            }
-                                            if (selectedUploadedFiles.length ==
-                                                selectedMedia.length) {
-                                              safeSetState(() {
-                                                _model.uploadedLocalFile_uploadDataTbt501 =
-                                                    selectedUploadedFiles.first;
-                                              });
-                                            } else {
-                                              safeSetState(() {});
-                                              return;
-                                            }
-                                          }
-
-                                          _model.qq = await actions
-                                              .uploadFileAndConvertToBase64toList(
-                                            _model
-                                                .uploadedLocalFile_uploadDataTbt501,
-                                          );
-                                          if (!functions
-                                              .imageNull(_model.qq!)) {
-                                            FFAppState()
-                                                .addToPhotos(_model.qq!);
-                                            safeSetState(() {});
-                                          }
-
-                                          safeSetState(() {});
+                                            builder: (context) {
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  FocusScope.of(context)
+                                                      .unfocus();
+                                                  FocusManager
+                                                      .instance.primaryFocus
+                                                      ?.unfocus();
+                                                },
+                                                child: Padding(
+                                                  padding:
+                                                      MediaQuery.viewInsetsOf(
+                                                          context),
+                                                  child: Container(
+                                                    height: MediaQuery.sizeOf(
+                                                                context)
+                                                            .height *
+                                                        0.25,
+                                                    child: PhotoOrVideoWidget(),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ).then(
+                                              (value) => safeSetState(() {}));
                                         },
                                         text: 'Медиафайл',
                                         icon: Icon(
                                           Icons.camera_alt,
-                                          size: 15,
+                                          size: 15.0,
                                         ),
                                         options: FFButtonOptions(
                                           width:
                                               MediaQuery.sizeOf(context).width *
                                                   0.92,
-                                          height: 40,
+                                          height: 40.0,
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  24, 0, 24, 0),
+                                                  24.0, 0.0, 24.0, 0.0),
                                           iconPadding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  10, 0, 0, 0),
+                                                  10.0, 0.0, 0.0, 0.0),
                                           iconColor:
                                               FlutterFlowTheme.of(context)
                                                   .primary,
@@ -378,17 +554,17 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .primaryText,
-                                                fontSize: 14,
+                                                fontSize: 14.0,
                                                 letterSpacing: 0.0,
                                                 fontWeight: FontWeight.normal,
                                               ),
-                                          elevation: 3,
+                                          elevation: 3.0,
                                           borderSide: BorderSide(
                                             color: Colors.transparent,
-                                            width: 1,
+                                            width: 1.0,
                                           ),
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                       ),
                                     ],
@@ -417,40 +593,63 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0, 10, 0, 0),
-                                            child: Container(
-                                              width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  0.2,
-                                              height: MediaQuery.sizeOf(context)
-                                                      .height *
-                                                  0.1,
-                                              decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondary,
+                                                    0.0, 10.0, 0.0, 0.0),
+                                            child: InkWell(
+                                              splashColor: Colors.transparent,
+                                              focusColor: Colors.transparent,
+                                              hoverColor: Colors.transparent,
+                                              highlightColor:
+                                                  Colors.transparent,
+                                              onTap: () async {
+                                                context.pushNamed(
+                                                  MediaViewerWidget.routeName,
+                                                  queryParameters: {
+                                                    'data': serializeParam(
+                                                      functions
+                                                          .removeBase64Prefix(
+                                                              getJsonField(
+                                                        filesItem,
+                                                        r'''$.data''',
+                                                      )),
+                                                      ParamType.String,
+                                                    ),
+                                                  }.withoutNulls,
+                                                );
+                                              },
+                                              child: Container(
+                                                width:
+                                                    MediaQuery.sizeOf(context)
+                                                            .width *
+                                                        0.3,
+                                                height:
+                                                    MediaQuery.sizeOf(context)
+                                                            .height *
+                                                        0.15,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12.0),
+                                                  border: Border.all(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondary,
+                                                  ),
                                                 ),
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Image.network(
-                                                  'https://magnum.etry.kz${getJsonField(
-                                                    filesItem,
-                                                    r'''$.url''',
-                                                  ).toString()}',
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.2,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.1,
-                                                  fit: BoxFit.cover,
+                                                child: Container(
+                                                  width: 20.0,
+                                                  height: 10.0,
+                                                  child: custom_widgets
+                                                      .Base64Media(
+                                                    width: 20.0,
+                                                    height: 10.0,
+                                                    base64Data: functions
+                                                        .removeBase64Prefix(
+                                                            getJsonField(
+                                                      filesItem,
+                                                      r'''$.data''',
+                                                    )),
+                                                    controllable: false,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -458,7 +657,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    65, 0, 0, 0),
+                                                    115.0, 0.0, 0.0, 0.0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
@@ -484,7 +683,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .secondaryText,
-                                                  size: 24,
+                                                  size: 24.0,
                                                 ),
                                               ),
                                             ),
@@ -496,7 +695,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                 },
                               ),
                               Align(
-                                alignment: AlignmentDirectional(0, 0),
+                                alignment: AlignmentDirectional(0.0, 0.0),
                                 child: Builder(
                                   builder: (context) {
                                     final fotki = FFAppState().photos.toList();
@@ -512,49 +711,145 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                           children: [
                                             Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0, 10, 0, 0),
+                                                  .fromSTEB(
+                                                      0.0, 10.0, 0.0, 0.0),
                                               child: Container(
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                      BorderRadius.circular(12),
+                                                      BorderRadius.circular(
+                                                          12.0),
                                                   border: Border.all(
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .secondary,
                                                   ),
                                                 ),
-                                                child: Container(
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.2,
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.1,
-                                                  child: custom_widgets
-                                                      .Base64Media(
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.2,
-                                                    height: MediaQuery.sizeOf(
-                                                                context)
-                                                            .height *
-                                                        0.1,
-                                                    base64Data: functions
-                                                        .removeBase64Prefix(
-                                                            getJsonField(
-                                                      fotkiItem,
-                                                      r'''$.data''',
-                                                    ).toString()),
-                                                  ),
+                                                child: Builder(
+                                                  builder: (context) {
+                                                    if ((functions
+                                                                .getFileExtension(
+                                                                    getJsonField(
+                                                              fotkiItem,
+                                                              r'''$.url''',
+                                                            ).toString()) ==
+                                                            'MOV') ||
+                                                        (functions
+                                                                .getFileExtension(
+                                                                    getJsonField(
+                                                              fotkiItem,
+                                                              r'''$.url''',
+                                                            ).toString()) ==
+                                                            'MP4')) {
+                                                      return FlutterFlowVideoPlayer(
+                                                        path:
+                                                            'https://app.etry.kz${getJsonField(
+                                                          fotkiItem,
+                                                          r'''$.url''',
+                                                        ).toString()}',
+                                                        videoType:
+                                                            VideoType.network,
+                                                        width:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .width *
+                                                                0.3,
+                                                        height:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .height *
+                                                                0.15,
+                                                        autoPlay: false,
+                                                        looping: false,
+                                                        showControls: true,
+                                                        allowFullScreen: true,
+                                                        allowPlaybackSpeedMenu:
+                                                            false,
+                                                        lazyLoad: true,
+                                                      );
+                                                    } else {
+                                                      return InkWell(
+                                                        splashColor:
+                                                            Colors.transparent,
+                                                        focusColor:
+                                                            Colors.transparent,
+                                                        hoverColor:
+                                                            Colors.transparent,
+                                                        highlightColor:
+                                                            Colors.transparent,
+                                                        onTap: () async {
+                                                          await Navigator.push(
+                                                            context,
+                                                            PageTransition(
+                                                              type:
+                                                                  PageTransitionType
+                                                                      .fade,
+                                                              child:
+                                                                  FlutterFlowExpandedImageView(
+                                                                image: Image
+                                                                    .network(
+                                                                  'https://app.etry.kz${getJsonField(
+                                                                    fotkiItem,
+                                                                    r'''$.url''',
+                                                                  ).toString()}',
+                                                                  fit: BoxFit
+                                                                      .contain,
+                                                                ),
+                                                                allowRotation:
+                                                                    false,
+                                                                tag:
+                                                                    'https://app.etry.kz${getJsonField(
+                                                                  fotkiItem,
+                                                                  r'''$.url''',
+                                                                ).toString()}',
+                                                                useHeroAnimation:
+                                                                    true,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        child: Hero(
+                                                          tag:
+                                                              'https://app.etry.kz${getJsonField(
+                                                            fotkiItem,
+                                                            r'''$.url''',
+                                                          ).toString()}',
+                                                          transitionOnUserGestures:
+                                                              true,
+                                                          child: ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                            child:
+                                                                Image.network(
+                                                              'https://app.etry.kz${getJsonField(
+                                                                fotkiItem,
+                                                                r'''$.url''',
+                                                              ).toString()}',
+                                                              width: MediaQuery
+                                                                          .sizeOf(
+                                                                              context)
+                                                                      .width *
+                                                                  0.3,
+                                                              height: MediaQuery
+                                                                          .sizeOf(
+                                                                              context)
+                                                                      .height *
+                                                                  0.15,
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
                                                 ),
                                               ),
                                             ),
                                             Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(65, 0, 0, 0),
+                                                  .fromSTEB(
+                                                      115.0, 0.0, 0.0, 0.0),
                                               child: InkWell(
                                                 splashColor: Colors.transparent,
                                                 focusColor: Colors.transparent,
@@ -582,14 +877,14 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .secondaryText,
-                                                    size: 24,
+                                                    size: 24.0,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                           ],
                                         );
-                                      }).divide(SizedBox(width: 5)),
+                                      }).divide(SizedBox(width: 5.0)),
                                     );
                                   },
                                 ),
@@ -619,25 +914,26 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10.0),
                             ),
                             child: Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 5.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Container(
-                                    width: MediaQuery.sizeOf(context).width,
-                                    height: 50,
+                                    width:
+                                        MediaQuery.sizeOf(context).width * 1.0,
+                                    height: 50.0,
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .secondaryBackground,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8.0),
                                     ),
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          16, 5, 16, 0),
+                                          16.0, 5.0, 16.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -650,7 +946,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                 .override(
                                                   fontFamily: 'SFProText',
                                                   color: Color(0xFF87898F),
-                                                  fontSize: 16,
+                                                  fontSize: 16.0,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -676,17 +972,19 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                     MediaQuery.sizeOf(context)
                                                             .width *
                                                         0.8,
-                                                height: 50,
+                                                height: 50.0,
                                                 decoration: BoxDecoration(
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .secondaryBackground,
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(
+                                                          8.0),
                                                 ),
                                                 child: Padding(
                                                   padding: EdgeInsetsDirectional
-                                                      .fromSTEB(16, 0, 16, 0),
+                                                      .fromSTEB(
+                                                          16.0, 0.0, 16.0, 0.0),
                                                   child: Row(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
@@ -698,7 +996,10 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                         padding:
                                                             EdgeInsetsDirectional
                                                                 .fromSTEB(
-                                                                    0, 5, 0, 0),
+                                                                    0.0,
+                                                                    5.0,
+                                                                    0.0,
+                                                                    0.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -729,7 +1030,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                                               context)
                                                                           .primaryText,
                                                                       fontSize:
-                                                                          15,
+                                                                          15.0,
                                                                       letterSpacing:
                                                                           0.0,
                                                                       fontWeight:
@@ -742,8 +1043,8 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                         ),
                                                       ),
                                                       Container(
-                                                        width: 39,
-                                                        height: 39,
+                                                        width: 39.0,
+                                                        height: 39.0,
                                                         decoration:
                                                             BoxDecoration(
                                                           color:
@@ -754,7 +1055,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                         child: Align(
                                                           alignment:
                                                               AlignmentDirectional(
-                                                                  0, 0),
+                                                                  0.0, 0.0),
                                                           child: Text(
                                                             worksItem.amount
                                                                 .toString(),
@@ -811,7 +1112,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primaryText,
-                                                  size: 24,
+                                                  size: 24.0,
                                                 ),
                                               ),
                                             ],
@@ -836,7 +1137,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                               backgroundColor:
                                                   Colors.transparent,
                                               alignment:
-                                                  AlignmentDirectional(0, 0)
+                                                  AlignmentDirectional(0.0, 0.0)
                                                       .resolve(
                                                           Directionality.of(
                                                               context)),
@@ -865,18 +1166,20 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                         );
                                       },
                                       child: Container(
-                                        width: MediaQuery.sizeOf(context).width,
-                                        height: 50,
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                                1.0,
+                                        height: 50.0,
                                         decoration: BoxDecoration(
                                           color: FlutterFlowTheme.of(context)
                                               .secondaryBackground,
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                         child: Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  16, 5, 16, 0),
+                                                  16.0, 5.0, 16.0, 0.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             mainAxisAlignment:
@@ -887,7 +1190,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .secondaryText,
-                                                size: 24,
+                                                size: 24.0,
                                               ),
                                               Text(
                                                 'Добавить работу',
@@ -900,7 +1203,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primaryText,
-                                                      fontSize: 16,
+                                                      fontSize: 16.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -914,10 +1217,10 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                   ),
                                   Container(
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12.0),
                                     ),
                                   ),
-                                ].divide(SizedBox(height: 5)),
+                                ].divide(SizedBox(height: 5.0)),
                               ),
                             ),
                           ),
@@ -943,25 +1246,26 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10.0),
                             ),
                             child: Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 5.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Container(
-                                    width: MediaQuery.sizeOf(context).width,
-                                    height: 50,
+                                    width:
+                                        MediaQuery.sizeOf(context).width * 1.0,
+                                    height: 50.0,
                                     decoration: BoxDecoration(
                                       color: FlutterFlowTheme.of(context)
                                           .secondaryBackground,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(8.0),
                                     ),
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          16, 5, 16, 0),
+                                          16.0, 5.0, 16.0, 0.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
@@ -974,7 +1278,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                 .override(
                                                   fontFamily: 'SFProText',
                                                   color: Color(0xFF87898F),
-                                                  fontSize: 16,
+                                                  fontSize: 16.0,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -1005,17 +1309,19 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                     MediaQuery.sizeOf(context)
                                                             .width *
                                                         0.8,
-                                                height: 50,
+                                                height: 50.0,
                                                 decoration: BoxDecoration(
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .secondaryBackground,
                                                   borderRadius:
-                                                      BorderRadius.circular(8),
+                                                      BorderRadius.circular(
+                                                          8.0),
                                                 ),
                                                 child: Padding(
                                                   padding: EdgeInsetsDirectional
-                                                      .fromSTEB(16, 0, 16, 0),
+                                                      .fromSTEB(
+                                                          16.0, 0.0, 16.0, 0.0),
                                                   child: Row(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
@@ -1027,7 +1333,10 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                         padding:
                                                             EdgeInsetsDirectional
                                                                 .fromSTEB(
-                                                                    0, 5, 0, 0),
+                                                                    0.0,
+                                                                    5.0,
+                                                                    0.0,
+                                                                    0.0),
                                                         child: Column(
                                                           mainAxisSize:
                                                               MainAxisSize.max,
@@ -1059,7 +1368,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                                               context)
                                                                           .primaryText,
                                                                       fontSize:
-                                                                          15,
+                                                                          15.0,
                                                                       letterSpacing:
                                                                           0.0,
                                                                       fontWeight:
@@ -1094,8 +1403,8 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                         ),
                                                       ),
                                                       Container(
-                                                        width: 39,
-                                                        height: 39,
+                                                        width: 39.0,
+                                                        height: 39.0,
                                                         decoration:
                                                             BoxDecoration(
                                                           color:
@@ -1106,7 +1415,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                         child: Align(
                                                           alignment:
                                                               AlignmentDirectional(
-                                                                  0, 0),
+                                                                  0.0, 0.0),
                                                           child: Text(
                                                             sparepartsItem
                                                                 .amount
@@ -1164,7 +1473,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                   color: FlutterFlowTheme.of(
                                                           context)
                                                       .primaryText,
-                                                  size: 24,
+                                                  size: 24.0,
                                                 ),
                                               ),
                                             ],
@@ -1189,7 +1498,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                               backgroundColor:
                                                   Colors.transparent,
                                               alignment:
-                                                  AlignmentDirectional(0, 0)
+                                                  AlignmentDirectional(0.0, 0.0)
                                                       .resolve(
                                                           Directionality.of(
                                                               context)),
@@ -1218,18 +1527,20 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                         );
                                       },
                                       child: Container(
-                                        width: MediaQuery.sizeOf(context).width,
-                                        height: 50,
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                                1.0,
+                                        height: 50.0,
                                         decoration: BoxDecoration(
                                           color: FlutterFlowTheme.of(context)
                                               .secondaryBackground,
                                           borderRadius:
-                                              BorderRadius.circular(8),
+                                              BorderRadius.circular(8.0),
                                         ),
                                         child: Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  16, 5, 16, 0),
+                                                  16.0, 5.0, 16.0, 0.0),
                                           child: Row(
                                             mainAxisSize: MainAxisSize.max,
                                             mainAxisAlignment:
@@ -1240,7 +1551,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .secondaryText,
-                                                size: 24,
+                                                size: 24.0,
                                               ),
                                               Text(
                                                 'Добавить ТМЦ',
@@ -1253,7 +1564,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primaryText,
-                                                      fontSize: 16,
+                                                      fontSize: 16.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -1267,10 +1578,10 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                   ),
                                   Container(
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12.0),
                                     ),
                                   ),
-                                ].divide(SizedBox(height: 5)),
+                                ].divide(SizedBox(height: 5.0)),
                               ),
                             ),
                           ),
@@ -1288,28 +1599,29 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10.0),
                             ),
                             child: Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 5.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Container(
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0, 0, 0, 5),
+                                          0.0, 0.0, 0.0, 5.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Expanded(
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(15, 0, 0, 0),
+                                                  .fromSTEB(
+                                                      15.0, 0.0, 0.0, 0.0),
                                               child: Text(
                                                 'Приоритет',
                                                 style: FlutterFlowTheme.of(
@@ -1321,7 +1633,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                           FlutterFlowTheme.of(
                                                                   context)
                                                               .primaryText,
-                                                      fontSize: 16,
+                                                      fontSize: 16.0,
                                                       letterSpacing: 0.0,
                                                       fontWeight:
                                                           FontWeight.w500,
@@ -1331,11 +1643,12 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                           ),
                                           Expanded(
                                             child: Align(
-                                              alignment:
-                                                  AlignmentDirectional(1, 0),
+                                              alignment: AlignmentDirectional(
+                                                  1.0, 0.0),
                                               child: Padding(
                                                 padding: EdgeInsetsDirectional
-                                                    .fromSTEB(0, 0, 15, 0),
+                                                    .fromSTEB(
+                                                        0.0, 0.0, 15.0, 0.0),
                                                 child: Theme(
                                                   data: ThemeData(
                                                     checkboxTheme:
@@ -1349,7 +1662,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                           RoundedRectangleBorder(
                                                         borderRadius:
                                                             BorderRadius
-                                                                .circular(4),
+                                                                .circular(4.0),
                                                       ),
                                                     ),
                                                     unselectedWidgetColor:
@@ -1375,7 +1688,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                             width: 2,
                                                             color: FlutterFlowTheme
                                                                     .of(context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                           )
                                                         : null,
                                                     activeColor:
@@ -1395,7 +1708,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                       ),
                                     ),
                                   ),
-                                ].divide(SizedBox(height: 5)),
+                                ].divide(SizedBox(height: 5.0)),
                               ),
                             ),
                           ),
@@ -1421,28 +1734,28 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                             decoration: BoxDecoration(
                               color: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(10.0),
                             ),
                             child: Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 5.0, 0.0, 5.0),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   Container(
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(12.0),
                                     ),
                                     child: Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0, 0, 0, 5),
+                                          0.0, 0.0, 0.0, 5.0),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
                                           Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    15, 0, 0, 0),
+                                                    15.0, 0.0, 0.0, 0.0),
                                             child: Text(
                                               'Ошибка из мониторинга',
                                               style: FlutterFlowTheme.of(
@@ -1453,7 +1766,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                     color: FlutterFlowTheme.of(
                                                             context)
                                                         .primaryText,
-                                                    fontSize: 16,
+                                                    fontSize: 16.0,
                                                     letterSpacing: 0.0,
                                                     fontWeight: FontWeight.w500,
                                                   ),
@@ -1461,11 +1774,12 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                           ),
                                           Expanded(
                                             child: Align(
-                                              alignment:
-                                                  AlignmentDirectional(1, 0),
+                                              alignment: AlignmentDirectional(
+                                                  1.0, 0.0),
                                               child: Padding(
                                                 padding: EdgeInsetsDirectional
-                                                    .fromSTEB(0, 0, 15, 0),
+                                                    .fromSTEB(
+                                                        0.0, 0.0, 15.0, 0.0),
                                                 child: Theme(
                                                   data: ThemeData(
                                                     checkboxTheme:
@@ -1479,7 +1793,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                           RoundedRectangleBorder(
                                                         borderRadius:
                                                             BorderRadius
-                                                                .circular(4),
+                                                                .circular(4.0),
                                                       ),
                                                     ),
                                                     unselectedWidgetColor:
@@ -1505,7 +1819,7 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                                             width: 2,
                                                             color: FlutterFlowTheme
                                                                     .of(context)
-                                                                .secondaryText!,
+                                                                .secondaryText,
                                                           )
                                                         : null,
                                                     activeColor:
@@ -1525,15 +1839,16 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                                       ),
                                     ),
                                   ),
-                                ].divide(SizedBox(height: 5)),
+                                ].divide(SizedBox(height: 5.0)),
                               ),
                             ),
                           ),
-                      ].divide(SizedBox(height: 12)),
+                      ].divide(SizedBox(height: 12.0)),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0, 12, 0, 12),
+                    padding:
+                        EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 12.0),
                     child: FFButtonWidget(
                       onPressed: () async {
                         var _shouldSetState = false;
@@ -1546,32 +1861,28 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                         if (_model.hh!) {
                           _model.apiResultg8z = await CreateDefectsCall.call(
                             access: currentAuthenticationToken,
-                            bodyJson: EditDefectStruct(
-                              equipment: widget!.equipId,
+                            bodyJson: functions.fixFormPayload(EditDefectStruct(
+                              equipment: widget.equipId,
                               title: _model.nameTextController.text,
-                              files: functions.combineArraysfiles(
-                                  FFAppState()
-                                      .photos
-                                      .map((e) =>
-                                          FilesStruct.maybeFromMap(getJsonField(
-                                            e,
-                                            r'''$''',
-                                          )))
-                                      .withoutNulls
-                                      .toList(),
-                                  _model.photos123
-                                      .map((e) =>
-                                          FilesStruct.maybeFromMap(getJsonField(
-                                            e,
-                                            r'''$''',
-                                          )))
-                                      .withoutNulls
-                                      .toList()),
                               spareParts: FFAppState().spareparts,
                               priority: _model.prioritetValue,
                               works: FFAppState().works,
                               note: null,
-                            ).toMap(),
+                              fileIds: (FFAppState()
+                                      .photos
+                                      .map((e) => getJsonField(
+                                            e,
+                                            r'''$.id''',
+                                          ))
+                                      .toList())
+                                  .cast<int>(),
+                              form: widget.formId,
+                              formResult: FFAppState().formresult1,
+                              errorMonitoring: valueOrDefault<bool>(
+                                _model.errormonitoringValue,
+                                false,
+                              ),
+                            ).toMap()),
                           );
 
                           _shouldSetState = true;
@@ -1631,29 +1942,31 @@ class _CreateDefectCopyWidgetState extends State<CreateDefectCopyWidget> {
                         FFAppState().spareparts = [];
                         FFAppState().photos = [];
                         FFAppState().works = [];
+                        FFAppState().formresult1 = [];
                         safeSetState(() {});
                         if (_shouldSetState) safeSetState(() {});
                       },
                       text: 'Создать заявку',
                       options: FFButtonOptions(
                         width: double.infinity,
-                        height: 48,
-                        padding: EdgeInsets.all(0),
-                        iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                        height: 48.0,
+                        padding: EdgeInsets.all(0.0),
+                        iconPadding:
+                            EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
                         color: FlutterFlowTheme.of(context).primary,
                         textStyle:
                             FlutterFlowTheme.of(context).titleSmall.override(
                                   fontFamily: 'SFProText',
                                   color: Colors.white,
-                                  fontSize: 15,
+                                  fontSize: 15.0,
                                   letterSpacing: 0.0,
                                 ),
-                        elevation: 4,
+                        elevation: 4.0,
                         borderSide: BorderSide(
                           color: Colors.transparent,
-                          width: 1,
+                          width: 1.0,
                         ),
-                        borderRadius: BorderRadius.circular(60),
+                        borderRadius: BorderRadius.circular(60.0),
                       ),
                     ),
                   ),

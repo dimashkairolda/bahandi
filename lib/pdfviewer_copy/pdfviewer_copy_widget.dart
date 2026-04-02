@@ -93,7 +93,7 @@ class _PdfviewerCopyWidgetState extends State<PdfviewerCopyWidget> {
                       width: MediaQuery.sizeOf(context).width * 1.0,
                       height: MediaQuery.sizeOf(context).height * 1.0,
                       apiUrl:
-                          'https://magnum.etry.kz/api/v1/request/service-act/${widget!.id?.toString()}/pdf',
+                          'https://app.etry.kz/api/v1/request/service-act/${widget!.id?.toString()}/pdf',
                       fileName: widget!.title!,
                       accessToken: currentAuthenticationToken!,
                     ),

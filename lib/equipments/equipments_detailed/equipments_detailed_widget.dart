@@ -1,7 +1,8 @@
 import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
+import '/backend/schema/structs/index.dart';
+import '/defects/choose_user/choose_user_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
-import '/flutter_flow/flutter_flow_data_table.dart';
 import '/flutter_flow/flutter_flow_expanded_image_view.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -10,12 +11,14 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
+import '/utils/role_utils.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
+
 import 'equipments_detailed_model.dart';
 export 'equipments_detailed_model.dart';
 
@@ -50,7 +53,7 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
 
     _model.tabBarController = TabController(
       vsync: this,
-      length: 5,
+      length: 4,
       initialIndex: 0,
     )..addListener(() => safeSetState(() {}));
   }
@@ -64,9 +67,11 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FFAppState>();
+
     return FutureBuilder<ApiCallResponse>(
       future: GetEquipmentIdCall.call(
-        id: widget!.id,
+        id: widget.id,
         access: currentAuthenticationToken,
       ),
       builder: (context, snapshot) {
@@ -76,8 +81,8 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
             body: Center(
               child: SizedBox(
-                width: 50.0,
-                height: 50.0,
+                width: 50,
+                height: 50,
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
                     FlutterFlowTheme.of(context).primary,
@@ -88,6 +93,15 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
           );
         }
         final equipmentsDetailedGetEquipmentIdResponse = snapshot.data!;
+
+        final equipmentStatus = getJsonField(
+              equipmentsDetailedGetEquipmentIdResponse.jsonBody,
+              r'''$.status''',
+            )?.toString() ??
+            '';
+        final canEdit = isDirectorRole() ||
+            equipmentStatus == 'draft' ||
+            equipmentStatus == 'draft_reject';
 
         return GestureDetector(
           onTap: () {
@@ -102,29 +116,63 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
               automaticallyImplyLeading: false,
               leading: FlutterFlowIconButton(
                 borderColor: Colors.transparent,
-                borderRadius: 30.0,
-                borderWidth: 1.0,
-                buttonSize: 60.0,
+                borderRadius: 30,
+                borderWidth: 1,
+                buttonSize: 60,
                 icon: Icon(
                   Icons.arrow_back_rounded,
                   color: Color(0xFF3466E7),
-                  size: 30.0,
+                  size: 30,
                 ),
                 onPressed: () async {
                   context.pop();
                 },
               ),
               title: Text(
-                'Профиль оборудования',
+                FFLocalizations.of(context).getVariableText(
+                  ruText: 'Профиль оборудования',
+                  kkText: 'Жабдық профилі',
+                ),
                 style: FlutterFlowTheme.of(context).headlineMedium.override(
                       fontFamily: 'SFProText',
                       color: Color(0xFF3466E7),
-                      fontSize: 22.0,
+                      fontSize: 18,
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w500,
                     ),
               ),
-              actions: [],
+              actions: [
+                if (canEdit)
+                  Padding(
+                    padding:
+                        const EdgeInsetsDirectional.fromSTEB(0, 0, 8, 0),
+                    child: FlutterFlowIconButton(
+                      borderRadius: 20.0,
+                      borderWidth: 1.0,
+                      buttonSize: 40.0,
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        color: FlutterFlowTheme.of(context).primaryText,
+                        size: 24,
+                      ),
+                      onPressed: () async {
+                        await context.pushNamed(
+                          EditEquipmentSimpleWidget.routeName,
+                          queryParameters: {
+                            'equipmentJson': serializeParam(
+                              equipmentsDetailedGetEquipmentIdResponse
+                                  .jsonBody,
+                              ParamType.JSON,
+                            ),
+                          }.withoutNulls,
+                        );
+                        if (mounted) {
+                          safeSetState(() {});
+                        }
+                      },
+                    ),
+                  ),
+              ],
               centerTitle: false,
             ),
             body: SafeArea(
@@ -133,17 +181,15 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding:
-                        EdgeInsetsDirectional.fromSTEB(0.0, 18.0, 0.0, 29.0),
+                    padding: EdgeInsetsDirectional.fromSTEB(0, 10, 0, 10),
                     child: Container(
-                      width: MediaQuery.sizeOf(context).width * 1.0,
+                      width: MediaQuery.sizeOf(context).width,
                       height: MediaQuery.sizeOf(context).height * 0.12,
                       decoration: BoxDecoration(
                         color: FlutterFlowTheme.of(context).secondaryBackground,
                       ),
                       child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            20.0, 10.0, 0.0, 10.0),
+                        padding: EdgeInsetsDirectional.fromSTEB(20, 10, 0, 10),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.start,
@@ -165,7 +211,7 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                         fadeOutDuration:
                                             Duration(milliseconds: 0),
                                         imageUrl:
-                                            'https://magnum.etry.kz${getJsonField(
+                                            'https://app.etry.kz${getJsonField(
                                           equipmentsDetailedGetEquipmentIdResponse
                                               .jsonBody,
                                           r'''$.img''',
@@ -180,7 +226,7 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                       ),
                                       allowRotation: true,
                                       tag:
-                                          'https://magnum.etry.kz${getJsonField(
+                                          'https://app.etry.kz${getJsonField(
                                         equipmentsDetailedGetEquipmentIdResponse
                                             .jsonBody,
                                         r'''$.img''',
@@ -191,7 +237,7 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                 );
                               },
                               child: Hero(
-                                tag: 'https://magnum.etry.kz${getJsonField(
+                                tag: 'https://app.etry.kz${getJsonField(
                                   equipmentsDetailedGetEquipmentIdResponse
                                       .jsonBody,
                                   r'''$.img''',
@@ -210,7 +256,7 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                     fadeInDuration: Duration(milliseconds: 0),
                                     fadeOutDuration: Duration(milliseconds: 0),
                                     imageUrl:
-                                        'https://magnum.etry.kz${getJsonField(
+                                        'https://app.etry.kz${getJsonField(
                                       equipmentsDetailedGetEquipmentIdResponse
                                           .jsonBody,
                                       r'''$.img''',
@@ -226,10 +272,10 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                               ),
                             ),
                             Align(
-                              alignment: AlignmentDirectional(0.0, 0.0),
+                              alignment: AlignmentDirectional(0, 0),
                               child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    20.0, 0.0, 0.0, 0.0),
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(20, 0, 0, 0),
                                 child: Container(
                                   width: MediaQuery.sizeOf(context).width * 0.6,
                                   decoration: BoxDecoration(),
@@ -243,7 +289,7 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                         .bodyMedium
                                         .override(
                                           fontFamily: 'SFProText',
-                                          fontSize: 15.0,
+                                          fontSize: 15,
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -258,78 +304,126 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                   ),
                   Expanded(
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: FlutterFlowTheme.of(context).secondaryBackground,
-                      ),
+                      decoration: BoxDecoration(),
                       child: Column(
                         children: [
                           Align(
-                            alignment: Alignment(0.0, 0),
+                            alignment: Alignment(0, 0),
                             child: FlutterFlowButtonTabBar(
                               useToggleButtonStyle: false,
                               isScrollable: true,
                               labelStyle: FlutterFlowTheme.of(context)
                                   .labelMedium
                                   .override(
-                                    font: GoogleFonts.readexPro(
-                                      fontWeight: FontWeight.w600,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .fontStyle,
-                                    ),
+                                    fontFamily: 'SFProText',
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontStyle,
                                   ),
                               unselectedLabelStyle: FlutterFlowTheme.of(context)
                                   .labelMedium
                                   .override(
-                                    font: GoogleFonts.readexPro(
-                                      fontWeight: FontWeight.w600,
-                                      fontStyle: FlutterFlowTheme.of(context)
-                                          .labelMedium
-                                          .fontStyle,
-                                    ),
+                                    fontFamily: 'SFProText',
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w600,
-                                    fontStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .fontStyle,
                                   ),
-                              labelColor: FlutterFlowTheme.of(context)
+                              labelColor:
+                                  FlutterFlowTheme.of(context).primaryText,
+                              unselectedLabelColor:
+                                  FlutterFlowTheme.of(context).primaryText,
+                              backgroundColor: FlutterFlowTheme.of(context)
                                   .secondaryBackground,
-                              unselectedLabelColor: Color(0xFF2A61ED),
-                              backgroundColor: Color(0xFF2A61ED),
-                              borderWidth: 2.0,
-                              borderRadius: 8.0,
-                              elevation: 0.0,
-                              labelPadding: EdgeInsetsDirectional.fromSTEB(
-                                  10.0, 0.0, 10.0, 0.0),
-                              buttonMargin: EdgeInsetsDirectional.fromSTEB(
-                                  8.0, 0.0, 8.0, 0.0),
+                              borderWidth: 2,
+                              borderRadius: 8,
+                              elevation: 0,
+                              labelPadding:
+                                  EdgeInsetsDirectional.fromSTEB(10, 0, 10, 0),
+                              buttonMargin:
+                                  EdgeInsetsDirectional.fromSTEB(8, 0, 8, 0),
                               tabs: [
-                                Tab(
-                                  text: 'Сведения',
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0, 0, 5, 0),
+                                      child: Icon(
+                                        Icons.list_alt,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    Tab(
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Сведения',
+                                        kkText: 'Мәліметтер',
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Tab(
-                                  text: 'Заявки',
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0, 0, 5, 0),
+                                      child: Icon(
+                                        Icons.error_outline,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    Tab(
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Заявки',
+                                        kkText: 'Өтінімдер',
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Tab(
-                                  text: 'Характеристики',
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0, 0, 5, 0),
+                                      child: FaIcon(
+                                        FontAwesomeIcons.paperclip,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    Tab(
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Вложения',
+                                        kkText: 'Медиа',
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Tab(
-                                  text: 'Вложения',
-                                ),
-                                Tab(
-                                  text: 'Ответственные',
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0, 0, 5, 0),
+                                      child: Icon(
+                                        Icons.people_outline,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    Tab(
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Ответственные',
+                                        kkText: 'Жауаптылар',
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                               controller: _model.tabBarController,
                               onTap: (i) async {
                                 [
-                                  () async {},
                                   () async {},
                                   () async {},
                                   () async {},
@@ -354,367 +448,177 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  20.0, 10.0, 20.0, 0.0),
+                                                  11.5, 8, 11.5, 0),
                                           child: Container(
+                                            width: double.infinity,
                                             decoration: BoxDecoration(
                                               color:
                                                   FlutterFlowTheme.of(context)
                                                       .secondaryBackground,
                                               borderRadius:
-                                                  BorderRadius.circular(10.0),
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Padding(
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      10.0, 0.0, 10.0, 0.0),
+                                                  .fromSTEB(16, 15, 16, 15),
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 20.0,
-                                                                0.0, 0.0),
+                                                            .fromSTEB(
+                                                                0, 0, 0, 5),
                                                     child: Row(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
                                                       children: [
-                                                        Text(
-                                                          'Наименование',
-                                                          style: FlutterFlowTheme
+                                                        Icon(
+                                                          Icons.list_alt_sharp,
+                                                          color: FlutterFlowTheme
                                                                   .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'SFProText',
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .alternate,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
+                                                              .primaryText,
+                                                          size: 20,
                                                         ),
-                                                        Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.5,
-                                                          decoration:
-                                                              BoxDecoration(),
+                                                        Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(10,
+                                                                      0, 0, 0),
                                                           child: Text(
-                                                            valueOrDefault<
-                                                                String>(
-                                                              getJsonField(
-                                                                equipmentsDetailedGetEquipmentIdResponse
-                                                                    .jsonBody,
-                                                                r'''$.title''',
-                                                              )?.toString(),
-                                                              '-',
+                                                            FFLocalizations.of(
+                                                                    context)
+                                                                .getVariableText(
+                                                              ruText:
+                                                                  'Информация об оборудовании',
+                                                              kkText:
+                                                                  'Жабдық туралы ақпарат',
                                                             ),
-                                                            textAlign:
-                                                                TextAlign.end,
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
                                                                 .override(
                                                                   fontFamily:
                                                                       'SFProText',
-                                                                  fontSize:
-                                                                      15.0,
+                                                                  fontSize: 16,
                                                                   letterSpacing:
                                                                       0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
                                                                 ),
                                                           ),
                                                         ),
                                                       ],
                                                     ),
                                                   ),
-                                                  Divider(
-                                                    thickness: 1.0,
-                                                    color: Color(0xFFD9D9D9),
-                                                  ),
                                                   Row(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
                                                     mainAxisAlignment:
                                                         MainAxisAlignment
                                                             .spaceBetween,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
                                                     children: [
-                                                      Text(
-                                                        'Производитель',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
                                                       Container(
                                                         width:
                                                             MediaQuery.sizeOf(
                                                                         context)
                                                                     .width *
-                                                                0.5,
+                                                                0.4,
                                                         decoration:
                                                             BoxDecoration(),
-                                                        child: Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            getJsonField(
-                                                              equipmentsDetailedGetEquipmentIdResponse
-                                                                  .jsonBody,
-                                                              r'''$.manufacturer_info.title''',
-                                                            )?.toString(),
-                                                            '-',
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.end,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'SFProText',
-                                                                fontSize: 15.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Divider(
-                                                    thickness: 1.0,
-                                                    color: Color(0xFFD9D9D9),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        'Модель',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  letterSpacing:
-                                                                      0.0,
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      AlignmentDirectional(
+                                                                          -1,
+                                                                          -1),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                    child: Text(
+                                                                      FFLocalizations.of(
+                                                                              context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Наименование',
+                                                                        kkText:
+                                                                            'Атауы',
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .start,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            fontSize:
+                                                                                14,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
                                                                 ),
-                                                      ),
-                                                      Container(
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                0.5,
-                                                        decoration:
-                                                            BoxDecoration(),
-                                                        child: Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            getJsonField(
-                                                              equipmentsDetailedGetEquipmentIdResponse
-                                                                  .jsonBody,
-                                                              r'''$.model_info.title''',
-                                                            )?.toString(),
-                                                            '-',
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.end,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'SFProText',
-                                                                fontSize: 15.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Divider(
-                                                    thickness: 1.0,
-                                                    color: Color(0xFFD9D9D9),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        'Заводской номер',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                      Container(
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                0.5,
-                                                        decoration:
-                                                            BoxDecoration(),
-                                                        child: Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            getJsonField(
-                                                              equipmentsDetailedGetEquipmentIdResponse
-                                                                  .jsonBody,
-                                                              r'''$.factory_number''',
-                                                            )?.toString(),
-                                                            '-',
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.end,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'SFProText',
-                                                                fontSize: 15.0,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Divider(
-                                                    thickness: 1.0,
-                                                    color: Color(0xFFD9D9D9),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        'Инвентарный номер',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                      ),
-                                                      Text(
-                                                        valueOrDefault<String>(
-                                                          getJsonField(
-                                                            equipmentsDetailedGetEquipmentIdResponse
-                                                                .jsonBody,
-                                                            r'''$.inventory_number''',
-                                                          )?.toString(),
-                                                          '-',
-                                                        ),
-                                                        textAlign:
-                                                            TextAlign.end,
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 15.0,
-                                                              letterSpacing:
-                                                                  0.0,
+                                                              ],
                                                             ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Divider(
-                                                    thickness: 1.0,
-                                                    color: Color(0xFFD9D9D9),
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        'Диспетческий номер',
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .alternate,
-                                                                  letterSpacing:
-                                                                      0.0,
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.title''',
+                                                                  )?.toString(),
+                                                                  '-',
                                                                 ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      fontSize:
+                                                                          16,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                       Container(
                                                         width:
@@ -724,104 +628,625 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                                                 0.4,
                                                         decoration:
                                                             BoxDecoration(),
-                                                        child: Text(
-                                                          valueOrDefault<
-                                                              String>(
-                                                            getJsonField(
-                                                              equipmentsDetailedGetEquipmentIdResponse
-                                                                  .jsonBody,
-                                                              r'''$.dispatch_number''',
-                                                            )?.toString(),
-                                                            '-',
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.end,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'SFProText',
-                                                                fontSize: 15.0,
-                                                                letterSpacing:
-                                                                    0.0,
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      AlignmentDirectional(
+                                                                          -1,
+                                                                          -1),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                    child: Text(
+                                                                      FFLocalizations.of(
+                                                                              context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Модель',
+                                                                        kkText:
+                                                                            'Модель',
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .start,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            fontSize:
+                                                                                14,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.model_info.title''',
+                                                                  )?.toString(),
+                                                                  '-',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          14,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
                                                               ),
+                                                            ),
+                                                          ],
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                   Divider(
-                                                    thickness: 1.0,
-                                                    color: Color(0xFFD9D9D9),
+                                                    thickness: 2,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryBackground,
                                                   ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 0.0,
-                                                                0.0, 20.0),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                          'Штрих - код',
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .bodyMedium
-                                                              .override(
-                                                                fontFamily:
-                                                                    'SFProText',
-                                                                color: FlutterFlowTheme.of(
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Container(
+                                                        width:
+                                                            MediaQuery.sizeOf(
                                                                         context)
-                                                                    .alternate,
-                                                                letterSpacing:
-                                                                    0.0,
-                                                              ),
-                                                        ),
-                                                        Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.4,
-                                                          decoration:
-                                                              BoxDecoration(),
-                                                          child: Text(
-                                                            valueOrDefault<
-                                                                String>(
-                                                              getJsonField(
-                                                                equipmentsDetailedGetEquipmentIdResponse
-                                                                    .jsonBody,
-                                                                r'''$.barcode''',
-                                                              )?.toString(),
-                                                              '-',
-                                                            ),
-                                                            textAlign:
-                                                                TextAlign.end,
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  fontSize:
-                                                                      15.0,
-                                                                  letterSpacing:
-                                                                      0.0,
+                                                                    .width *
+                                                                0.4,
+                                                        decoration:
+                                                            BoxDecoration(),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      AlignmentDirectional(
+                                                                          -1,
+                                                                          -1),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                    child: Text(
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Заводской номер',
+                                                                        kkText: 'Зауыт нөмірі',
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .start,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            fontSize:
+                                                                                14,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
                                                                 ),
-                                                          ),
+                                                              ],
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.factory_number''',
+                                                                  )?.toString(),
+                                                                  '-',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      fontSize:
+                                                                          16,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
-                                                    ),
+                                                      ),
+                                                      Container(
+                                                        width:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .width *
+                                                                0.4,
+                                                        decoration:
+                                                            BoxDecoration(),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      AlignmentDirectional(
+                                                                          -1,
+                                                                          -1),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                    child: Text(
+                                                                      FFLocalizations.of(
+                                                                              context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Диспетчерский номер',
+                                                                        kkText:
+                                                                            'Диспетчерлік нөмір',
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .start,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            fontSize:
+                                                                                14,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.dispatch_number''',
+                                                                  )?.toString(),
+                                                                  '-',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          14,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                ].divide(
-                                                    SizedBox(height: 10.0)),
+                                                  Divider(
+                                                    thickness: 2,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryBackground,
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Container(
+                                                        width:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .width *
+                                                                0.4,
+                                                        decoration:
+                                                            BoxDecoration(),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      AlignmentDirectional(
+                                                                          -1,
+                                                                          -1),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                    child: Text(
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Инвентарный номер',
+                                                                        kkText: 'Инвентарлық нөмірі',
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .start,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            fontSize:
+                                                                                14,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.inventory_number''',
+                                                                  )?.toString(),
+                                                                  '-',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      fontSize:
+                                                                          16,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .width *
+                                                                0.4,
+                                                        decoration:
+                                                            BoxDecoration(),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Align(
+                                                                  alignment:
+                                                                      AlignmentDirectional(
+                                                                          -1,
+                                                                          -1),
+                                                                  child:
+                                                                      Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                    child: Text(
+                                                                      FFLocalizations.of(
+                                                                              context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Штрих - код',
+                                                                        kkText:
+                                                                            'Штрих-код',
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .start,
+                                                                      style: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .bodySmall
+                                                                          .override(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            fontSize:
+                                                                                14,
+                                                                            letterSpacing:
+                                                                                0.0,
+                                                                          ),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.barcode''',
+                                                                  )?.toString(),
+                                                                  '-',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .primaryText,
+                                                                      fontSize:
+                                                                          14,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Divider(
+                                                    thickness: 2,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryBackground,
+                                                  ),
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Container(
+                                                        decoration:
+                                                            BoxDecoration(),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Padding(
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
+                                                                child: Text(
+                                                                  FFLocalizations.of(
+                                                                          context)
+                                                                      .getVariableText(
+                                                                    ruText:
+                                                                        'Филиал',
+                                                                    kkText:
+                                                                        'Филиал',
+                                                                  ),
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .start,
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodySmall
+                                                                      .override(
+                                                                        fontFamily:
+                                                                            'SFProText',
+                                                                        color: FlutterFlowTheme.of(context)
+                                                                            .secondaryText,
+                                                                        fontSize:
+                                                                            14,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            Align(
+                                                              alignment:
+                                                                  AlignmentDirectional(
+                                                                      -1, -1),
+                                                              child: Text(
+                                                                valueOrDefault<
+                                                                    String>(
+                                                                  getJsonField(
+                                                                    equipmentsDetailedGetEquipmentIdResponse
+                                                                        .jsonBody,
+                                                                    r'''$.area_info.title''',
+                                                                  )?.toString(),
+                                                                  '-',
+                                                                ),
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyLarge
+                                                                    .override(
+                                                                      fontFamily:
+                                                                          'SFProText',
+                                                                      fontSize:
+                                                                          16,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .normal,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ].divide(SizedBox(height: 15)),
                                               ),
                                             ),
                                           ),
@@ -829,39 +1254,189 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                         Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
-                                                  20.0, 0.0, 20.0, 0.0),
+                                                  11.5, 0, 11.5, 0),
                                           child: FFButtonWidget(
                                             onPressed: () async {
-                                              context.pushNamed(
-                                                CreateDefectCopyWidget
-                                                    .routeName,
-                                                queryParameters: {
-                                                  'equipId': serializeParam(
-                                                    widget!.id,
-                                                    ParamType.int,
-                                                  ),
-                                                  'title': serializeParam(
-                                                    getJsonField(
-                                                      equipmentsDetailedGetEquipmentIdResponse
-                                                          .jsonBody,
-                                                      r'''$.title''',
-                                                    ).toString(),
-                                                    ParamType.String,
-                                                  ),
-                                                }.withoutNulls,
+                                              _model.zz1 =
+                                                  await GetDefectsFormCall.call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                equipment: widget.id,
+                                                type: getJsonField(
+                                                  equipmentsDetailedGetEquipmentIdResponse
+                                                      .jsonBody,
+                                                  r'''$.type_info.id''',
+                                                ),
                                               );
+
+                                              if (functions
+                                                      .jsonToList(getJsonField(
+                                                        (_model.zz1?.jsonBody ??
+                                                            ''),
+                                                        r'''$.data''',
+                                                      ))
+                                                      .length
+                                                      .toString() !=
+                                                  '0') {
+                                                FFAppState().formresult1 =
+                                                    (getJsonField(
+                                                  (_model.zz1?.jsonBody ?? ''),
+                                                  r'''$.data[0].structure''',
+                                                  true,
+                                                )!
+                                                                .toList()
+                                                                .map<FormResultStruct?>(
+                                                                    FormResultStruct
+                                                                        .maybeFromMap)
+                                                                .toList()
+                                                            as Iterable<
+                                                                FormResultStruct?>)
+                                                        .withoutNulls
+                                                        .toList()
+                                                        .cast<
+                                                            FormResultStruct>();
+                                                safeSetState(() {});
+
+                                                context.pushNamed(
+                                                  CreateDefectWidget.routeName,
+                                                  queryParameters: {
+                                                    'equip': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.title''',
+                                                      ).toString(),
+                                                      ParamType.String,
+                                                    ),
+                                                    'equipId': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.id''',
+                                                      ),
+                                                      ParamType.int,
+                                                    ),
+                                                    'ispravil': serializeParam(
+                                                      false,
+                                                      ParamType.bool,
+                                                    ),
+                                                    'priority': serializeParam(
+                                                      false,
+                                                      ParamType.bool,
+                                                    ),
+                                                    'typeId': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.type_info.id''',
+                                                      ),
+                                                      ParamType.int,
+                                                    ),
+                                                    'inventory': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.inventory_number''',
+                                                      ).toString(),
+                                                      ParamType.String,
+                                                    ),
+                                                    'area': serializeParam(
+                                                      valueOrDefault<String>(
+                                                        getJsonField(
+                                                          equipmentsDetailedGetEquipmentIdResponse
+                                                              .jsonBody,
+                                                          r'''$.area_info.title''',
+                                                        )?.toString(),
+                                                        '-',
+                                                      ),
+                                                      ParamType.String,
+                                                    ),
+                                                    'formid': serializeParam(
+                                                      getJsonField(
+                                                        (_model.zz1?.jsonBody ??
+                                                            ''),
+                                                        r'''$.data[0].id''',
+                                                      ),
+                                                      ParamType.int,
+                                                    ),
+                                                  }.withoutNulls,
+                                                );
+                                              } else {
+                                                context.pushNamed(
+                                                  CreateDefectWidget.routeName,
+                                                  queryParameters: {
+                                                    'equip': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.title''',
+                                                      ).toString(),
+                                                      ParamType.String,
+                                                    ),
+                                                    'equipId': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.id''',
+                                                      ),
+                                                      ParamType.int,
+                                                    ),
+                                                    'ispravil': serializeParam(
+                                                      false,
+                                                      ParamType.bool,
+                                                    ),
+                                                    'priority': serializeParam(
+                                                      false,
+                                                      ParamType.bool,
+                                                    ),
+                                                    'typeId': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.type_info.id''',
+                                                      ),
+                                                      ParamType.int,
+                                                    ),
+                                                    'inventory': serializeParam(
+                                                      getJsonField(
+                                                        equipmentsDetailedGetEquipmentIdResponse
+                                                            .jsonBody,
+                                                        r'''$.inventory_number''',
+                                                      ).toString(),
+                                                      ParamType.String,
+                                                    ),
+                                                    'area': serializeParam(
+                                                      valueOrDefault<String>(
+                                                        getJsonField(
+                                                          equipmentsDetailedGetEquipmentIdResponse
+                                                              .jsonBody,
+                                                          r'''$.area_info.title''',
+                                                        )?.toString(),
+                                                        '-',
+                                                      ),
+                                                      ParamType.String,
+                                                    ),
+                                                  }.withoutNulls,
+                                                );
+                                              }
+
+                                              safeSetState(() {});
                                             },
-                                            text: 'Добавить дефект',
+                                            text: FFLocalizations.of(context)
+                                                .getVariableText(
+                                              ruText: 'Создать заявку',
+                                              kkText: 'Өтінім жасау',
+                                            ),
                                             options: FFButtonOptions(
                                               width: MediaQuery.sizeOf(context)
-                                                      .width *
-                                                  1.0,
-                                              height: 40.0,
+                                                  .width,
+                                              height: MediaQuery.sizeOf(context)
+                                                      .height *
+                                                  0.05,
                                               padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      24.0, 0.0, 24.0, 0.0),
+                                                  .fromSTEB(24, 0, 24, 0),
                                               iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
+                                                  .fromSTEB(0, 0, 0, 0),
                                               color: Color(0xFF2A61ED),
                                               textStyle: FlutterFlowTheme.of(
                                                       context)
@@ -892,79 +1467,582 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                                             .titleSmall
                                                             .fontStyle,
                                                   ),
-                                              borderSide: BorderSide(
-                                                color: Color(0xFFDCDCDC),
-                                                width: 1.0,
-                                              ),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                  BorderRadius.circular(10),
                                             ),
                                           ),
                                         ),
-                                      ].divide(SizedBox(height: 10.0)),
+                                      ].divide(SizedBox(height: 10)),
                                     ),
                                   ),
                                 ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
+                                FutureBuilder<ApiCallResponse>(
+                                  future: GetDefectsAPICall.call(
+                                    access: currentAuthenticationToken,
+                                    search: '&equipment=${getJsonField(
+                                      equipmentsDetailedGetEquipmentIdResponse
+                                          .jsonBody,
+                                      r'''$.id''',
+                                    ).toString()}',
+                                    page: '10',
                                   ),
-                                  child: FutureBuilder<ApiCallResponse>(
-                                    future: GetDefectsAPICall.call(
-                                      access: currentAuthenticationToken,
-                                      search: '&equipment=${getJsonField(
-                                        equipmentsDetailedGetEquipmentIdResponse
-                                            .jsonBody,
-                                        r'''$.id''',
-                                      ).toString()}',
-                                      page: '10',
-                                    ),
-                                    builder: (context, snapshot) {
-                                      // Customize what your widget looks like when it's loading.
-                                      if (!snapshot.hasData) {
-                                        return Center(
-                                          child: SizedBox(
-                                            width: 50.0,
-                                            height: 50.0,
-                                            child: CircularProgressIndicator(
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                FlutterFlowTheme.of(context)
-                                                    .primary,
-                                              ),
+                                  builder: (context, snapshot) {
+                                    // Customize what your widget looks like when it's loading.
+                                    if (!snapshot.hasData) {
+                                      return Center(
+                                        child: SizedBox(
+                                          width: 50,
+                                          height: 50,
+                                          child: CircularProgressIndicator(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                              FlutterFlowTheme.of(context)
+                                                  .primary,
                                             ),
                                           ),
-                                        );
-                                      }
-                                      final columnGetDefectsAPIResponse =
-                                          snapshot.data!;
+                                        ),
+                                      );
+                                    }
+                                    final containerGetDefectsAPIResponse =
+                                        snapshot.data!;
 
-                                      return Builder(
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryBackground,
+                                      ),
+                                      child: Builder(
                                         builder: (context) {
-                                          final defects = getJsonField(
-                                            columnGetDefectsAPIResponse
-                                                .jsonBody,
-                                            r'''$.data''',
-                                          ).toList();
+                                          if (containerGetDefectsAPIResponse
+                                                  .succeeded &&
+                                              (functions
+                                                      .jsonToList(getJsonField(
+                                                        containerGetDefectsAPIResponse
+                                                            .jsonBody,
+                                                        r'''$.data''',
+                                                      ))
+                                                      .length !=
+                                                  0)) {
+                                            return Builder(
+                                              builder: (context) {
+                                                final defects = getJsonField(
+                                                  containerGetDefectsAPIResponse
+                                                      .jsonBody,
+                                                  r'''$.data''',
+                                                ).toList();
 
-                                          return SingleChildScrollView(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: List.generate(
-                                                      defects.length,
-                                                      (defectsIndex) {
-                                                final defectsItem =
-                                                    defects[defectsIndex];
-                                                return Align(
-                                                  alignment:
-                                                      AlignmentDirectional(
-                                                          0.0, 0.0),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(16.0, 0.0,
-                                                                16.0, 0.0),
+                                                return SingleChildScrollView(
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: List.generate(
+                                                            defects.length,
+                                                            (defectsIndex) {
+                                                      final defectsItem =
+                                                          defects[defectsIndex];
+                                                      return Align(
+                                                        alignment:
+                                                            AlignmentDirectional(
+                                                                0, 0),
+                                                        child: Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
+                                                          child: InkWell(
+                                                            splashColor: Colors
+                                                                .transparent,
+                                                            focusColor: Colors
+                                                                .transparent,
+                                                            hoverColor: Colors
+                                                                .transparent,
+                                                            highlightColor:
+                                                                Colors
+                                                                    .transparent,
+                                                            onTap: () async {
+                                                              context.pushNamed(
+                                                                DetailedDefectsOfflineWidget
+                                                                    .routeName,
+                                                                queryParameters:
+                                                                    {
+                                                                  'id':
+                                                                      serializeParam(
+                                                                    getJsonField(
+                                                                      defectsItem,
+                                                                      r'''$.id''',
+                                                                    ),
+                                                                    ParamType
+                                                                        .int,
+                                                                  ),
+                                                                }.withoutNulls,
+                                                              );
+                                                            },
+                                                            child: Material(
+                                                              color: Colors
+                                                                  .transparent,
+                                                              elevation: 2,
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
+                                                              ),
+                                                              child: Container(
+                                                                width: MediaQuery
+                                                                        .sizeOf(
+                                                                            context)
+                                                                    .width,
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .secondaryBackground,
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              10),
+                                                                ),
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .max,
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceEvenly,
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Row(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .max,
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      crossAxisAlignment:
+                                                                          CrossAxisAlignment
+                                                                              .start,
+                                                                      children:
+                                                                          [
+                                                                        Padding(
+                                                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                                                              5,
+                                                                              5,
+                                                                              5,
+                                                                              5),
+                                                                          child:
+                                                                              Column(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.max,
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children:
+                                                                                [
+                                                                              Row(
+                                                                                mainAxisSize: MainAxisSize.max,
+                                                                                children: [
+                                                                                  Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      borderRadius: BorderRadius.circular(6),
+                                                                                      border: Border.all(
+                                                                                        color: FlutterFlowTheme.of(context).secondaryText,
+                                                                                      ),
+                                                                                    ),
+                                                                                    child: Padding(
+                                                                                      padding: EdgeInsets.all(5),
+                                                                                      child: Text(
+                                                                                        'ID: ${getJsonField(
+                                                                                          defectsItem,
+                                                                                          r'''$.id''',
+                                                                                        ).toString()}',
+                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                              fontFamily: 'SFProText',
+                                                                                              fontSize: 12,
+                                                                                              letterSpacing: 0.0,
+                                                                                            ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  Container(
+                                                                                    decoration: BoxDecoration(
+                                                                                      color: valueOrDefault<Color>(
+                                                                                        functions.colorDefectCopy(getJsonField(
+                                                                                          defectsItem,
+                                                                                          r'''$.status''',
+                                                                                        ).toString()),
+                                                                                        FlutterFlowTheme.of(context).alternate,
+                                                                                      ),
+                                                                                      borderRadius: BorderRadius.circular(16),
+                                                                                    ),
+                                                                                    child: Row(
+                                                                                      mainAxisSize: MainAxisSize.max,
+                                                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                                                      children: [
+                                                                                        Container(
+                                                                                          decoration: BoxDecoration(),
+                                                                                          child: Align(
+                                                                                            alignment: AlignmentDirectional(0, 0),
+                                                                                            child: Padding(
+                                                                                              padding: EdgeInsets.all(5),
+                                                                                              child: Text(
+                                                                                                valueOrDefault<String>(
+                                                                                                  functions.statusRequest(getJsonField(
+                                                                                                    defectsItem,
+                                                                                                    r'''$.status''',
+                                                                                                  ).toString()),
+                                                                                                  '-',
+                                                                                                ),
+                                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                                      fontFamily: 'SFProText',
+                                                                                                      color: Colors.white,
+                                                                                                      fontSize: 12,
+                                                                                                      letterSpacing: 0.0,
+                                                                                                    ),
+                                                                                              ),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                  ),
+                                                                                ].divide(SizedBox(width: 10)),
+                                                                              ),
+                                                                              Padding(
+                                                                                padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 10),
+                                                                                child: Container(
+                                                                                  width: MediaQuery.sizeOf(context).width * 0.85,
+                                                                                  decoration: BoxDecoration(),
+                                                                                  child: Text(
+                                                                                    getJsonField(
+                                                                                      defectsItem,
+                                                                                      r'''$.title''',
+                                                                                    ).toString(),
+                                                                                    style: FlutterFlowTheme.of(context).headlineSmall.override(
+                                                                                          fontFamily: 'SFProText',
+                                                                                          fontSize: 16,
+                                                                                          letterSpacing: 0.0,
+                                                                                          fontWeight: FontWeight.w500,
+                                                                                        ),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              Container(
+                                                                                width: MediaQuery.sizeOf(context).width * 0.85,
+                                                                                decoration: BoxDecoration(),
+                                                                                child: RichText(
+                                                                                  textScaler: MediaQuery.of(context).textScaler,
+                                                                                  text: TextSpan(
+                                                                                    children: [
+                                                                                      TextSpan(
+                                                                                        text: valueOrDefault<String>(
+                                                                                          getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.equipment_info.area_info.title''',
+                                                                                          )?.toString(),
+                                                                                          '-',
+                                                                                        ),
+                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                              fontFamily: 'SFProText',
+                                                                                              fontSize: 12,
+                                                                                              letterSpacing: 0.0,
+                                                                                              fontWeight: FontWeight.normal,
+                                                                                            ),
+                                                                                      ),
+                                                                                      TextSpan(
+                                                                                        text: ' ',
+                                                                                        style: TextStyle(),
+                                                                                      ),
+                                                                                      TextSpan(
+                                                                                        text: valueOrDefault<String>(
+                                                                                          getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.equipment_info.area_info.object_info.title''',
+                                                                                          )?.toString(),
+                                                                                          '-',
+                                                                                        ),
+                                                                                        style: TextStyle(
+                                                                                          fontFamily: 'SFProText',
+                                                                                          fontSize: 12,
+                                                                                        ),
+                                                                                      )
+                                                                                    ],
+                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                          fontFamily: 'SFProText',
+                                                                                          fontSize: 12,
+                                                                                          letterSpacing: 0.0,
+                                                                                          fontWeight: FontWeight.normal,
+                                                                                        ),
+                                                                                  ),
+                                                                                ),
+                                                                              ),
+                                                                              Row(
+                                                                                mainAxisSize: MainAxisSize.max,
+                                                                                children: [
+                                                                                  Container(
+                                                                                    width: MediaQuery.sizeOf(context).width * 0.85,
+                                                                                    decoration: BoxDecoration(
+                                                                                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                    ),
+                                                                                    child: Text(
+                                                                                      getJsonField(
+                                                                                        defectsItem,
+                                                                                        r'''$.equipment_info.title''',
+                                                                                      ).toString(),
+                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                            fontFamily: 'SFProText',
+                                                                                            fontSize: 12,
+                                                                                            letterSpacing: 0.0,
+                                                                                          ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                              Container(
+                                                                                width: MediaQuery.sizeOf(context).width * 0.85,
+                                                                                decoration: BoxDecoration(),
+                                                                                child: Row(
+                                                                                  mainAxisSize: MainAxisSize.max,
+                                                                                  children: [
+                                                                                    Icon(
+                                                                                      Icons.calendar_today,
+                                                                                      color: Color(0xFF87898F),
+                                                                                      size: 15,
+                                                                                    ),
+                                                                                    Align(
+                                                                                      alignment: AlignmentDirectional(-1, -1),
+                                                                                      child: Text(
+                                                                                        dateTimeFormat(
+                                                                                          "dd.MM.y H:mm",
+                                                                                          functions.stringToDateTime(getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.created_on''',
+                                                                                          ).toString()),
+                                                                                          locale: FFLocalizations.of(context).languageCode,
+                                                                                        ),
+                                                                                        style: FlutterFlowTheme.of(context).bodyLarge.override(
+                                                                                              fontFamily: 'SFProText',
+                                                                                              color: Color(0xFF87898F),
+                                                                                              fontSize: 14,
+                                                                                              letterSpacing: 0.0,
+                                                                                              fontWeight: FontWeight.normal,
+                                                                                            ),
+                                                                                      ),
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                              ),
+                                                                              if (((functions.statusRequest(getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.status''',
+                                                                                          ).toString()) ==
+                                                                                          'Открыта') ||
+                                                                                      (functions.statusRequest(getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.status''',
+                                                                                          ).toString()) ==
+                                                                                          'У исполнителя') ||
+                                                                                      (functions.statusRequest(getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.status''',
+                                                                                          ).toString()) ==
+                                                                                          'Отклонена') ||
+                                                                                      (functions.statusRequest(getJsonField(
+                                                                                            defectsItem,
+                                                                                            r'''$.status''',
+                                                                                          ).toString()) ==
+                                                                                          'В работе')) &&
+                                                                                  (valueOrDefault<String>(
+                                                                                        functions.jsonToStringCopy(getJsonField(
+                                                                                          FFAppState().account,
+                                                                                          r'''$.role''',
+                                                                                        )),
+                                                                                        '-',
+                                                                                      ) ==
+                                                                                      '\"engineer\"'))
+                                                                                FFButtonWidget(
+                                                                                  onPressed: () async {
+                                                                                    await showModalBottomSheet(
+                                                                                      isScrollControlled: true,
+                                                                                      backgroundColor: Colors.transparent,
+                                                                                      useSafeArea: true,
+                                                                                      context: context,
+                                                                                      builder: (context) {
+                                                                                        return GestureDetector(
+                                                                                          onTap: () {
+                                                                                            FocusScope.of(context).unfocus();
+                                                                                            FocusManager.instance.primaryFocus?.unfocus();
+                                                                                          },
+                                                                                          child: Padding(
+                                                                                            padding: MediaQuery.viewInsetsOf(context),
+                                                                                            child: ChooseUserWidget(
+                                                                                              json: defectsItem,
+                                                                                            ),
+                                                                                          ),
+                                                                                        );
+                                                                                      },
+                                                                                    ).then((value) => safeSetState(() {}));
+                                                                                  },
+                                                                                  text: FFLocalizations.of(context).getVariableText(
+                                                                                    ruText: 'Назначить исполнителя',
+                                                                                    kkText: 'Орындаушыны тағайындау',
+                                                                                  ),
+                                                                                  icon: Icon(
+                                                                                    Icons.person_add,
+                                                                                    size: 15,
+                                                                                  ),
+                                                                                  options: FFButtonOptions(
+                                                                                    width: MediaQuery.sizeOf(context).width * 0.85,
+                                                                                    height: MediaQuery.sizeOf(context).height * 0.03,
+                                                                                    padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                                                                                    iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                                                                                    iconColor: FlutterFlowTheme.of(context).primary,
+                                                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                    textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                                                                                          font: GoogleFonts.readexPro(
+                                                                                            fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                                                            fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                                                                                          ),
+                                                                                          color: FlutterFlowTheme.of(context).primary,
+                                                                                          letterSpacing: 0.0,
+                                                                                          fontWeight: FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                                                                                          fontStyle: FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                                                                                        ),
+                                                                                    elevation: 0,
+                                                                                    borderSide: BorderSide(
+                                                                                      color: FlutterFlowTheme.of(context).primary,
+                                                                                    ),
+                                                                                    borderRadius: BorderRadius.circular(8),
+                                                                                  ),
+                                                                                ),
+                                                                            ].divide(SizedBox(height: 3)),
+                                                                          ),
+                                                                        ),
+                                                                      ].divide(SizedBox(
+                                                                              width: 5)),
+                                                                    ),
+                                                                  ]
+                                                                      .addToStart(SizedBox(
+                                                                          height:
+                                                                              10))
+                                                                      .addToEnd(SizedBox(
+                                                                          height:
+                                                                              10)),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      );
+                                                    })
+                                                        .divide(SizedBox(
+                                                            height: 10))
+                                                        .addToStart(SizedBox(
+                                                            height: 10)),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          } else {
+                                            return Container(
+                                              width: 100,
+                                              height: 100,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primaryBackground,
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.max,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(
+                                                    Icons.error_outline,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryText,
+                                                    size: 24,
+                                                  ),
+                                                  Align(
+                                                    alignment:
+                                                        AlignmentDirectional(
+                                                            0, 0),
+                                                    child: Text(
+                                                      FFLocalizations.of(context)
+                                                          .getVariableText(
+                                                        ruText:
+                                                            'Заявки отсутствуют',
+                                                        kkText:
+                                                            'Өтінімдер жоқ',
+                                                      ),
+                                                      style: FlutterFlowTheme
+                                                              .of(context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily:
+                                                                'SFProText',
+                                                            fontSize: 18,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    if (functions
+                                            .jsonToList(getJsonField(
+                                              equipmentsDetailedGetEquipmentIdResponse
+                                                  .jsonBody,
+                                              r'''$.files''',
+                                            ))
+                                            .length !=
+                                        0) {
+                                      return Container(
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
+                                        ),
+                                        child: Padding(
+                                          padding: EdgeInsets.all(10),
+                                          child: Builder(
+                                            builder: (context) {
+                                              final childs = getJsonField(
+                                                equipmentsDetailedGetEquipmentIdResponse
+                                                    .jsonBody,
+                                                r'''$.files''',
+                                              ).toList();
+
+                                              return GridView.builder(
+                                                padding: EdgeInsets.zero,
+                                                gridDelegate:
+                                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount: 3,
+                                                  crossAxisSpacing: 10,
+                                                  mainAxisSpacing: 10,
+                                                  childAspectRatio: 1,
+                                                ),
+                                                scrollDirection: Axis.vertical,
+                                                itemCount: childs.length,
+                                                itemBuilder:
+                                                    (context, childsIndex) {
+                                                  final childsItem =
+                                                      childs[childsIndex];
+                                                  return Align(
+                                                    alignment:
+                                                        AlignmentDirectional(
+                                                            0, 0),
                                                     child: InkWell(
                                                       splashColor:
                                                           Colors.transparent,
@@ -976,865 +2054,123 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                                           Colors.transparent,
                                                       onTap: () async {
                                                         context.pushNamed(
-                                                          DetailedDefectsOfflineWidget
+                                                          PdfviewerWidget
                                                               .routeName,
                                                           queryParameters: {
-                                                            'id':
+                                                            'title':
                                                                 serializeParam(
                                                               getJsonField(
-                                                                defectsItem,
-                                                                r'''$.id''',
-                                                              ),
-                                                              ParamType.int,
+                                                                childsItem,
+                                                                r'''$.title''',
+                                                              ).toString(),
+                                                              ParamType.String,
+                                                            ),
+                                                            'viewer':
+                                                                serializeParam(
+                                                              getJsonField(
+                                                                childsItem,
+                                                                r'''$.url''',
+                                                              ).toString(),
+                                                              ParamType.String,
+                                                            ),
+                                                            'extension':
+                                                                serializeParam(
+                                                              getJsonField(
+                                                                childsItem,
+                                                                r'''$.extension''',
+                                                              ).toString(),
+                                                              ParamType.String,
                                                             ),
                                                           }.withoutNulls,
                                                         );
                                                       },
-                                                      child: Container(
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                1.0,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryBackground,
+                                                      child: Material(
+                                                        color:
+                                                            Colors.transparent,
+                                                        elevation: 2,
+                                                        shape:
+                                                            RoundedRectangleBorder(
                                                           borderRadius:
                                                               BorderRadius
-                                                                  .circular(
-                                                                      10.0),
+                                                                  .circular(12),
                                                         ),
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceEvenly,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Container(
-                                                                  width: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width *
-                                                                      0.12,
-                                                                  height: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width *
-                                                                      0.12,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    shape: BoxShape
-                                                                        .circle,
-                                                                    border:
-                                                                        Border
-                                                                            .all(
-                                                                      color: Color(
-                                                                          0xFFDCDCDC),
-                                                                    ),
-                                                                  ),
-                                                                  child:
-                                                                      Container(
-                                                                    width: MediaQuery.sizeOf(context)
-                                                                            .width *
-                                                                        0.12,
-                                                                    height: MediaQuery.sizeOf(context)
-                                                                            .width *
-                                                                        0.12,
-                                                                    clipBehavior:
-                                                                        Clip.antiAlias,
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      shape: BoxShape
-                                                                          .circle,
-                                                                    ),
-                                                                    child: Image
-                                                                        .asset(
-                                                                      'assets/images/Avatar_(5).png',
-                                                                      fit: BoxFit
-                                                                          .cover,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          5.0,
-                                                                          0.0,
-                                                                          5.0,
-                                                                          0.0),
-                                                                  child: Column(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.7,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.spaceBetween,
-                                                                          children: [
-                                                                            Container(
-                                                                              width: MediaQuery.sizeOf(context).width * 0.7,
-                                                                              decoration: BoxDecoration(),
-                                                                              child: Text(
-                                                                                getJsonField(
-                                                                                  defectsItem,
-                                                                                  r'''$.title''',
-                                                                                ).toString(),
-                                                                                style: FlutterFlowTheme.of(context).headlineSmall.override(
-                                                                                      fontFamily: 'SFProText',
-                                                                                      fontSize: 16.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.w500,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Container(
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.spaceBetween,
-                                                                          children: [
-                                                                            Container(
-                                                                              width: MediaQuery.sizeOf(context).width * 0.7,
-                                                                              decoration: BoxDecoration(
-                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              ),
-                                                                              child: RichText(
-                                                                                textScaler: MediaQuery.of(context).textScaler,
-                                                                                text: TextSpan(
-                                                                                  children: [
-                                                                                    TextSpan(
-                                                                                      text: valueOrDefault<String>(
-                                                                                        getJsonField(
-                                                                                          defectsItem,
-                                                                                          r'''$.equipment_info.area_info.title''',
-                                                                                        )?.toString(),
-                                                                                        '-',
-                                                                                      ),
-                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                            fontFamily: 'SFProText',
-                                                                                            fontSize: 12.0,
-                                                                                            letterSpacing: 0.0,
-                                                                                            fontWeight: FontWeight.normal,
-                                                                                          ),
-                                                                                    ),
-                                                                                    TextSpan(
-                                                                                      text: ' ',
-                                                                                      style: TextStyle(),
-                                                                                    ),
-                                                                                    TextSpan(
-                                                                                      text: valueOrDefault<String>(
-                                                                                        getJsonField(
-                                                                                          defectsItem,
-                                                                                          r'''$.equipment_info.area_info.object_info.title''',
-                                                                                        )?.toString(),
-                                                                                        '-',
-                                                                                      ),
-                                                                                      style: TextStyle(
-                                                                                        fontFamily: 'SFProText',
-                                                                                        fontSize: 12.0,
-                                                                                      ),
-                                                                                    )
-                                                                                  ],
-                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                        fontFamily: 'SFProText',
-                                                                                        fontSize: 12.0,
-                                                                                        letterSpacing: 0.0,
-                                                                                        fontWeight: FontWeight.normal,
-                                                                                      ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Container(
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.spaceBetween,
-                                                                          children: [
-                                                                            Container(
-                                                                              width: MediaQuery.sizeOf(context).width * 0.7,
-                                                                              decoration: BoxDecoration(
-                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                              ),
-                                                                              child: Text(
-                                                                                getJsonField(
-                                                                                  defectsItem,
-                                                                                  r'''$.equipment_info.title''',
-                                                                                ).toString(),
-                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                      fontFamily: 'SFProText',
-                                                                                      fontSize: 12.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Container(
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.calendar_today,
-                                                                              color: Color(0xFF87898F),
-                                                                              size: 15.0,
-                                                                            ),
-                                                                            Align(
-                                                                              alignment: AlignmentDirectional(-1.0, -1.0),
-                                                                              child: Text(
-                                                                                dateTimeFormat(
-                                                                                  "d.M.y",
-                                                                                  functions.stringToDateTime(getJsonField(
-                                                                                    defectsItem,
-                                                                                    r'''$.created_on''',
-                                                                                  ).toString()),
-                                                                                  locale: FFLocalizations.of(context).languageCode,
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).bodyLarge.override(
-                                                                                      fontFamily: 'SFProText',
-                                                                                      color: Color(0xFF87898F),
-                                                                                      fontSize: 14.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.normal,
-                                                                                    ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      Container(
-                                                                        decoration:
-                                                                            BoxDecoration(
-                                                                          borderRadius:
-                                                                              BorderRadius.circular(16.0),
-                                                                          border:
-                                                                              Border.all(
-                                                                            color:
-                                                                                valueOrDefault<Color>(
-                                                                              functions.colorDefectCopy(getJsonField(
-                                                                                defectsItem,
-                                                                                r'''$.status''',
-                                                                              ).toString()),
-                                                                              FlutterFlowTheme.of(context).alternate,
-                                                                            ),
-                                                                            width:
-                                                                                1.0,
-                                                                          ),
-                                                                        ),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          children: [
-                                                                            Container(
-                                                                              decoration: BoxDecoration(),
-                                                                              child: Align(
-                                                                                alignment: AlignmentDirectional(0.0, 0.0),
-                                                                                child: Padding(
-                                                                                  padding: EdgeInsetsDirectional.fromSTEB(5.0, 5.0, 5.0, 5.0),
-                                                                                  child: Text(
-                                                                                    valueOrDefault<String>(
-                                                                                      functions.statusRequest(getJsonField(
-                                                                                        defectsItem,
-                                                                                        r'''$.status''',
-                                                                                      ).toString()),
-                                                                                      '-',
-                                                                                    ),
-                                                                                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                          fontFamily: 'SFProText',
-                                                                                          color: valueOrDefault<Color>(
-                                                                                            functions.colorDefectCopy(getJsonField(
-                                                                                              defectsItem,
-                                                                                              r'''$.status''',
-                                                                                            ).toString()),
-                                                                                            FlutterFlowTheme.of(context).alternate,
-                                                                                          ),
-                                                                                          fontSize: 12.0,
-                                                                                          letterSpacing: 0.0,
-                                                                                        ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                    ].divide(SizedBox(
-                                                                        height:
-                                                                            3.0)),
-                                                                  ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  width: 5.0)),
-                                                            ),
-                                                          ]
-                                                              .addToStart(
-                                                                  SizedBox(
-                                                                      height:
-                                                                          10.0))
-                                                              .addToEnd(SizedBox(
-                                                                  height:
-                                                                      10.0)),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                );
-                                              })
-                                                  .divide(
-                                                      SizedBox(height: 10.0))
-                                                  .addToStart(
-                                                      SizedBox(height: 10.0)),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                                SingleChildScrollView(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    children: [
-                                      Container(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                1.0,
-                                        height: 50.0,
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .secondaryBackground,
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.max,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            FFButtonWidget(
-                                              onPressed: () async {
-                                                _model.parameters =
-                                                    getJsonField(
-                                                  widget!.json,
-                                                  r'''$.technical_parameters''',
-                                                  true,
-                                                )!
-                                                        .toList()
-                                                        .cast<dynamic>();
-                                                _model.xarakteristic = 1;
-                                                safeSetState(() {});
-                                              },
-                                              text: 'Тех. характеристики',
-                                              options: FFButtonOptions(
-                                                width:
-                                                    MediaQuery.sizeOf(context)
-                                                            .width *
-                                                        0.45,
-                                                height: 40.0,
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        10.0, 0.0, 10.0, 0.0),
-                                                iconPadding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
-                                                color: _model.xarakteristic == 1
-                                                    ? Color(0xFF5E8AF7)
-                                                    : Color(0xFF2A61ED),
-                                                textStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .override(
-                                                          fontFamily:
-                                                              'SFProText',
-                                                          color: Colors.white,
-                                                          fontSize: 14.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                        ),
-                                                elevation: 3.0,
-                                                borderSide: BorderSide(
-                                                  color: Colors.transparent,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                            ),
-                                            FFButtonWidget(
-                                              onPressed: () async {
-                                                _model.parameters =
-                                                    getJsonField(
-                                                  widget!.json,
-                                                  r'''$.operational_parameters''',
-                                                  true,
-                                                )!
-                                                        .toList()
-                                                        .cast<dynamic>();
-                                                _model.xarakteristic = 2;
-                                                safeSetState(() {});
-                                              },
-                                              text: 'Эксп. характеристики',
-                                              options: FFButtonOptions(
-                                                width:
-                                                    MediaQuery.sizeOf(context)
-                                                            .width *
-                                                        0.45,
-                                                height: 40.0,
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        10.0, 0.0, 10.0, 0.0),
-                                                iconPadding:
-                                                    EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
-                                                color: _model.xarakteristic == 2
-                                                    ? Color(0xFF5E8AF7)
-                                                    : Color(0xFF2A61ED),
-                                                textStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .titleSmall
-                                                        .override(
-                                                          fontFamily:
-                                                              'SFProText',
-                                                          color: Colors.white,
-                                                          fontSize: 14.0,
-                                                          letterSpacing: 0.0,
-                                                          fontWeight:
-                                                              FontWeight.normal,
-                                                        ),
-                                                elevation: 3.0,
-                                                borderSide: BorderSide(
-                                                  color: Colors.transparent,
-                                                  width: 1.0,
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                            ),
-                                          ].divide(SizedBox(width: 5.0)),
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            15.0, 0.0, 15.0, 0.0),
-                                        child: Container(
-                                          decoration: BoxDecoration(),
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0.0, 10.0, 0.0, 0.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                  children: [
-                                                    Container(
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          0.4,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child: Text(
-                                                        'Название',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 15.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          0.3,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child: Text(
-                                                        'Значение',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 15.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      width: MediaQuery.sizeOf(
-                                                                  context)
-                                                              .width *
-                                                          0.3,
-                                                      decoration:
-                                                          BoxDecoration(),
-                                                      child: Text(
-                                                        'Измерение',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .bodyMedium
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 15.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                  ].divide(
-                                                      SizedBox(width: 3.0)),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsetsDirectional
-                                                      .fromSTEB(
-                                                          0.0, 10.0, 0.0, 0.0),
-                                                  child: Builder(
-                                                    builder: (context) {
-                                                      final parameter = _model
-                                                          .parameters
-                                                          .toList();
-
-                                                      return Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: List.generate(
-                                                            parameter.length,
-                                                            (parameterIndex) {
-                                                          final parameterItem =
-                                                              parameter[
-                                                                  parameterIndex];
-                                                          return Row(
+                                                        child: Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .secondaryBackground,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12),
+                                                          ),
+                                                          child: Column(
                                                             mainAxisSize:
                                                                 MainAxisSize
                                                                     .max,
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment
-                                                                    .spaceAround,
+                                                                    .center,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
                                                             children: [
                                                               Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.4,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Text(
-                                                                  getJsonField(
-                                                                    parameterItem,
-                                                                    r'''$.title''',
-                                                                  ).toString(),
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .readexPro(
-                                                                          fontWeight:
-                                                                              FontWeight.w500,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        fontSize:
-                                                                            14.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.3,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Text(
-                                                                  getJsonField(
-                                                                    parameterItem,
-                                                                    r'''$.field_1_placeholder''',
-                                                                  ).toString(),
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .readexPro(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        fontSize:
-                                                                            12.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.3,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Text(
-                                                                  getJsonField(
-                                                                    parameterItem,
-                                                                    r'''$.unit''',
-                                                                  ).toString(),
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        font: GoogleFonts
-                                                                            .readexPro(
-                                                                          fontWeight: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontWeight,
-                                                                          fontStyle: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .fontStyle,
-                                                                        ),
-                                                                        fontSize:
-                                                                            12.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontWeight,
-                                                                        fontStyle: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .fontStyle,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                            ].divide(SizedBox(
-                                                                width: 3.0)),
-                                                          );
-                                                        }),
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primaryBackground,
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 10.0, 0.0, 0.0),
-                                    child: Builder(
-                                      builder: (context) {
-                                        final childs = getJsonField(
-                                          equipmentsDetailedGetEquipmentIdResponse
-                                              .jsonBody,
-                                          r'''$.files''',
-                                        ).toList();
-
-                                        return ListView.builder(
-                                          padding: EdgeInsets.zero,
-                                          shrinkWrap: true,
-                                          scrollDirection: Axis.vertical,
-                                          itemCount: childs.length,
-                                          itemBuilder: (context, childsIndex) {
-                                            final childsItem =
-                                                childs[childsIndex];
-                                            return Align(
-                                              alignment: AlignmentDirectional(
-                                                  0.0, 0.0),
-                                              child: Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        0.0, 0.0, 0.0, 10.0),
-                                                child: InkWell(
-                                                  splashColor:
-                                                      Colors.transparent,
-                                                  focusColor:
-                                                      Colors.transparent,
-                                                  hoverColor:
-                                                      Colors.transparent,
-                                                  highlightColor:
-                                                      Colors.transparent,
-                                                  onTap: () async {
-                                                    context.pushNamed(
-                                                      PdfviewerWidget.routeName,
-                                                      queryParameters: {
-                                                        'title': serializeParam(
-                                                          getJsonField(
-                                                            childsItem,
-                                                            r'''$.title''',
-                                                          ).toString(),
-                                                          ParamType.String,
-                                                        ),
-                                                        'viewer':
-                                                            serializeParam(
-                                                          getJsonField(
-                                                            childsItem,
-                                                            r'''$.url''',
-                                                          ).toString(),
-                                                          ParamType.String,
-                                                        ),
-                                                        'extension':
-                                                            serializeParam(
-                                                          getJsonField(
-                                                            childsItem,
-                                                            r'''$.extension''',
-                                                          ).toString(),
-                                                          ParamType.String,
-                                                        ),
-                                                      }.withoutNulls,
-                                                    );
-                                                  },
-                                                  child: Material(
-                                                    color: Colors.transparent,
-                                                    elevation: 2.0,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              0.0),
-                                                    ),
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(0.0),
-                                                      ),
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Container(
-                                                            width: MediaQuery
+                                                                width: MediaQuery
                                                                         .sizeOf(
                                                                             context)
-                                                                    .width *
-                                                                1.0,
-                                                            decoration:
-                                                                BoxDecoration(),
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
+                                                                    .width,
+                                                                decoration:
+                                                                    BoxDecoration(),
+                                                                child: Padding(
+                                                                  padding: EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          10.0,
-                                                                          15.0,
-                                                                          10.0,
-                                                                          15.0),
-                                                              child: RichText(
-                                                                textScaler: MediaQuery.of(
-                                                                        context)
-                                                                    .textScaler,
-                                                                text: TextSpan(
-                                                                  children: [
-                                                                    TextSpan(
-                                                                      text:
-                                                                          'Название:  ',
+                                                                          10,
+                                                                          15,
+                                                                          10,
+                                                                          15),
+                                                                  child:
+                                                                      RichText(
+                                                                    textScaler:
+                                                                        MediaQuery.of(context)
+                                                                            .textScaler,
+                                                                    text:
+                                                                        TextSpan(
+                                                                      children: [
+                                                                        TextSpan(
+                                                                          text:
+                                                                              FFLocalizations.of(context).getVariableText(
+                                                                                ruText: 'Название:  ',
+                                                                                kkText: 'Атауы:  ',
+                                                                              ),
+                                                                          style: FlutterFlowTheme.of(context)
+                                                                              .titleMedium
+                                                                              .override(
+                                                                                fontFamily: 'SFProText',
+                                                                                color: FlutterFlowTheme.of(context).alternate,
+                                                                                fontSize: 12,
+                                                                                letterSpacing: 0.0,
+                                                                                fontWeight: FontWeight.w500,
+                                                                              ),
+                                                                        ),
+                                                                        TextSpan(
+                                                                          text:
+                                                                              getJsonField(
+                                                                            childsItem,
+                                                                            r'''$.title''',
+                                                                          ).toString(),
+                                                                          style:
+                                                                              TextStyle(
+                                                                            fontFamily:
+                                                                                'SFProText',
+                                                                            fontWeight:
+                                                                                FontWeight.w500,
+                                                                            fontSize:
+                                                                                14,
+                                                                          ),
+                                                                        )
+                                                                      ],
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .titleMedium
@@ -1842,278 +2178,257 @@ class _EquipmentsDetailedWidgetState extends State<EquipmentsDetailedWidget>
                                                                             fontFamily:
                                                                                 'SFProText',
                                                                             color:
-                                                                                FlutterFlowTheme.of(context).alternate,
+                                                                                FlutterFlowTheme.of(context).primaryText,
                                                                             fontSize:
-                                                                                12.0,
+                                                                                16,
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
                                                                                 FontWeight.w500,
                                                                           ),
                                                                     ),
-                                                                    TextSpan(
-                                                                      text:
-                                                                          getJsonField(
-                                                                        childsItem,
-                                                                        r'''$.title''',
-                                                                      ).toString(),
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontFamily:
-                                                                            'SFProText',
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                        fontSize:
-                                                                            14.0,
-                                                                      ),
-                                                                    )
-                                                                  ],
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .titleMedium
-                                                                      .override(
-                                                                        fontFamily:
-                                                                            'SFProText',
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .primaryText,
-                                                                        fontSize:
-                                                                            16.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                      ),
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ),
+                                                            ],
                                                           ),
-                                                        ],
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Builder(
-                                  builder: (context) {
-                                    if (getJsonField(
-                                          widget!.json,
-                                          r'''$.responsibles_info''',
-                                        ) !=
-                                        null) {
-                                      return Container(
-                                        decoration: BoxDecoration(
-                                          color: FlutterFlowTheme.of(context)
-                                              .primaryBackground,
-                                        ),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 10.0, 0.0, 0.0),
-                                          child: Builder(
-                                            builder: (context) {
-                                              final responsibles = getJsonField(
-                                                equipmentsDetailedGetEquipmentIdResponse
-                                                    .jsonBody,
-                                                r'''$.responsibles_info''',
-                                              ).toList();
-
-                                              return FlutterFlowDataTable<
-                                                  dynamic>(
-                                                controller: _model
-                                                    .paginatedDataTableController,
-                                                data: responsibles,
-                                                numRows: responsibles.length,
-                                                columnsBuilder:
-                                                    (onSortChanged) => [
-                                                  DataColumn2(
-                                                    label:
-                                                        DefaultTextStyle.merge(
-                                                      softWrap: true,
-                                                      child: Text(
-                                                        '№',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .labelLarge
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 14.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  DataColumn2(
-                                                    label:
-                                                        DefaultTextStyle.merge(
-                                                      softWrap: true,
-                                                      child: Text(
-                                                        'ФИО',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .labelLarge
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 14.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    fixedWidth:
-                                                        MediaQuery.sizeOf(
-                                                                    context)
-                                                                .width *
-                                                            0.5,
-                                                  ),
-                                                  DataColumn2(
-                                                    label:
-                                                        DefaultTextStyle.merge(
-                                                      softWrap: true,
-                                                      child: Text(
-                                                        'Должность',
-                                                        style: FlutterFlowTheme
-                                                                .of(context)
-                                                            .labelLarge
-                                                            .override(
-                                                              fontFamily:
-                                                                  'SFProText',
-                                                              fontSize: 14.0,
-                                                              letterSpacing:
-                                                                  0.0,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                      ),
-                                                    ),
-                                                    fixedWidth:
-                                                        MediaQuery.sizeOf(
-                                                                    context)
-                                                                .width *
-                                                            0.3,
-                                                  ),
-                                                ],
-                                                dataRowBuilder:
-                                                    (responsiblesItem,
-                                                            responsiblesIndex,
-                                                            selected,
-                                                            onSelectChanged) =>
-                                                        DataRow(
-                                                  color:
-                                                      MaterialStateProperty.all(
-                                                    responsiblesIndex % 2 == 0
-                                                        ? FlutterFlowTheme.of(
-                                                                context)
-                                                            .secondaryBackground
-                                                        : FlutterFlowTheme.of(
-                                                                context)
-                                                            .primaryBackground,
-                                                  ),
-                                                  cells: [
-                                                    Text(
-                                                      getJsonField(
-                                                        responsiblesItem,
-                                                        r'''$.id''',
-                                                      ).toString(),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'SFProText',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                    Text(
-                                                      getJsonField(
-                                                        responsiblesItem,
-                                                        r'''$.full_name''',
-                                                      ).toString(),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'SFProText',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                    Text(
-                                                      functions.roleToRus(
-                                                          getJsonField(
-                                                        responsiblesItem,
-                                                        r'''$.role''',
-                                                      ).toString()),
-                                                      style: FlutterFlowTheme
-                                                              .of(context)
-                                                          .bodyMedium
-                                                          .override(
-                                                            fontFamily:
-                                                                'SFProText',
-                                                            letterSpacing: 0.0,
-                                                          ),
-                                                    ),
-                                                  ]
-                                                      .map((c) => DataCell(c))
-                                                      .toList(),
-                                                ),
-                                                paginated: false,
-                                                selectable: false,
-                                                headingRowHeight: 40.0,
-                                                dataRowHeight: 65.0,
-                                                columnSpacing: 20.0,
-                                                headingRowColor:
-                                                    Color(0xFF7195EE),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                                addHorizontalDivider: true,
-                                                addTopAndBottomDivider: false,
-                                                hideDefaultHorizontalDivider:
-                                                    true,
-                                                horizontalDividerColor:
-                                                    FlutterFlowTheme.of(context)
-                                                        .secondaryBackground,
-                                                horizontalDividerThickness: 1.0,
-                                                addVerticalDivider: false,
+                                                  );
+                                                },
                                               );
                                             },
                                           ),
                                         ),
                                       );
                                     } else {
-                                      return Align(
-                                        alignment:
-                                            AlignmentDirectional(0.0, -1.0),
-                                        child: Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 20.0, 0.0, 0.0),
-                                          child: Text(
-                                            'Отсутствуют ответственные',
-                                            style: FlutterFlowTheme.of(context)
-                                                .headlineMedium
-                                                .override(
-                                                  fontFamily: 'SFProText',
-                                                  fontSize: 20.0,
-                                                  letterSpacing: 0.0,
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              size: 24,
+                                            ),
+                                            Align(
+                                              alignment:
+                                                  AlignmentDirectional(0, 0),
+                                              child: Text(
+                                                FFLocalizations.of(context)
+                                                    .getVariableText(
+                                                  ruText:
+                                                      'Вложения отсутствуют',
+                                                  kkText: 'Тіркемелер жоқ',
                                                 ),
-                                          ),
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily:
+                                                              'SFProText',
+                                                          fontSize: 18,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                  },
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    if (getJsonField(
+                                          widget.json,
+                                          r'''$.responsibles_info''',
+                                        ) !=
+                                        null) {
+                                      return Builder(
+                                        builder: (context) {
+                                          final responsibles = getJsonField(
+                                            equipmentsDetailedGetEquipmentIdResponse
+                                                .jsonBody,
+                                            r'''$.responsibles_info''',
+                                          ).toList();
+
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            children: List.generate(
+                                                    responsibles.length,
+                                                    (responsiblesIndex) {
+                                              final responsiblesItem =
+                                                  responsibles[
+                                                      responsiblesIndex];
+                                              return Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(0, 0, 0, 1),
+                                                child: Container(
+                                                  width:
+                                                      MediaQuery.sizeOf(context)
+                                                              .width *
+                                                          0.95,
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryBackground,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: EdgeInsets.all(8),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(40),
+                                                          child: Image.asset(
+                                                            'assets/images/img_568656_10546.png',
+                                                            width: 30,
+                                                            height: 30,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          child: Padding(
+                                                            padding:
+                                                                EdgeInsetsDirectional
+                                                                    .fromSTEB(
+                                                                        12,
+                                                                        0,
+                                                                        0,
+                                                                        0),
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  valueOrDefault<
+                                                                      String>(
+                                                                    getJsonField(
+                                                                      responsiblesItem,
+                                                                      r'''$.full_name''',
+                                                                    )?.toString(),
+                                                                    '-',
+                                                                  ),
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyLarge
+                                                                      .override(
+                                                                        fontFamily:
+                                                                            'SFProText',
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                        fontWeight:
+                                                                            FontWeight.w600,
+                                                                      ),
+                                                                ),
+                                                                Text(
+                                                                  valueOrDefault<
+                                                                      String>(
+                                                                    functions
+                                                                        .roleToRus(
+                                                                            getJsonField(
+                                                                      responsiblesItem,
+                                                                      r'''$.role''',
+                                                                    ).toString()),
+                                                                    '-',
+                                                                  ),
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyMedium
+                                                                      .override(
+                                                                        fontFamily:
+                                                                            'SFProText',
+                                                                        fontSize:
+                                                                            12,
+                                                                        letterSpacing:
+                                                                            0.0,
+                                                                      ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            })
+                                                .divide(SizedBox(height: 10))
+                                                .addToStart(
+                                                    SizedBox(height: 10))
+                                                .addToEnd(SizedBox(height: 10)),
+                                          );
+                                        },
+                                      );
+                                    } else {
+                                      return Container(
+                                        width: 100,
+                                        height: 100,
+                                        decoration: BoxDecoration(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primaryBackground,
+                                        ),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.error_outline,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              size: 24,
+                                            ),
+                                            Align(
+                                              alignment:
+                                                  AlignmentDirectional(0, 0),
+                                              child: Text(
+                                                FFLocalizations.of(context)
+                                                    .getVariableText(
+                                                  ruText:
+                                                      'Ответственные отсутствуют',
+                                                  kkText: 'Жауаптылар жоқ',
+                                                ),
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily:
+                                                              'SFProText',
+                                                          fontSize: 18,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       );
                                     }

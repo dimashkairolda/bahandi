@@ -11,11 +11,11 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'detailed_service_acts_model.dart';
 export 'detailed_service_acts_model.dart';
 
@@ -67,7 +67,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
     return FutureBuilder<ApiCallResponse>(
       future: GetServiceActByIDCall.call(
         access: currentAuthenticationToken,
-        id: widget!.id,
+        id: widget.id,
       ),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
@@ -76,8 +76,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
             body: Center(
               child: SizedBox(
-                width: 50.0,
-                height: 50.0,
+                width: 50,
+                height: 50,
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
                     FlutterFlowTheme.of(context).primary,
@@ -102,16 +102,24 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
               automaticallyImplyLeading: false,
               leading: FlutterFlowIconButton(
                 borderColor: Colors.transparent,
-                borderRadius: 30.0,
-                borderWidth: 1.0,
-                buttonSize: 60.0,
+                borderRadius: 30,
+                borderWidth: 1,
+                buttonSize: 60,
                 icon: Icon(
                   Icons.arrow_back_rounded,
                   color: Color(0xFF3466E7),
-                  size: 30.0,
+                  size: 30,
                 ),
                 onPressed: () async {
-                  context.pushNamed(ServiceActWidget.routeName);
+                  context.pushNamed(
+                    ServiceActWidget.routeName,
+                    extra: <String, dynamic>{
+                      kTransitionInfoKey: TransitionInfo(
+                        hasTransition: true,
+                        transitionType: PageTransitionType.leftToRight,
+                      ),
+                    },
+                  );
                 },
               ),
               title: Text(
@@ -128,14 +136,14 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                 style: FlutterFlowTheme.of(context).titleLarge.override(
                       fontFamily: 'SFProText',
                       color: FlutterFlowTheme.of(context).primaryText,
-                      fontSize: 18.0,
+                      fontSize: 18,
                       letterSpacing: 0.0,
                     ),
               ),
               actions: [
                 Container(
                   width: MediaQuery.sizeOf(context).width * 0.1,
-                  height: 100.0,
+                  height: 100,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
                   ),
@@ -172,11 +180,11 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Align(
-                          alignment: AlignmentDirectional(0.0, 0.0),
+                          alignment: AlignmentDirectional(0, 0),
                           child: FaIcon(
                             FontAwesomeIcons.fileDownload,
                             color: FlutterFlowTheme.of(context).primary,
-                            size: 25.0,
+                            size: 25,
                           ),
                         ),
                       ],
@@ -185,7 +193,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                 ),
               ],
               centerTitle: false,
-              elevation: 0.0,
+              elevation: 0,
             ),
             body: SafeArea(
               top: true,
@@ -202,12 +210,12 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Container(
-                              width: MediaQuery.sizeOf(context).width * 1.0,
+                              width: MediaQuery.sizeOf(context).width,
                               height: MediaQuery.sizeOf(context).height * 0.099,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.circular(0.0),
+                                borderRadius: BorderRadius.circular(0),
                               ),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
@@ -216,7 +224,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                 children: [
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        11.5, 0.0, 11.5, 0.0),
+                                        11.5, 0, 11.5, 0),
                                     child: Container(
                                       decoration: BoxDecoration(),
                                       child: Row(
@@ -226,15 +234,15 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                         children: [
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(-1.0, 0.0),
+                                                AlignmentDirectional(-1, 0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
                                                   0.6,
                                               decoration: BoxDecoration(),
                                               child: Align(
-                                                alignment: AlignmentDirectional(
-                                                    -1.0, 0.0),
+                                                alignment:
+                                                    AlignmentDirectional(-1, 0),
                                                 child: Text(
                                                   valueOrDefault<String>(
                                                     getJsonField(
@@ -249,7 +257,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                       .bodyLarge
                                                       .override(
                                                         fontFamily: 'SFProText',
-                                                        fontSize: 17.0,
+                                                        fontSize: 17,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.normal,
@@ -264,18 +272,18 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                   ),
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        11.5, 0.0, 0.0, 0.0),
+                                        11.5, 0, 0, 0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.max,
                                       children: [
                                         Icon(
                                           Icons.calendar_today,
                                           color: Color(0xFF87898F),
-                                          size: 15.0,
+                                          size: 15,
                                         ),
                                         Align(
                                           alignment:
-                                              AlignmentDirectional(-1.0, -1.0),
+                                              AlignmentDirectional(-1, -1),
                                           child: Text(
                                             valueOrDefault<String>(
                                               dateTimeFormat(
@@ -297,7 +305,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                 .override(
                                                   fontFamily: 'SFProText',
                                                   color: Color(0xFF87898F),
-                                                  fontSize: 14.0,
+                                                  fontSize: 14,
                                                   letterSpacing: 0.0,
                                                   fontWeight: FontWeight.normal,
                                                 ),
@@ -306,7 +314,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                       ],
                                     ),
                                   ),
-                                ].divide(SizedBox(height: 10.0)),
+                                ].divide(SizedBox(height: 10)),
                               ),
                             ),
                           ],
@@ -317,7 +325,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                           child: Column(
                             children: [
                               Align(
-                                alignment: Alignment(0.0, 0),
+                                alignment: Alignment(0, 0),
                                 child: FlutterFlowButtonTabBar(
                                   useToggleButtonStyle: false,
                                   isScrollable: true,
@@ -325,7 +333,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                       .titleMedium
                                       .override(
                                         fontFamily: 'SFProText',
-                                        fontSize: 14.0,
+                                        fontSize: 14,
                                         letterSpacing: 0.0,
                                       ),
                                   unselectedLabelStyle:
@@ -333,7 +341,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                           .titleMedium
                                           .override(
                                             fontFamily: 'SFProText',
-                                            fontSize: 14.0,
+                                            fontSize: 14,
                                             letterSpacing: 0.0,
                                           ),
                                   labelColor: FlutterFlowTheme.of(context)
@@ -342,23 +350,39 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                       FlutterFlowTheme.of(context).primaryText,
                                   backgroundColor:
                                       FlutterFlowTheme.of(context).primary,
-                                  borderWidth: 0.0,
-                                  borderRadius: 10.0,
-                                  elevation: 0.0,
+                                  borderWidth: 0,
+                                  borderRadius: 10,
+                                  elevation: 0,
                                   buttonMargin: EdgeInsetsDirectional.fromSTEB(
-                                      10.0, 10.0, 10.0, 0.0),
+                                      10, 10, 10, 0),
                                   tabs: [
                                     Tab(
-                                      text: 'Информация',
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Информация',
+                                        kkText: 'Ақпарат',
+                                      ),
                                     ),
                                     Tab(
-                                      text: 'Список работ',
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Список работ',
+                                        kkText: 'Жұмыстар тізімі',
+                                      ),
                                     ),
                                     Tab(
-                                      text: 'Список ТМЦ',
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Список ТМЦ',
+                                        kkText: 'ТМҚ тізімі',
+                                      ),
                                     ),
                                     Tab(
-                                      text: 'Вложения',
+                                      text: FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText: 'Вложения',
+                                        kkText: 'Медиа',
+                                      ),
                                     ),
                                   ],
                                   controller: _model.tabBarController,
@@ -417,8 +441,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                             children: [
                                               Padding(
                                                 padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        11.5, 8.0, 11.5, 0.0),
+                                                    .fromSTEB(11.5, 8, 11.5, 0),
                                                 child: Container(
                                                   width: double.infinity,
                                                   decoration: BoxDecoration(
@@ -427,13 +450,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            10.0),
+                                                            10),
                                                   ),
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 16.0,
-                                                                0.0, 16.0),
+                                                            .fromSTEB(
+                                                                0, 16, 0, 16),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -441,11 +464,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
                                                           child: Row(
                                                             mainAxisSize:
                                                                 MainAxisSize
@@ -470,19 +490,23 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           .start,
                                                                   children: [
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Padding(
                                                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            3.0),
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
                                                                         child:
                                                                             Text(
-                                                                          'Время начала',
+                                                                          FFLocalizations.of(context).getVariableText(
+                                                                            ruText: 'Время начала',
+                                                                            kkText: 'Басталу уақыты',
+                                                                          ),
                                                                           textAlign:
                                                                               TextAlign.start,
                                                                           style: FlutterFlowTheme.of(context)
@@ -490,7 +514,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               .override(
                                                                                 fontFamily: 'SFProText',
                                                                                 color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14.0,
+                                                                                fontSize: 14,
                                                                                 letterSpacing: 0.0,
                                                                               ),
                                                                         ),
@@ -514,7 +538,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             ),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'SFProText',
-                                                                                  fontSize: 15.0,
+                                                                                  fontSize: 15,
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.normal,
                                                                                 ),
@@ -524,7 +548,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'SFProText',
-                                                                              fontSize: 16.0,
+                                                                              fontSize: 16,
                                                                               letterSpacing: 0.0,
                                                                               fontWeight: FontWeight.normal,
                                                                             ),
@@ -539,11 +563,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
                                                           child: Row(
                                                             mainAxisSize:
                                                                 MainAxisSize
@@ -568,19 +589,23 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           .start,
                                                                   children: [
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Padding(
                                                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            3.0),
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
                                                                         child:
                                                                             Text(
-                                                                          'Время окончания',
+                                                                          FFLocalizations.of(context).getVariableText(
+                                                                            ruText: 'Время окончания',
+                                                                            kkText: 'Аяқталу уақыты',
+                                                                          ),
                                                                           textAlign:
                                                                               TextAlign.start,
                                                                           style: FlutterFlowTheme.of(context)
@@ -588,7 +613,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               .override(
                                                                                 fontFamily: 'SFProText',
                                                                                 color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14.0,
+                                                                                fontSize: 14,
                                                                                 letterSpacing: 0.0,
                                                                               ),
                                                                         ),
@@ -612,7 +637,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             ),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'SFProText',
-                                                                                  fontSize: 15.0,
+                                                                                  fontSize: 15,
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.normal,
                                                                                 ),
@@ -622,7 +647,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'SFProText',
-                                                                              fontSize: 16.0,
+                                                                              fontSize: 16,
                                                                               letterSpacing: 0.0,
                                                                               fontWeight: FontWeight.normal,
                                                                             ),
@@ -637,11 +662,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
                                                           child: Row(
                                                             mainAxisSize:
                                                                 MainAxisSize
@@ -666,19 +688,23 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           .start,
                                                                   children: [
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Padding(
                                                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0.0,
-                                                                            0.0,
-                                                                            0.0,
-                                                                            3.0),
+                                                                            0,
+                                                                            0,
+                                                                            0,
+                                                                            3),
                                                                         child:
                                                                             Text(
-                                                                          'Клиент',
+                                                                          FFLocalizations.of(context).getVariableText(
+                                                                            ruText: 'Клиент',
+                                                                            kkText: 'Клиент',
+                                                                          ),
                                                                           textAlign:
                                                                               TextAlign.start,
                                                                           style: FlutterFlowTheme.of(context)
@@ -686,7 +712,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               .override(
                                                                                 fontFamily: 'SFProText',
                                                                                 color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14.0,
+                                                                                fontSize: 14,
                                                                                 letterSpacing: 0.0,
                                                                               ),
                                                                         ),
@@ -710,7 +736,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             ),
                                                                             style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                   fontFamily: 'SFProText',
-                                                                                  fontSize: 15.0,
+                                                                                  fontSize: 15,
                                                                                   letterSpacing: 0.0,
                                                                                   fontWeight: FontWeight.normal,
                                                                                 ),
@@ -720,7 +746,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .bodyMedium
                                                                             .override(
                                                                               fontFamily: 'SFProText',
-                                                                              fontSize: 16.0,
+                                                                              fontSize: 16,
                                                                               letterSpacing: 0.0,
                                                                               fontWeight: FontWeight.normal,
                                                                             ),
@@ -735,11 +761,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
                                                           child: Row(
                                                             mainAxisSize:
                                                                 MainAxisSize
@@ -760,12 +783,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           .start,
                                                                   children: [
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Text(
-                                                                        'Исполнитель',
+                                                                        FFLocalizations.of(context).getVariableText(
+                                                                          ruText: 'Исполнитель',
+                                                                          kkText: 'Орындаушы',
+                                                                        ),
                                                                         textAlign:
                                                                             TextAlign.start,
                                                                         style: FlutterFlowTheme.of(context)
@@ -773,15 +800,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .override(
                                                                               fontFamily: 'SFProText',
                                                                               color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              fontSize: 14.0,
+                                                                              fontSize: 14,
                                                                               letterSpacing: 0.0,
                                                                             ),
                                                                       ),
                                                                     ),
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Text(
                                                                         valueOrDefault<
@@ -796,7 +824,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .bodyLarge
                                                                             .override(
                                                                               fontFamily: 'SFProText',
-                                                                              fontSize: 16.0,
+                                                                              fontSize: 16,
                                                                               letterSpacing: 0.0,
                                                                               fontWeight: FontWeight.normal,
                                                                             ),
@@ -811,11 +839,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
                                                           child: Row(
                                                             mainAxisSize:
                                                                 MainAxisSize
@@ -836,12 +861,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           .start,
                                                                   children: [
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Text(
-                                                                        'Автор',
+                                                                        FFLocalizations.of(context).getVariableText(
+                                                                          ruText: 'Автор',
+                                                                          kkText: 'Автор',
+                                                                        ),
                                                                         textAlign:
                                                                             TextAlign.start,
                                                                         style: FlutterFlowTheme.of(context)
@@ -849,15 +878,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .override(
                                                                               fontFamily: 'SFProText',
                                                                               color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              fontSize: 14.0,
+                                                                              fontSize: 14,
                                                                               letterSpacing: 0.0,
                                                                             ),
                                                                       ),
                                                                     ),
                                                                     Align(
-                                                                      alignment: AlignmentDirectional(
-                                                                          -1.0,
-                                                                          -1.0),
+                                                                      alignment:
+                                                                          AlignmentDirectional(
+                                                                              -1,
+                                                                              -1),
                                                                       child:
                                                                           Text(
                                                                         _model
@@ -867,7 +897,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             .bodyLarge
                                                                             .override(
                                                                               fontFamily: 'SFProText',
-                                                                              fontSize: 16.0,
+                                                                              fontSize: 16,
                                                                               letterSpacing: 0.0,
                                                                               fontWeight: FontWeight.normal,
                                                                             ),
@@ -879,16 +909,15 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             ],
                                                           ),
                                                         ),
-                                                      ].divide(SizedBox(
-                                                          height: 5.0)),
+                                                      ].divide(
+                                                          SizedBox(height: 5)),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                               Padding(
                                                 padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        11.5, 8.0, 11.5, 8.0),
+                                                    .fromSTEB(11.5, 8, 11.5, 8),
                                                 child: Container(
                                                   width: double.infinity,
                                                   decoration: BoxDecoration(
@@ -897,13 +926,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            10.0),
+                                                            10),
                                                   ),
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 16.0,
-                                                                0.0, 16.0),
+                                                            .fromSTEB(
+                                                                0, 16, 0, 16),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -914,13 +943,14 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Padding(
                                                           padding:
                                                               EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                      16.0,
-                                                                      0.0,
-                                                                      16.0,
-                                                                      0.0),
+                                                                  .fromSTEB(16,
+                                                                      0, 16, 0),
                                                           child: Text(
-                                                            'Поломки',
+                                                            FFLocalizations.of(context)
+                                                                .getVariableText(
+                                                              ruText: 'Поломки',
+                                                              kkText: 'Ақаулар',
+                                                            ),
                                                             style: FlutterFlowTheme
                                                                     .of(context)
                                                                 .bodyMedium
@@ -929,8 +959,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       'SFProText',
                                                                   color: Color(
                                                                       0xFF87898F),
-                                                                  fontSize:
-                                                                      16.0,
+                                                                  fontSize: 16,
                                                                   letterSpacing:
                                                                       0.0,
                                                                   fontWeight:
@@ -962,16 +991,15 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                 return Align(
                                                                   alignment:
                                                                       AlignmentDirectional(
-                                                                          0.0,
-                                                                          0.0),
+                                                                          0, 0),
                                                                   child:
                                                                       Padding(
                                                                     padding: EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            16.0,
-                                                                            0.0,
-                                                                            16.0,
-                                                                            0.0),
+                                                                            16,
+                                                                            0,
+                                                                            16,
+                                                                            0),
                                                                     child:
                                                                         InkWell(
                                                                       splashColor:
@@ -1007,14 +1035,14 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       },
                                                                       child:
                                                                           Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            1.0,
+                                                                        width: MediaQuery.sizeOf(context)
+                                                                            .width,
                                                                         decoration:
                                                                             BoxDecoration(
                                                                           color:
                                                                               FlutterFlowTheme.of(context).secondaryBackground,
                                                                           borderRadius:
-                                                                              BorderRadius.circular(10.0),
+                                                                              BorderRadius.circular(10),
                                                                         ),
                                                                         child:
                                                                             Column(
@@ -1043,7 +1071,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                   ),
                                                                                 ),
                                                                                 Padding(
-                                                                                  padding: EdgeInsetsDirectional.fromSTEB(5.0, 0.0, 5.0, 0.0),
+                                                                                  padding: EdgeInsetsDirectional.fromSTEB(5, 0, 5, 0),
                                                                                   child: Column(
                                                                                     mainAxisSize: MainAxisSize.max,
                                                                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1065,7 +1093,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                                 ).toString(),
                                                                                                 style: FlutterFlowTheme.of(context).headlineSmall.override(
                                                                                                       fontFamily: 'SFProText',
-                                                                                                      fontSize: 16.0,
+                                                                                                      fontSize: 16,
                                                                                                       letterSpacing: 0.0,
                                                                                                       fontWeight: FontWeight.w500,
                                                                                                     ),
@@ -1074,7 +1102,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                             Container(
                                                                                               height: MediaQuery.sizeOf(context).height * 0.028,
                                                                                               decoration: BoxDecoration(
-                                                                                                borderRadius: BorderRadius.circular(16.0),
+                                                                                                borderRadius: BorderRadius.circular(16),
                                                                                                 border: Border.all(
                                                                                                   color: valueOrDefault<Color>(
                                                                                                     functions.colorDefectCopy(getJsonField(
@@ -1083,14 +1111,14 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                                     ).toString()),
                                                                                                     FlutterFlowTheme.of(context).alternate,
                                                                                                   ),
-                                                                                                  width: 1.0,
+                                                                                                  width: 1,
                                                                                                 ),
                                                                                               ),
                                                                                               child: Row(
                                                                                                 mainAxisSize: MainAxisSize.max,
                                                                                                 children: [
                                                                                                   Padding(
-                                                                                                    padding: EdgeInsetsDirectional.fromSTEB(5.0, 0.0, 5.0, 0.0),
+                                                                                                    padding: EdgeInsetsDirectional.fromSTEB(5, 0, 5, 0),
                                                                                                     child: Text(
                                                                                                       valueOrDefault<String>(
                                                                                                         functions.statusRequest(getJsonField(
@@ -1108,7 +1136,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                                               ).toString()),
                                                                                                               FlutterFlowTheme.of(context).alternate,
                                                                                                             ),
-                                                                                                            fontSize: 12.0,
+                                                                                                            fontSize: 12,
                                                                                                             letterSpacing: 0.0,
                                                                                                           ),
                                                                                                     ),
@@ -1120,7 +1148,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                         ),
                                                                                       ),
                                                                                       Padding(
-                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
                                                                                         child: Container(
                                                                                           decoration: BoxDecoration(),
                                                                                           child: Row(
@@ -1139,7 +1167,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                                   ).toString(),
                                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                         fontFamily: 'SFProText',
-                                                                                                        fontSize: 12.0,
+                                                                                                        fontSize: 12,
                                                                                                         letterSpacing: 0.0,
                                                                                                       ),
                                                                                                 ),
@@ -1149,7 +1177,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                         ),
                                                                                       ),
                                                                                       Padding(
-                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
                                                                                         child: Container(
                                                                                           decoration: BoxDecoration(),
                                                                                           child: Row(
@@ -1158,10 +1186,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                               Icon(
                                                                                                 Icons.calendar_today,
                                                                                                 color: Color(0xFF87898F),
-                                                                                                size: 15.0,
+                                                                                                size: 15,
                                                                                               ),
                                                                                               Align(
-                                                                                                alignment: AlignmentDirectional(-1.0, -1.0),
+                                                                                                alignment: AlignmentDirectional(-1, -1),
                                                                                                 child: Text(
                                                                                                   dateTimeFormat(
                                                                                                     "d.M.y",
@@ -1174,7 +1202,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                                   style: FlutterFlowTheme.of(context).bodyLarge.override(
                                                                                                         fontFamily: 'SFProText',
                                                                                                         color: Color(0xFF87898F),
-                                                                                                        fontSize: 14.0,
+                                                                                                        fontSize: 14,
                                                                                                         letterSpacing: 0.0,
                                                                                                         fontWeight: FontWeight.normal,
                                                                                                       ),
@@ -1187,9 +1215,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                     ],
                                                                                   ),
                                                                                 ),
-                                                                              ].addToStart(SizedBox(width: 5.0)).addToEnd(SizedBox(width: 5.0)),
+                                                                              ].addToStart(SizedBox(width: 5)).addToEnd(SizedBox(width: 5)),
                                                                             ),
-                                                                          ].addToStart(SizedBox(height: 10.0)).addToEnd(SizedBox(height: 10.0)),
+                                                                          ].addToStart(SizedBox(height: 10)).addToEnd(SizedBox(height: 10)),
                                                                         ),
                                                                       ),
                                                                     ),
@@ -1199,20 +1227,20 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             );
                                                           },
                                                         ),
-                                                      ].divide(SizedBox(
-                                                          height: 5.0)),
+                                                      ].divide(
+                                                          SizedBox(height: 5)),
                                                     ),
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ].divide(SizedBox(height: 20.0)),
+                                        ].divide(SizedBox(height: 20)),
                                       ),
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 15.0, 0.0, 0.0),
+                                          0, 15, 0, 0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -1232,13 +1260,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            10.0),
+                                                            10),
                                                   ),
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 5.0,
-                                                                0.0, 5.0),
+                                                            .fromSTEB(
+                                                                0, 5, 0, 5),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -1246,10 +1274,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Container(
                                                           width:
                                                               MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  1.0,
-                                                          height: 50.0,
+                                                                      context)
+                                                                  .width,
+                                                          height: 50,
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1258,16 +1285,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        8.0),
+                                                                        8),
                                                           ),
                                                           child: Padding(
                                                             padding:
                                                                 EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        16.0,
-                                                                        5.0,
-                                                                        16.0,
-                                                                        0.0),
+                                                                        16,
+                                                                        5,
+                                                                        16,
+                                                                        0),
                                                             child: Row(
                                                               mainAxisSize:
                                                                   MainAxisSize
@@ -1277,7 +1304,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       .spaceBetween,
                                                               children: [
                                                                 Text(
-                                                                  'Список работ',
+                                                                  FFLocalizations.of(context)
+                                                                      .getVariableText(
+                                                                    ruText:
+                                                                        'Список работ',
+                                                                    kkText:
+                                                                        'Жұмыстар тізімі',
+                                                                  ),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -1287,7 +1320,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         color: Color(
                                                                             0xFF87898F),
                                                                         fontSize:
-                                                                            16.0,
+                                                                            16,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
@@ -1318,7 +1351,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                     color: FlutterFlowTheme.of(
                                                                             context)
                                                                         .primaryText,
-                                                                    size: 24.0,
+                                                                    size: 24,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1352,21 +1385,21 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               .width *
                                                                           0.8,
                                                                       height:
-                                                                          50.0,
+                                                                          50,
                                                                       decoration:
                                                                           BoxDecoration(
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .secondaryBackground,
                                                                         borderRadius:
-                                                                            BorderRadius.circular(8.0),
+                                                                            BorderRadius.circular(8),
                                                                       ),
                                                                       child:
                                                                           Padding(
                                                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            16.0,
-                                                                            0.0,
-                                                                            16.0,
-                                                                            0.0),
+                                                                            16,
+                                                                            0,
+                                                                            16,
+                                                                            0),
                                                                         child:
                                                                             Row(
                                                                           mainAxisSize:
@@ -1375,7 +1408,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               MainAxisAlignment.spaceBetween,
                                                                           children: [
                                                                             Padding(
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
                                                                               child: Column(
                                                                                 mainAxisSize: MainAxisSize.max,
                                                                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1386,7 +1419,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                           fontFamily: 'SFProText',
                                                                                           color: FlutterFlowTheme.of(context).primaryText,
-                                                                                          fontSize: 15.0,
+                                                                                          fontSize: 15,
                                                                                           letterSpacing: 0.0,
                                                                                           fontWeight: FontWeight.w500,
                                                                                         ),
@@ -1395,14 +1428,14 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               ),
                                                                             ),
                                                                             Container(
-                                                                              width: 39.0,
-                                                                              height: 39.0,
+                                                                              width: 39,
+                                                                              height: 39,
                                                                               decoration: BoxDecoration(
                                                                                 color: Color(0xFF86878F),
                                                                                 shape: BoxShape.circle,
                                                                               ),
                                                                               child: Align(
-                                                                                alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                alignment: AlignmentDirectional(0, 0),
                                                                                 child: Text(
                                                                                   worksItem.amount.toString(),
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -1449,7 +1482,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .primaryText,
                                                                         size:
-                                                                            24.0,
+                                                                            24,
                                                                       ),
                                                                     ),
                                                                   ],
@@ -1486,8 +1519,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         Colors
                                                                             .transparent,
                                                                     alignment: AlignmentDirectional(
-                                                                            0.0,
-                                                                            0.0)
+                                                                            0,
+                                                                            0)
                                                                         .resolve(
                                                                             Directionality.of(context)),
                                                                     child:
@@ -1517,11 +1550,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             },
                                                             child: Container(
                                                               width: MediaQuery
-                                                                          .sizeOf(
-                                                                              context)
-                                                                      .width *
-                                                                  1.0,
-                                                              height: 50.0,
+                                                                      .sizeOf(
+                                                                          context)
+                                                                  .width,
+                                                              height: 50,
                                                               decoration:
                                                                   BoxDecoration(
                                                                 color: FlutterFlowTheme.of(
@@ -1530,15 +1562,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            8.0),
+                                                                            8),
                                                               ),
                                                               child: Padding(
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16.0,
-                                                                        5.0,
-                                                                        16.0,
-                                                                        0.0),
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            16,
+                                                                            5,
+                                                                            16,
+                                                                            0),
                                                                 child: Row(
                                                                   mainAxisSize:
                                                                       MainAxisSize
@@ -1552,11 +1585,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       color: FlutterFlowTheme.of(
                                                                               context)
                                                                           .secondaryText,
-                                                                      size:
-                                                                          24.0,
+                                                                      size: 24,
                                                                     ),
                                                                     Text(
-                                                                      'Добавить работу',
+                                                                      FFLocalizations.of(context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Добавить работу',
+                                                                        kkText:
+                                                                            'Жұмыс қосу',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -1566,7 +1604,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             fontSize:
-                                                                                16.0,
+                                                                                16,
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
@@ -1579,8 +1617,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             ),
                                                           ),
                                                         ),
-                                                      ].divide(SizedBox(
-                                                          height: 5.0)),
+                                                      ].divide(
+                                                          SizedBox(height: 5)),
                                                     ),
                                                   ),
                                                 );
@@ -1596,13 +1634,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            10.0),
+                                                            10),
                                                   ),
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 5.0,
-                                                                0.0, 5.0),
+                                                            .fromSTEB(
+                                                                0, 5, 0, 5),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -1610,10 +1648,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Container(
                                                           width:
                                                               MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  1.0,
-                                                          height: 50.0,
+                                                                      context)
+                                                                  .width,
+                                                          height: 50,
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -1622,16 +1659,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        8.0),
+                                                                        8),
                                                           ),
                                                           child: Padding(
                                                             padding:
                                                                 EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        16.0,
-                                                                        5.0,
-                                                                        16.0,
-                                                                        0.0),
+                                                                        16,
+                                                                        5,
+                                                                        16,
+                                                                        0),
                                                             child: Row(
                                                               mainAxisSize:
                                                                   MainAxisSize
@@ -1641,7 +1678,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       .spaceBetween,
                                                               children: [
                                                                 Text(
-                                                                  'Список работ',
+                                                                  FFLocalizations.of(context)
+                                                                      .getVariableText(
+                                                                    ruText:
+                                                                        'Список работ',
+                                                                    kkText:
+                                                                        'Жұмыстар тізімі',
+                                                                  ),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -1651,7 +1694,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         color: Color(
                                                                             0xFF87898F),
                                                                         fontSize:
-                                                                            16.0,
+                                                                            16,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
@@ -1704,7 +1747,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             size:
-                                                                                24.0,
+                                                                                24,
                                                                           ),
                                                                         ),
                                                                       );
@@ -1741,7 +1784,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           color:
                                                                               FlutterFlowTheme.of(context).primaryText,
                                                                           size:
-                                                                              24.0,
+                                                                              24,
                                                                         ),
                                                                       );
                                                                     } else if (valueOrDefault<
@@ -1782,7 +1825,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             size:
-                                                                                24.0,
+                                                                                24,
                                                                           ),
                                                                         ),
                                                                       );
@@ -1824,7 +1867,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             size:
-                                                                                24.0,
+                                                                                24,
                                                                           ),
                                                                         ),
                                                                       );
@@ -1861,28 +1904,28 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                     works[
                                                                         worksIndex];
                                                                 return Container(
-                                                                  width: MediaQuery.sizeOf(
+                                                                  width: MediaQuery
+                                                                          .sizeOf(
                                                                               context)
-                                                                          .width *
-                                                                      1.0,
-                                                                  height: 50.0,
+                                                                      .width,
+                                                                  height: 50,
                                                                   decoration:
                                                                       BoxDecoration(
                                                                     color: FlutterFlowTheme.of(
                                                                             context)
                                                                         .secondaryBackground,
                                                                     borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            8.0),
+                                                                        BorderRadius
+                                                                            .circular(8),
                                                                   ),
                                                                   child:
                                                                       Padding(
                                                                     padding: EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            16.0,
-                                                                            0.0,
-                                                                            16.0,
-                                                                            0.0),
+                                                                            16,
+                                                                            0,
+                                                                            16,
+                                                                            0),
                                                                     child: Row(
                                                                       mainAxisSize:
                                                                           MainAxisSize
@@ -1893,10 +1936,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       children: [
                                                                         Padding(
                                                                           padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              0.0,
-                                                                              5.0,
-                                                                              0.0,
-                                                                              0.0),
+                                                                              0,
+                                                                              5,
+                                                                              0,
+                                                                              0),
                                                                           child:
                                                                               Column(
                                                                             mainAxisSize:
@@ -1911,7 +1954,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'SFProText',
                                                                                       color: FlutterFlowTheme.of(context).primaryText,
-                                                                                      fontSize: 15.0,
+                                                                                      fontSize: 15,
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w500,
                                                                                     ),
@@ -1921,9 +1964,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         ),
                                                                         Container(
                                                                           width:
-                                                                              39.0,
+                                                                              39,
                                                                           height:
-                                                                              39.0,
+                                                                              39,
                                                                           decoration:
                                                                               BoxDecoration(
                                                                             color:
@@ -1934,7 +1977,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           child:
                                                                               Align(
                                                                             alignment:
-                                                                                AlignmentDirectional(0.0, 0.0),
+                                                                                AlignmentDirectional(0, 0),
                                                                             child:
                                                                                 Text(
                                                                               worksItem.amount.toString(),
@@ -1965,11 +2008,11 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        12.0),
+                                                                        12),
                                                           ),
                                                         ),
-                                                      ].divide(SizedBox(
-                                                          height: 5.0)),
+                                                      ].divide(
+                                                          SizedBox(height: 5)),
                                                     ),
                                                   ),
                                                 );
@@ -2017,7 +2060,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                       .showSnackBar(
                                                     SnackBar(
                                                       content: Text(
-                                                        'Дефект успешно отредактирован!',
+                                                        FFLocalizations.of(context)
+                                                            .getVariableText(
+                                                          ruText:
+                                                              'Дефект успешно отредактирован!',
+                                                          kkText:
+                                                              'Ақау сәтті өңделді!',
+                                                        ),
                                                         style: TextStyle(
                                                           color: FlutterFlowTheme
                                                                   .of(context)
@@ -2065,7 +2114,11 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                 if (_shouldSetState)
                                                   safeSetState(() {});
                                               },
-                                              text: 'Сохранить',
+                                              text: FFLocalizations.of(context)
+                                                  .getVariableText(
+                                                ruText: 'Сохранить',
+                                                kkText: 'Сақтау',
+                                              ),
                                               options: FFButtonOptions(
                                                 width:
                                                     MediaQuery.sizeOf(context)
@@ -2076,12 +2129,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             .height *
                                                         0.05,
                                                 padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 16.0, 0.0),
+                                                    .fromSTEB(16, 0, 16, 0),
                                                 iconPadding:
                                                     EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
+                                                        .fromSTEB(0, 0, 0, 0),
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .primary,
@@ -2094,17 +2145,17 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                           color: Colors.white,
                                                           letterSpacing: 0.0,
                                                         ),
-                                                elevation: 0.0,
+                                                elevation: 0,
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                    BorderRadius.circular(8),
                                               ),
                                             ),
-                                        ].divide(SizedBox(height: 10.0)),
+                                        ].divide(SizedBox(height: 10)),
                                       ),
                                     ),
                                     Padding(
                                       padding: EdgeInsetsDirectional.fromSTEB(
-                                          0.0, 15.0, 0.0, 0.0),
+                                          0, 15, 0, 0),
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         crossAxisAlignment:
@@ -2124,13 +2175,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            10.0),
+                                                            10),
                                                   ),
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 5.0,
-                                                                0.0, 5.0),
+                                                            .fromSTEB(
+                                                                0, 5, 0, 5),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -2138,10 +2189,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Container(
                                                           width:
                                                               MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  1.0,
-                                                          height: 50.0,
+                                                                      context)
+                                                                  .width,
+                                                          height: 50,
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -2150,16 +2200,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        8.0),
+                                                                        8),
                                                           ),
                                                           child: Padding(
                                                             padding:
                                                                 EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        16.0,
-                                                                        5.0,
-                                                                        16.0,
-                                                                        0.0),
+                                                                        16,
+                                                                        5,
+                                                                        16,
+                                                                        0),
                                                             child: Row(
                                                               mainAxisSize:
                                                                   MainAxisSize
@@ -2169,7 +2219,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       .spaceBetween,
                                                               children: [
                                                                 Text(
-                                                                  'Список ТМЦ',
+                                                                  FFLocalizations.of(context)
+                                                                      .getVariableText(
+                                                                    ruText:
+                                                                        'Список ТМЦ',
+                                                                    kkText:
+                                                                        'ТМҚ тізімі',
+                                                                  ),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -2179,7 +2235,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         color: Color(
                                                                             0xFF87898F),
                                                                         fontSize:
-                                                                            16.0,
+                                                                            16,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
@@ -2211,7 +2267,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                     color: FlutterFlowTheme.of(
                                                                             context)
                                                                         .primaryText,
-                                                                    size: 24.0,
+                                                                    size: 24,
                                                                   ),
                                                                 ),
                                                               ],
@@ -2249,21 +2305,21 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               .width *
                                                                           0.8,
                                                                       height:
-                                                                          50.0,
+                                                                          50,
                                                                       decoration:
                                                                           BoxDecoration(
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .secondaryBackground,
                                                                         borderRadius:
-                                                                            BorderRadius.circular(8.0),
+                                                                            BorderRadius.circular(8),
                                                                       ),
                                                                       child:
                                                                           Padding(
                                                                         padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            16.0,
-                                                                            0.0,
-                                                                            16.0,
-                                                                            0.0),
+                                                                            16,
+                                                                            0,
+                                                                            16,
+                                                                            0),
                                                                         child:
                                                                             Row(
                                                                           mainAxisSize:
@@ -2272,7 +2328,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               MainAxisAlignment.spaceBetween,
                                                                           children: [
                                                                             Padding(
-                                                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
                                                                               child: Column(
                                                                                 mainAxisSize: MainAxisSize.max,
                                                                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -2283,7 +2339,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                           fontFamily: 'SFProText',
                                                                                           color: FlutterFlowTheme.of(context).primaryText,
-                                                                                          fontSize: 15.0,
+                                                                                          fontSize: 15,
                                                                                           letterSpacing: 0.0,
                                                                                           fontWeight: FontWeight.w500,
                                                                                         ),
@@ -2299,14 +2355,14 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                               ),
                                                                             ),
                                                                             Container(
-                                                                              width: 39.0,
-                                                                              height: 39.0,
+                                                                              width: 39,
+                                                                              height: 39,
                                                                               decoration: BoxDecoration(
                                                                                 color: Color(0xFF86878F),
                                                                                 shape: BoxShape.circle,
                                                                               ),
                                                                               child: Align(
-                                                                                alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                alignment: AlignmentDirectional(0, 0),
                                                                                 child: Text(
                                                                                   sparepartsItem.amount.toString(),
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -2353,7 +2409,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .primaryText,
                                                                         size:
-                                                                            24.0,
+                                                                            24,
                                                                       ),
                                                                     ),
                                                                   ],
@@ -2390,8 +2446,8 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         Colors
                                                                             .transparent,
                                                                     alignment: AlignmentDirectional(
-                                                                            0.0,
-                                                                            0.0)
+                                                                            0,
+                                                                            0)
                                                                         .resolve(
                                                                             Directionality.of(context)),
                                                                     child:
@@ -2421,11 +2477,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             },
                                                             child: Container(
                                                               width: MediaQuery
-                                                                          .sizeOf(
-                                                                              context)
-                                                                      .width *
-                                                                  1.0,
-                                                              height: 50.0,
+                                                                      .sizeOf(
+                                                                          context)
+                                                                  .width,
+                                                              height: 50,
                                                               decoration:
                                                                   BoxDecoration(
                                                                 color: FlutterFlowTheme.of(
@@ -2434,15 +2489,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            8.0),
+                                                                            8),
                                                               ),
                                                               child: Padding(
-                                                                padding: EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16.0,
-                                                                        5.0,
-                                                                        16.0,
-                                                                        0.0),
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            16,
+                                                                            5,
+                                                                            16,
+                                                                            0),
                                                                 child: Row(
                                                                   mainAxisSize:
                                                                       MainAxisSize
@@ -2456,11 +2512,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       color: FlutterFlowTheme.of(
                                                                               context)
                                                                           .secondaryText,
-                                                                      size:
-                                                                          24.0,
+                                                                      size: 24,
                                                                     ),
                                                                     Text(
-                                                                      'Добавить ТМЦ',
+                                                                      FFLocalizations.of(context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Добавить ТМЦ',
+                                                                        kkText:
+                                                                            'ТМҚ қосу',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2470,7 +2531,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             fontSize:
-                                                                                16.0,
+                                                                                16,
                                                                             letterSpacing:
                                                                                 0.0,
                                                                             fontWeight:
@@ -2489,11 +2550,11 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        12.0),
+                                                                        12),
                                                           ),
                                                         ),
-                                                      ].divide(SizedBox(
-                                                          height: 5.0)),
+                                                      ].divide(
+                                                          SizedBox(height: 5)),
                                                     ),
                                                   ),
                                                 );
@@ -2509,13 +2570,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         .secondaryBackground,
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                            10.0),
+                                                            10),
                                                   ),
                                                   child: Padding(
                                                     padding:
                                                         EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 5.0,
-                                                                0.0, 5.0),
+                                                            .fromSTEB(
+                                                                0, 5, 0, 5),
                                                     child: Column(
                                                       mainAxisSize:
                                                           MainAxisSize.max,
@@ -2523,10 +2584,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                         Container(
                                                           width:
                                                               MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  1.0,
-                                                          height: 50.0,
+                                                                      context)
+                                                                  .width,
+                                                          height: 50,
                                                           decoration:
                                                               BoxDecoration(
                                                             color: FlutterFlowTheme
@@ -2535,16 +2595,16 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        8.0),
+                                                                        8),
                                                           ),
                                                           child: Padding(
                                                             padding:
                                                                 EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        16.0,
-                                                                        5.0,
-                                                                        16.0,
-                                                                        0.0),
+                                                                        16,
+                                                                        5,
+                                                                        16,
+                                                                        0),
                                                             child: Row(
                                                               mainAxisSize:
                                                                   MainAxisSize
@@ -2554,7 +2614,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       .spaceBetween,
                                                               children: [
                                                                 Text(
-                                                                  'Список ТМЦ',
+                                                                  FFLocalizations.of(context)
+                                                                      .getVariableText(
+                                                                    ruText:
+                                                                        'Список ТМЦ',
+                                                                    kkText:
+                                                                        'ТМҚ тізімі',
+                                                                  ),
                                                                   style: FlutterFlowTheme.of(
                                                                           context)
                                                                       .bodyMedium
@@ -2564,7 +2630,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         color: Color(
                                                                             0xFF87898F),
                                                                         fontSize:
-                                                                            16.0,
+                                                                            16,
                                                                         letterSpacing:
                                                                             0.0,
                                                                         fontWeight:
@@ -2617,7 +2683,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             size:
-                                                                                24.0,
+                                                                                24,
                                                                           ),
                                                                         ),
                                                                       );
@@ -2654,7 +2720,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           color:
                                                                               FlutterFlowTheme.of(context).primaryText,
                                                                           size:
-                                                                              24.0,
+                                                                              24,
                                                                         ),
                                                                       );
                                                                     } else if (valueOrDefault<
@@ -2695,7 +2761,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             size:
-                                                                                24.0,
+                                                                                24,
                                                                           ),
                                                                         ),
                                                                       );
@@ -2737,7 +2803,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                             color:
                                                                                 FlutterFlowTheme.of(context).primaryText,
                                                                             size:
-                                                                                24.0,
+                                                                                24,
                                                                           ),
                                                                         ),
                                                                       );
@@ -2775,28 +2841,28 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                     spareparts[
                                                                         sparepartsIndex];
                                                                 return Container(
-                                                                  width: MediaQuery.sizeOf(
+                                                                  width: MediaQuery
+                                                                          .sizeOf(
                                                                               context)
-                                                                          .width *
-                                                                      1.0,
-                                                                  height: 50.0,
+                                                                      .width,
+                                                                  height: 50,
                                                                   decoration:
                                                                       BoxDecoration(
                                                                     color: FlutterFlowTheme.of(
                                                                             context)
                                                                         .secondaryBackground,
                                                                     borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            8.0),
+                                                                        BorderRadius
+                                                                            .circular(8),
                                                                   ),
                                                                   child:
                                                                       Padding(
                                                                     padding: EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            16.0,
-                                                                            0.0,
-                                                                            16.0,
-                                                                            0.0),
+                                                                            16,
+                                                                            0,
+                                                                            16,
+                                                                            0),
                                                                     child: Row(
                                                                       mainAxisSize:
                                                                           MainAxisSize
@@ -2807,10 +2873,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                       children: [
                                                                         Padding(
                                                                           padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              0.0,
-                                                                              5.0,
-                                                                              0.0,
-                                                                              0.0),
+                                                                              0,
+                                                                              5,
+                                                                              0,
+                                                                              0),
                                                                           child:
                                                                               Column(
                                                                             mainAxisSize:
@@ -2825,7 +2891,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                                 style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                       fontFamily: 'SFProText',
                                                                                       color: FlutterFlowTheme.of(context).primaryText,
-                                                                                      fontSize: 15.0,
+                                                                                      fontSize: 15,
                                                                                       letterSpacing: 0.0,
                                                                                       fontWeight: FontWeight.w500,
                                                                                     ),
@@ -2842,9 +2908,9 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                         ),
                                                                         Container(
                                                                           width:
-                                                                              39.0,
+                                                                              39,
                                                                           height:
-                                                                              39.0,
+                                                                              39,
                                                                           decoration:
                                                                               BoxDecoration(
                                                                             color:
@@ -2855,7 +2921,7 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                                           child:
                                                                               Align(
                                                                             alignment:
-                                                                                AlignmentDirectional(0.0, 0.0),
+                                                                                AlignmentDirectional(0, 0),
                                                                             child:
                                                                                 Text(
                                                                               sparepartsItem.amount.toString(),
@@ -2886,11 +2952,11 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
-                                                                        12.0),
+                                                                        12),
                                                           ),
                                                         ),
-                                                      ].divide(SizedBox(
-                                                          height: 5.0)),
+                                                      ].divide(
+                                                          SizedBox(height: 5)),
                                                     ),
                                                   ),
                                                 );
@@ -2939,7 +3005,13 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                       .showSnackBar(
                                                     SnackBar(
                                                       content: Text(
-                                                        'Дефект успешно отредактирован!',
+                                                        FFLocalizations.of(context)
+                                                            .getVariableText(
+                                                          ruText:
+                                                              'Дефект успешно отредактирован!',
+                                                          kkText:
+                                                              'Ақау сәтті өңделді!',
+                                                        ),
                                                         style: TextStyle(
                                                           color: FlutterFlowTheme
                                                                   .of(context)
@@ -2987,7 +3059,11 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                 if (_shouldSetState)
                                                   safeSetState(() {});
                                               },
-                                              text: 'Сохранить',
+                                              text: FFLocalizations.of(context)
+                                                  .getVariableText(
+                                                ruText: 'Сохранить',
+                                                kkText: 'Сақтау',
+                                              ),
                                               options: FFButtonOptions(
                                                 width:
                                                     MediaQuery.sizeOf(context)
@@ -2998,12 +3074,10 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                             .height *
                                                         0.05,
                                                 padding: EdgeInsetsDirectional
-                                                    .fromSTEB(
-                                                        16.0, 0.0, 16.0, 0.0),
+                                                    .fromSTEB(16, 0, 16, 0),
                                                 iconPadding:
                                                     EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                            0.0, 0.0, 0.0, 0.0),
+                                                        .fromSTEB(0, 0, 0, 0),
                                                 color:
                                                     FlutterFlowTheme.of(context)
                                                         .primary,
@@ -3016,12 +3090,12 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                                           color: Colors.white,
                                                           letterSpacing: 0.0,
                                                         ),
-                                                elevation: 0.0,
+                                                elevation: 0,
                                                 borderRadius:
-                                                    BorderRadius.circular(8.0),
+                                                    BorderRadius.circular(8),
                                               ),
                                             ),
-                                        ].divide(SizedBox(height: 10.0)),
+                                        ].divide(SizedBox(height: 10)),
                                       ),
                                     ),
                                     Column(
@@ -3031,15 +3105,15 @@ class _DetailedServiceActsWidgetState extends State<DetailedServiceActsWidget>
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    11.5, 15.0, 11.5, 0.0),
+                                                    11.5, 15, 11.5, 0),
                                             child: GridView(
                                               padding: EdgeInsets.zero,
                                               gridDelegate:
                                                   SliverGridDelegateWithFixedCrossAxisCount(
                                                 crossAxisCount: 3,
-                                                crossAxisSpacing: 10.0,
-                                                mainAxisSpacing: 10.0,
-                                                childAspectRatio: 1.0,
+                                                crossAxisSpacing: 10,
+                                                mainAxisSpacing: 10,
+                                                childAspectRatio: 1,
                                               ),
                                               scrollDirection: Axis.vertical,
                                               children: [],

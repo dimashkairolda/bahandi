@@ -1,8 +1,9 @@
-import 'package:Bahandi/firebase_options.dart';
+import 'package:Etry/firebase_options.dart';
+import 'package:Etry/inspections/inspections_widget.dart';
+import 'package:appmetrica_plugin/appmetrica_plugin.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -12,13 +13,11 @@ import 'auth/custom_auth/auth_util.dart';
 import 'auth/custom_auth/custom_auth_user_provider.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
+import 'services/app_update_checker.dart';
+import 'services/force_update_app.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/internationalization.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,14 +25,20 @@ void main() async {
   usePathUrlStrategy();
 
   await FlutterFlowTheme.initialize();
+  await FFLocalizations.initialize();
+
   await authManager.initialize();
 
-  final appState = FFAppState();
+  final appState = FFAppState(); // Initialize FFAppState
   await appState.initializePersistedState();
-
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await AppMetrica.activate(const AppMetricaConfig("5ae85786-d02b-482e-a1ea-3edfd65f273e", logs: true));
 
-  // 👉 Регистрируем фоновый обработчик
+  final updateCheck = await AppUpdateChecker.evaluate();
+  if (updateCheck.mustUpdate) {
+    runApp(ForceUpdateApp(storeUrl: updateCheck.storeUrl));
+    return;
+  }
 
 
   runApp(ChangeNotifierProvider(
@@ -47,17 +52,24 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 
+  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  static FirebaseAnalyticsObserver observer = FirebaseAnalyticsObserver(analytics: analytics);
+
   static _MyAppState of(BuildContext context) =>
       context.findAncestorStateOfType<_MyAppState>()!;
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Locale? _locale;
 
   ThemeMode _themeMode = FlutterFlowTheme.themeMode;
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
+  late DateTime _foregroundCheckAllowedAfter;
+  DateTime? _lastForegroundUpdateCheckAt;
+  static const _coldStartGraceBeforeForegroundCheck = Duration(seconds: 3);
+  static const _minIntervalBetweenForegroundChecks = Duration(seconds: 30);
   String getRoute([RouteMatch? routeMatch]) {
     final RouteMatch lastMatch =
         routeMatch ?? _router.routerDelegate.currentConfiguration.last;
@@ -76,6 +88,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _foregroundCheckAllowedAfter =
+        DateTime.now().add(_coldStartGraceBeforeForegroundCheck);
+    _locale = FFLocalizations.getStoredLocale();
 
     _appStateNotifier = AppStateNotifier.instance;
     _router = createRouter(_appStateNotifier);
@@ -90,7 +106,42 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkUpdateOnForeground();
+    }
+  }
+
+  Future<void> _checkUpdateOnForeground() async {
+    final now = DateTime.now();
+    if (now.isBefore(_foregroundCheckAllowedAfter)) {
+      return;
+    }
+    if (_lastForegroundUpdateCheckAt != null &&
+        now.difference(_lastForegroundUpdateCheckAt!) <
+            _minIntervalBetweenForegroundChecks) {
+      return;
+    }
+    _lastForegroundUpdateCheckAt = now;
+
+    final updateCheck = await AppUpdateChecker.evaluate();
+    if (!mounted) {
+      return;
+    }
+    if (updateCheck.mustUpdate) {
+      runApp(ForceUpdateApp(storeUrl: updateCheck.storeUrl));
+    }
+  }
+
   void setLocale(String language) {
+    FFLocalizations.storeLocale(language);
     safeSetState(() => _locale = createLocale(language));
   }
 
@@ -103,7 +154,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Bahandi',
+      title: 'Etry',
       localizationsDelegates: [
         FFLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
@@ -115,6 +166,7 @@ class _MyAppState extends State<MyApp> {
       locale: _locale,
       supportedLocales: const [
         Locale('ru'),
+        Locale('kk'),
       ],
       theme: ThemeData(
         brightness: Brightness.light,
@@ -160,23 +212,40 @@ class _NavBarPageState extends State<NavBarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userRole = valueOrDefault<String>(
+      getJsonField(
+        FFAppState().account,
+        r'''$.role''',
+      )?.toString(),
+      '',
+    );
+    final isLabeler = userRole == 'labeler' || userRole == '\"labeler\"';
+
     final tabs = {
       'Defects': DefectsWidget(),
-      'barcode': BarcodeWidget(),
-      'ServiceAct': ServiceActWidget(),
+      if (!isLabeler) 'EquipmentsTree': EquipmentsTreeWidget(),
+      'Inspections': InspectionsWidget(),
       'profilePage': ProfilePageWidget(),
     };
-    final currentIndex = tabs.keys.toList().indexOf(_currentPageName);
+    final tabKeys = tabs.keys.toList();
+    final resolvedPageName =
+        tabKeys.contains(_currentPageName) ? _currentPageName : tabKeys.first;
+    final currentIndex = tabKeys.indexOf(resolvedPageName);
 
     return Scaffold(
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
-      body: _currentPage ?? tabs[_currentPageName],
+      body: _currentPage ?? tabs[resolvedPageName],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
         onTap: (i) => safeSetState(() {
           _currentPage = null;
-          _currentPageName = tabs.keys.toList()[i];
+          _currentPageName = tabKeys[i];
+          MyApp.analytics.logEvent(
+    name: tabKeys[i],
+  );
+  AppMetrica.reportEvent(tabKeys[i]);
         }),
+        currentIndex: currentIndex,
+        
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
         selectedItemColor: FlutterFlowTheme.of(context).primary,
         unselectedItemColor: FlutterFlowTheme.of(context).secondaryText,
@@ -188,22 +257,32 @@ class _NavBarPageState extends State<NavBarPage> {
             icon: Icon(
               Icons.list_alt_outlined,
             ),
-            label: 'Заявки',
-            tooltip: '',
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(
-              FontAwesomeIcons.barcode,
-              size: 24.0,
+            label: FFLocalizations.of(context).getVariableText(
+              ruText: 'Заявки',
+              kkText: 'Өтінімдер',
             ),
-            label: 'Штрих-код',
             tooltip: '',
           ),
+          if (!isLabeler)
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.kitchen_rounded,
+              ),
+              label: FFLocalizations.of(context).getVariableText(
+                ruText: 'Парк оборудования',
+                kkText: 'Жабдықтар паркі',
+              ),
+              tooltip: '',
+            ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.fact_check,
+              Icons.grading,
+              size: 24.0,
             ),
-            label: 'Сервисный акт',
+            label: FFLocalizations.of(context).getVariableText(
+              ruText: 'Регламенты',
+              kkText: 'Регламенттер',
+            ),
             tooltip: '',
           ),
           BottomNavigationBarItem(
@@ -211,9 +290,13 @@ class _NavBarPageState extends State<NavBarPage> {
               Icons.person,
               size: 24.0,
             ),
-            label: 'Профиль',
+            label: FFLocalizations.of(context).getVariableText(
+              ruText: 'Профиль',
+              kkText: 'Профиль',
+            ),
             tooltip: '',
-          )
+          ),
+          
         ],
       ),
     );

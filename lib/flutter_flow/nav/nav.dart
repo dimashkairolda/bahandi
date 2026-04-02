@@ -1,8 +1,15 @@
 import 'dart:async';
 
+import 'package:Etry/components/scan_equipment_page.dart';
+import 'package:Etry/detailed_inspection/detailed_inspection_widget.dart';
+import 'package:Etry/detailed_inspection_done/detailed_inspection_done_widget.dart';
+import 'package:Etry/inspections/inspections_widget.dart';
+import 'package:Etry/inspections_time_list/inspections_time_list_widget.dart';
+import 'package:Etry/media_viewer/media_viewer_widget.dart';
+import 'package:Etry/video_player/video_player_widget.dart';
+import 'package:appmetrica_plugin/appmetrica_plugin.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 
 import '/backend/schema/structs/index.dart';
@@ -10,11 +17,7 @@ import '/backend/schema/structs/index.dart';
 import '/auth/custom_auth/custom_auth_user_provider.dart';
 
 import '/main.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
-import '/flutter_flow/lat_lng.dart';
-import '/flutter_flow/place.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import 'serialization_util.dart';
 
 import '/index.dart';
 
@@ -81,6 +84,7 @@ class AppStateNotifier extends ChangeNotifier {
 GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       initialLocation: '/',
       debugLogDiagnostics: true,
+
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
       errorBuilder: (context, state) =>
@@ -136,6 +140,22 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'equip',
               ParamType.String,
             ),
+            typeId: params.getParam(
+              'typeId',
+              ParamType.int,
+            ),
+            formid: params.getParam(
+              'formid',
+              ParamType.int,
+            ),
+            inventory: params.getParam(
+              'inventory',
+              ParamType.String,
+            ),
+            area: params.getParam(
+              'area',
+              ParamType.String,
+            ),
           ),
         ),
         FFRoute(
@@ -172,6 +192,12 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => EquipmentsTreeWidget(),
         ),
         FFRoute(
+          name: ScanEquipmentPageWidget.routeName,
+          path: ScanEquipmentPageWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => ScanEquipmentPageWidget(),
+        ),
+        FFRoute(
           name: EquipmentsDetailedWidget.routeName,
           path: EquipmentsDetailedWidget.routePath,
           requireAuth: true,
@@ -183,53 +209,6 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
             id: params.getParam(
               'id',
               ParamType.int,
-            ),
-          ),
-        ),
-        FFRoute(
-          name: InspectionsWidget.routeName,
-          path: InspectionsWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => InspectionsWidget(),
-        ),
-        FFRoute(
-          name: DetailedInspectionsWidget.routeName,
-          path: DetailedInspectionsWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => DetailedInspectionsWidget(
-            name: params.getParam(
-              'name',
-              ParamType.JSON,
-            ),
-            index: params.getParam(
-              'index',
-              ParamType.int,
-            ),
-            nextIndex: params.getParam(
-              'nextIndex',
-              ParamType.int,
-            ),
-            json: params.getParam(
-              'json',
-              ParamType.JSON,
-            ),
-          ),
-        ),
-        FFRoute(
-          name: DetailedInspectionsCopyCopyWidget.routeName,
-          path: DetailedInspectionsCopyCopyWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => DetailedInspectionsCopyCopyWidget(),
-        ),
-        FFRoute(
-          name: DetailedInspectionsCopyCopy2Widget.routeName,
-          path: DetailedInspectionsCopyCopy2Widget.routePath,
-          requireAuth: true,
-          builder: (context, params) => DetailedInspectionsCopyCopy2Widget(
-            asas: params.getParam<dynamic>(
-              'asas',
-              ParamType.JSON,
-              isList: true,
             ),
           ),
         ),
@@ -246,88 +225,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => DraftWidget(),
         ),
         FFRoute(
-          name: CreateDefectFromInspectionWidget.routeName,
-          path: CreateDefectFromInspectionWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => CreateDefectFromInspectionWidget(
-            searchid: params.getParam(
-              'searchid',
-              ParamType.int,
-            ),
-            equipid: params.getParam(
-              'equipid',
-              ParamType.int,
-            ),
-            formTitle: params.getParam(
-              'formTitle',
-              ParamType.String,
-            ),
-            text: params.getParam(
-              'text',
-              ParamType.String,
-            ),
-            title: params.getParam(
-              'title',
-              ParamType.String,
-            ),
-            reason: params.getParam(
-              'reason',
-              ParamType.String,
-            ),
-            event: params.getParam(
-              'event',
-              ParamType.String,
-            ),
-            type: params.getParam(
-              'type',
-              ParamType.String,
-            ),
-            isfixedonplace: params.getParam(
-              'isfixedonplace',
-              ParamType.int,
-            ),
-            isemergencysituation: params.getParam(
-              'isemergencysituation',
-              ParamType.int,
-            ),
-            name: params.getParam(
-              'name',
-              ParamType.JSON,
-            ),
-            index: params.getParam(
-              'index',
-              ParamType.int,
-            ),
-          ),
-        ),
-        FFRoute(
           name: InspectionsCopyWidget.routeName,
           path: InspectionsCopyWidget.routePath,
           requireAuth: true,
           builder: (context, params) => InspectionsCopyWidget(
-            id: params.getParam(
-              'id',
-              ParamType.int,
-            ),
-          ),
-        ),
-        FFRoute(
-          name: InspectionsTimeListWidget.routeName,
-          path: InspectionsTimeListWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => InspectionsTimeListWidget(
-            title: params.getParam(
-              'title',
-              ParamType.String,
-            ),
-            date: params.getParam(
-              'date',
-              ParamType.DateTime,
-            ),
-            json: params.getParam(
-              'json',
-              ParamType.JSON,
-            ),
+            
           ),
         ),
         FFRoute(
@@ -355,126 +257,11 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           requireAuth: true,
           builder: (context, params) => ChooseassetWidget(),
         ),
-
-        FFRoute(
-          name: DetailedInspections2Widget.routeName,
-          path: DetailedInspections2Widget.routePath,
-          requireAuth: true,
-          builder: (context, params) => DetailedInspections2Widget(
-            name: params.getParam(
-              'name',
-              ParamType.JSON,
-            ),
-            index: params.getParam(
-              'index',
-              ParamType.int,
-            ),
-            nextIndex: params.getParam(
-              'nextIndex',
-              ParamType.int,
-            ),
-          ),
-        ),
-        FFRoute(
-          name: InspectionsTimeListDoneWidget.routeName,
-          path: InspectionsTimeListDoneWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => InspectionsTimeListDoneWidget(
-            title: params.getParam(
-              'title',
-              ParamType.String,
-            ),
-            date: params.getParam(
-              'date',
-              ParamType.DateTime,
-            ),
-            json: params.getParam(
-              'json',
-              ParamType.JSON,
-            ),
-          ),
-        ),
-        FFRoute(
-          name: DetailedInspectionsEndedWidget.routeName,
-          path: DetailedInspectionsEndedWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => DetailedInspectionsEndedWidget(
-            name: params.getParam(
-              'name',
-              ParamType.JSON,
-            ),
-            index: params.getParam(
-              'index',
-              ParamType.int,
-            ),
-          ),
-        ),
-        FFRoute(
-          name: CreateDefectFromInspectionCopyWidget.routeName,
-          path: CreateDefectFromInspectionCopyWidget.routePath,
-          requireAuth: true,
-          builder: (context, params) => CreateDefectFromInspectionCopyWidget(
-            searchid: params.getParam(
-              'searchid',
-              ParamType.int,
-            ),
-            equipid: params.getParam(
-              'equipid',
-              ParamType.int,
-            ),
-            formTitle: params.getParam(
-              'formTitle',
-              ParamType.String,
-            ),
-            text: params.getParam(
-              'text',
-              ParamType.String,
-            ),
-            title: params.getParam(
-              'title',
-              ParamType.String,
-            ),
-            reason: params.getParam(
-              'reason',
-              ParamType.String,
-            ),
-            event: params.getParam(
-              'event',
-              ParamType.String,
-            ),
-            type: params.getParam(
-              'type',
-              ParamType.String,
-            ),
-            isfixedonplace: params.getParam(
-              'isfixedonplace',
-              ParamType.int,
-            ),
-            isemergencysituation: params.getParam(
-              'isemergencysituation',
-              ParamType.int,
-            ),
-            name: params.getParam(
-              'name',
-              ParamType.JSON,
-            ),
-            index: params.getParam(
-              'index',
-              ParamType.int,
-            ),
-            departmentId: params.getParam(
-              'departmentId',
-              ParamType.String,
-            ),
-          ),
-        ),
         FFRoute(
           name: BarcodeWidget.routeName,
           path: BarcodeWidget.routePath,
           requireAuth: true,
-          builder: (context, params) => params.isEmpty
-              ? NavBarPage(initialPage: 'barcode')
-              : BarcodeWidget(),
+          builder: (context, params) => BarcodeWidget(),
         ),
         FFRoute(
           name: EditDefecWidget.routeName,
@@ -599,6 +386,14 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               'priority',
               ParamType.bool,
             ),
+            typeId: params.getParam(
+              'typeId',
+              ParamType.int,
+            ),
+            formId: params.getParam(
+              'formId',
+              ParamType.int,
+            ),
           ),
         ),
         FFRoute(
@@ -623,6 +418,60 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => ChooseequipWidget(),
         ),
         FFRoute(
+          name: ObjectsAreasWidget.routeName,
+          path: ObjectsAreasWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => const ObjectsAreasWidget(),
+        ),
+        FFRoute(
+          name: AreaEquipmentsSelectWidget.routeName,
+          path: AreaEquipmentsSelectWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => AreaEquipmentsSelectWidget(
+            areaId: params.getParam(
+              'areaId',
+              ParamType.int,
+            ),
+            parentObjectId: params.getParam(
+              'parentObjectId',
+              ParamType.int,
+            ),
+            areaTitle: params.getParam(
+              'areaTitle',
+              ParamType.String,
+            ),
+            initialSelectedIds: params.getParam<int>(
+              'initialSelectedIds',
+              ParamType.int,
+              isList: true,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: AreaResponsiblesSelectWidget.routeName,
+          path: AreaResponsiblesSelectWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => AreaResponsiblesSelectWidget(
+            areaId: params.getParam(
+              'areaId',
+              ParamType.int,
+            ),
+            parentObjectId: params.getParam(
+              'parentObjectId',
+              ParamType.int,
+            ),
+            areaTitle: params.getParam(
+              'areaTitle',
+              ParamType.String,
+            ),
+            initialSelectedIds: params.getParam<int>(
+              'initialSelectedIds',
+              ParamType.int,
+              isList: true,
+            ),
+          ),
+        ),
+        FFRoute(
           name: CreateEquipmentWidget.routeName,
           path: CreateEquipmentWidget.routePath,
           requireAuth: true,
@@ -632,8 +481,163 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
               ParamType.String,
             ),
           ),
+        ),
+        FFRoute(
+          name: SitesListWidget.routeName,
+          path: SitesListWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => const SitesListWidget(),
+        ),
+        FFRoute(
+          name: SiteEquipmentListWidget.routeName,
+          path: SiteEquipmentListWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => SiteEquipmentListWidget(
+            areaId: params.getParam(
+              'areaId',
+              ParamType.int,
+            ),
+            areaTitle: params.getParam(
+              'areaTitle',
+              ParamType.String,
+            ),
+            objectTitle: params.getParam(
+              'objectTitle',
+              ParamType.String,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: AddEquipmentSimpleWidget.routeName,
+          path: AddEquipmentSimpleWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => AddEquipmentSimpleWidget(
+            areaId: params.getParam(
+              'areaId',
+              ParamType.int,
+            ),
+            areaTitle: params.getParam(
+              'areaTitle',
+              ParamType.String,
+            ),
+            objectTitle: params.getParam(
+              'objectTitle',
+              ParamType.String,
+            ),
+            categoryCode: params.getParam(
+              'categoryCode',
+              ParamType.String,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: EditEquipmentSimpleWidget.routeName,
+          path: EditEquipmentSimpleWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => EditEquipmentSimpleWidget(
+            equipmentJson: params.getParam(
+              'equipmentJson',
+              ParamType.JSON,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: MediaViewerWidget.routeName,
+          path: MediaViewerWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => MediaViewerWidget(
+            data: params.getParam(
+              'data',
+              ParamType.String,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: InspectionsWidget.routeName,
+          path: InspectionsWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => params.isEmpty
+              ? NavBarPage(initialPage: 'Inspections')
+              : InspectionsWidget(),
+        ),
+        FFRoute(
+          name: InspectionsTimeListWidget.routeName,
+          path: InspectionsTimeListWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => InspectionsTimeListWidget(
+            title: params.getParam(
+              'title',
+              ParamType.String,
+            ),
+            date: params.getParam(
+              'date',
+              ParamType.DateTime,
+            ),
+            json: params.getParam(
+              'json',
+              ParamType.JSON,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: DetailedInspectionWidget.routeName,
+          path: DetailedInspectionWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => DetailedInspectionWidget(
+            name: params.getParam(
+              'name',
+              ParamType.JSON,
+            ),
+            index: params.getParam(
+              'index',
+              ParamType.int,
+            ),
+            nextIndex: params.getParam(
+              'nextIndex',
+              ParamType.int,
+            ),
+            json: params.getParam(
+              'json',
+              ParamType.JSON,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: DetailedInspectionDoneWidget.routeName,
+          path: DetailedInspectionDoneWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => DetailedInspectionDoneWidget(
+            name: params.getParam(
+              'name',
+              ParamType.JSON,
+            ),
+            index: params.getParam(
+              'index',
+              ParamType.int,
+            ),
+            nextIndex: params.getParam(
+              'nextIndex',
+              ParamType.int,
+            ),
+            json: params.getParam(
+              'json',
+              ParamType.JSON,
+            ),
+          ),
+        ),
+        FFRoute(
+          name: VideoPlayerWidget.routeName,
+          path: VideoPlayerWidget.routePath,
+          requireAuth: true,
+          builder: (context, params) => VideoPlayerWidget(
+            url: params.getParam(
+              'url',
+              ParamType.String,
+            ),
+          ),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
+      observers: [routeObserver,FirebaseScreenObserver(),AppMetricaObserver(),],
     );
 
 extension NavParamExtensions on Map<String, String?> {
@@ -846,7 +850,7 @@ class FFRoute {
                     child,
                   ),
                 )
-              : MaterialPage(key: state.pageKey, child: child);
+              : MaterialPage(key: state.pageKey, child: child, name: state.name);
         },
         routes: routes,
       );
@@ -897,3 +901,41 @@ extension GoRouterLocationExtension on GoRouter {
     return matchList.uri.toString();
   }
 }
+class AppMetricaObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    // Получаем имя экрана
+    final screenName = route.settings.name;
+    print('Navigated to screen: $screenName');
+    if (screenName != null) {
+      // Используем метод ...WithMap и передаем Map вторым аргументом без имени
+      AppMetrica.reportEvent(screenName);
+      
+    }
+  }
+}
+
+class FirebaseScreenObserver extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final screenName = route.settings.name;
+    
+    if (screenName != null) {
+      // Отправляем стандартное событие просмотра экрана
+      FirebaseAnalytics.instance.logEvent(
+        name: screenName,
+      );
+      print('Firebase Analytics: logged screen $screenName');
+    }
+  }
+
+  // Можно также добавить didPop, если хотите отслеживать возвраты назад
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    final screenName = previousRoute?.settings.name;
+    if (screenName != null) {
+      FirebaseAnalytics.instance.logScreenView(screenName: screenName);
+    }
+  }
+}
+

@@ -1,25 +1,9 @@
-import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
-import '/backend/schema/structs/index.dart';
-import '/defects/add_t_m_c/add_t_m_c_widget.dart';
-import '/defects/add_works/add_works_widget.dart';
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import '/flutter_flow/upload_data.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'edit_defec_widget.dart' show EditDefecWidget;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class EditDefecModel extends FlutterFlowModel<EditDefecWidget> {
   ///  Local state fields for this page.
@@ -51,12 +35,6 @@ class EditDefecModel extends FlutterFlowModel<EditDefecWidget> {
     return null;
   }
 
-  bool isDataUploading_uploadDataTbt50 = false;
-  FFUploadedFile uploadedLocalFile_uploadDataTbt50 =
-      FFUploadedFile(bytes: Uint8List.fromList([]));
-
-  // Stores action output result for [Custom Action - uploadFileAndConvertToBase64toList] action in Button widget.
-  dynamic? qq;
   // State field(s) for Checkbox widget.
   bool? checkboxValue;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.

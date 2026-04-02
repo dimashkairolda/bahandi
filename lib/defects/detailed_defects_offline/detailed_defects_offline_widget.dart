@@ -1,29 +1,36 @@
+import 'package:Etry/video_player/video_player_widget.dart';
+
 import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
-import '/components/edit_defect2_widget.dart';
 import '/components/editcomment_widget.dart';
 import '/defects/add_comment_copy/add_comment_copy_widget.dart';
-import '/defects/add_t_m_c/add_t_m_c_widget.dart';
-import '/defects/add_works/add_works_widget.dart';
+import '/defects/choose_user/choose_user_widget.dart';
 import '/flutter_flow/flutter_flow_button_tabbar.dart';
 import '/flutter_flow/flutter_flow_expanded_image_view.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_video_player.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/upload_data.dart';
-import 'dart:ui';
+import '/inspections/checkboxes_show/checkboxes_show_widget.dart';
+import '/inspections/date_show/date_show_widget.dart';
+import '/inspections/diapason_show/diapason_show_widget.dart';
+import '/inspections/instruction/instruction_widget.dart';
+import '/inspections/iz_spiska_show/iz_spiska_show_widget.dart';
+import '/inspections/radio_defect_show/radio_defect_show_widget.dart';
+import '/inspections/short_text_show/short_text_show_widget.dart';
+import '/inspections/zamery_show/zamery_show_widget.dart';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
+import '/flutter_flow/permissions_util.dart';
 import '/index.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
-
 import 'detailed_defects_offline_model.dart';
 export 'detailed_defects_offline_model.dart';
 
@@ -49,6 +56,74 @@ class _DetailedDefectsOfflineWidgetState
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
+  String _extractObjectTitle(dynamic objectInfo) {
+    if (objectInfo is Map<String, dynamic>) {
+      final title = objectInfo['title']?.toString();
+      if (title != null && title.isNotEmpty && title != 'null') {
+        return title;
+      }
+    }
+    if (objectInfo is List && objectInfo.isNotEmpty) {
+      final first = objectInfo.first;
+      if (first is Map<String, dynamic>) {
+        final title = first['title']?.toString();
+        if (title != null && title.isNotEmpty && title != 'null') {
+          return title;
+        }
+      }
+    }
+    return '-';
+  }
+
+  String _defectAreaTitle(dynamic body) {
+    final fromEquipment = getJsonField(
+      body,
+      r'''$.equipment_info.area_info.title''',
+    )?.toString();
+    if (fromEquipment != null &&
+        fromEquipment.isNotEmpty &&
+        fromEquipment != 'null') {
+      return fromEquipment;
+    }
+    final fromRequest = getJsonField(
+      body,
+      r'''$.area_info.title''',
+    )?.toString();
+    if (fromRequest != null && fromRequest.isNotEmpty && fromRequest != 'null') {
+      return fromRequest;
+    }
+    return '-';
+  }
+
+  String _defectObjectTitle(dynamic body) {
+    final equipmentObj = getJsonField(
+      body,
+      r'''$.equipment_info.area_info.object_info''',
+    );
+    final equipmentTitle = _extractObjectTitle(equipmentObj);
+    if (equipmentTitle != '-') {
+      return equipmentTitle;
+    }
+    final requestObj = getJsonField(
+      body,
+      r'''$.area_info.object_info''',
+    );
+    return _extractObjectTitle(requestObj);
+  }
+
+  String _defectEquipmentTitle(dynamic body) {
+    final equipmentTitle = getJsonField(
+      body,
+      r'''$.equipment_info.title''',
+    )?.toString();
+    if (equipmentTitle != null &&
+        equipmentTitle.isNotEmpty &&
+        equipmentTitle != 'null') {
+      return equipmentTitle;
+    }
+    return '-';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -66,6 +141,21 @@ class _DetailedDefectsOfflineWidgetState
       length: 6,
       initialIndex: 0,
     )..addListener(() => safeSetState(() {}));
+
+    _model.nameTextController1 ??= TextEditingController();
+    _model.nameFocusNode1 ??= FocusNode();
+
+    _model.sumTextController1 ??= TextEditingController();
+    _model.sumFocusNode1 ??= FocusNode();
+
+    _model.nameTextController2 ??= TextEditingController();
+    _model.nameFocusNode2 ??= FocusNode();
+
+    _model.attributeTextController ??= TextEditingController();
+    _model.attributeFocusNode ??= FocusNode();
+
+    _model.sumTextController2 ??= TextEditingController();
+    _model.sumFocusNode2 ??= FocusNode();
   }
 
   @override
@@ -82,7 +172,7 @@ class _DetailedDefectsOfflineWidgetState
     return FutureBuilder<ApiCallResponse>(
       future: GetDefectsByIDCall.call(
         access: currentAuthenticationToken,
-        id: widget!.id,
+        id: widget.id,
       ),
       builder: (context, snapshot) {
         // Customize what your widget looks like when it's loading.
@@ -91,8 +181,8 @@ class _DetailedDefectsOfflineWidgetState
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
             body: Center(
               child: SizedBox(
-                width: 50,
-                height: 50,
+                width: 40.0,
+                height: 40.0,
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
                     FlutterFlowTheme.of(context).primary,
@@ -117,108 +207,49 @@ class _DetailedDefectsOfflineWidgetState
               automaticallyImplyLeading: false,
               leading: FlutterFlowIconButton(
                 borderColor: Colors.transparent,
-                borderRadius: 30,
-                borderWidth: 1,
-                buttonSize: 60,
+                borderRadius: 30.0,
+                borderWidth: 1.0,
+                buttonSize: 60.0,
                 icon: Icon(
                   Icons.arrow_back_rounded,
                   color: Color(0xFF3466E7),
-                  size: 30,
+                  size: 30.0,
                 ),
                 onPressed: () async {
-                  context.pushNamed(DefectsWidget.routeName);
-                },
-              ),
-              title: InkWell(
-                splashColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                onTap: () async {
-                  context.pushNamed(
-                    DetailedInspectionsCopyCopy2Widget.routeName,
-                    queryParameters: {
-                      'asas': serializeParam(
-                        getJsonField(
-                          detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                          r'''$.spare_parts''',
-                          true,
-                        ),
-                        ParamType.JSON,
-                        isList: true,
+                  context.goNamed(
+                    DefectsWidget.routeName,
+                    extra: <String, dynamic>{
+                      kTransitionInfoKey: TransitionInfo(
+                        hasTransition: true,
+                        transitionType: PageTransitionType.rightToLeft,
                       ),
-                    }.withoutNulls,
+                    },
                   );
                 },
-                child: Text(
-                  'Информация о заявке',
-                  style: FlutterFlowTheme.of(context).titleLarge.override(
-                        fontFamily: 'SFProText',
-                        color: FlutterFlowTheme.of(context).primaryText,
-                        fontSize: 18,
-                        letterSpacing: 0.0,
-                      ),
+              ),
+              title: Text(
+                FFLocalizations.of(context).getVariableText(
+                  ruText: 'Информация о заявке',
+                  kkText: 'Өтінім туралы ақпарат',
                 ),
+                style: FlutterFlowTheme.of(context).titleLarge.override(
+                      fontFamily: 'SFProText',
+                      color: FlutterFlowTheme.of(context).primaryText,
+                      fontSize: 18.0,
+                      letterSpacing: 0.0,
+                    ),
               ),
               actions: [
                 Container(
                   width: MediaQuery.sizeOf(context).width * 0.1,
-                  height: 100,
+                  height: 100.0,
                   decoration: BoxDecoration(
                     color: FlutterFlowTheme.of(context).secondaryBackground,
-                  ),
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    focusColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () async {
-                      await showModalBottomSheet(
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        enableDrag: false,
-                        context: context,
-                        builder: (context) {
-                          return GestureDetector(
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
-                            child: Padding(
-                              padding: MediaQuery.viewInsetsOf(context),
-                              child: Container(
-                                height: MediaQuery.sizeOf(context).height * 0.3,
-                                child: EditDefect2Widget(
-                                  id: widget!.id!,
-                                  json:
-                                      detailedDefectsOfflineGetDefectsByIDResponse
-                                          .jsonBody,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ).then((value) => safeSetState(() {}));
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Align(
-                          alignment: AlignmentDirectional(0, 0),
-                          child: Icon(
-                            Icons.more_vert,
-                            color: FlutterFlowTheme.of(context).primary,
-                            size: 25,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ],
               centerTitle: false,
-              elevation: 0,
+              elevation: 0.0,
             ),
             body: SafeArea(
               top: true,
@@ -235,11 +266,11 @@ class _DetailedDefectsOfflineWidgetState
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Container(
-                              width: MediaQuery.sizeOf(context).width,
+                              width: MediaQuery.sizeOf(context).width * 1.0,
                               decoration: BoxDecoration(
                                 color: FlutterFlowTheme.of(context)
                                     .secondaryBackground,
-                                borderRadius: BorderRadius.circular(0),
+                                borderRadius: BorderRadius.circular(0.0),
                               ),
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
@@ -248,9 +279,10 @@ class _DetailedDefectsOfflineWidgetState
                                 children: [
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
-                                        11.5, 0, 11.5, 0),
+                                        11.5, 0.0, 11.5, 0.0),
                                     child: Container(
-                                      width: MediaQuery.sizeOf(context).width,
+                                      width: MediaQuery.sizeOf(context).width *
+                                          1.0,
                                       decoration: BoxDecoration(),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.max,
@@ -259,15 +291,97 @@ class _DetailedDefectsOfflineWidgetState
                                         children: [
                                           Align(
                                             alignment:
-                                                AlignmentDirectional(-1, 0),
+                                                AlignmentDirectional(-1.0, 0.0),
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
                                                       .width *
                                                   0.6,
                                               decoration: BoxDecoration(),
                                               child: Align(
-                                                alignment:
-                                                    AlignmentDirectional(-1, 0),
+                                                alignment: AlignmentDirectional(
+                                                    -1.0, 0.0),
+                                                child: RichText(
+                                                  textScaler:
+                                                      MediaQuery.of(context)
+                                                          .textScaler,
+                                                  text: TextSpan(
+                                                    children: [
+                                                      TextSpan(
+                                                        text: '№',
+                                                        style: TextStyle(),
+                                                      ),
+                                                      TextSpan(
+                                                        text: getJsonField(
+                                                          detailedDefectsOfflineGetDefectsByIDResponse
+                                                              .jsonBody,
+                                                          r'''$.id''',
+                                                        ).toString(),
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyLarge
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'SFProText',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primary,
+                                                                  fontSize:
+                                                                      14.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .normal,
+                                                                ),
+                                                      )
+                                                    ],
+                                                    style: FlutterFlowTheme.of(
+                                                            context)
+                                                        .bodyLarge
+                                                        .override(
+                                                          fontFamily:
+                                                              'SFProText',
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .primary,
+                                                          fontSize: 14.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        11.5, 0.0, 11.5, 0.0),
+                                    child: Container(
+                                      width: MediaQuery.sizeOf(context).width *
+                                          1.0,
+                                      decoration: BoxDecoration(),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Align(
+                                            alignment:
+                                                AlignmentDirectional(-1.0, 0.0),
+                                            child: Container(
+                                              width: MediaQuery.sizeOf(context)
+                                                      .width *
+                                                  0.6,
+                                              decoration: BoxDecoration(),
+                                              child: Align(
+                                                alignment: AlignmentDirectional(
+                                                    -1.0, 0.0),
                                                 child: Text(
                                                   getJsonField(
                                                     detailedDefectsOfflineGetDefectsByIDResponse
@@ -279,7 +393,7 @@ class _DetailedDefectsOfflineWidgetState
                                                       .bodyLarge
                                                       .override(
                                                         fontFamily: 'SFProText',
-                                                        fontSize: 17,
+                                                        fontSize: 17.0,
                                                         letterSpacing: 0.0,
                                                         fontWeight:
                                                             FontWeight.normal,
@@ -290,40 +404,33 @@ class _DetailedDefectsOfflineWidgetState
                                           ),
                                           Container(
                                             decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                              border: Border.all(
-                                                color: valueOrDefault<Color>(
-                                                  functions.colorDefectCopy(
-                                                      getJsonField(
-                                                    detailedDefectsOfflineGetDefectsByIDResponse
-                                                        .jsonBody,
-                                                    r'''$.status''',
-                                                  ).toString()),
-                                                  FlutterFlowTheme.of(context)
-                                                      .alternate,
-                                                ),
-                                                width: 1,
+                                              color: valueOrDefault<Color>(
+                                                functions.colorDefectCopy(
+                                                    getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.status''',
+                                                ).toString()),
+                                                FlutterFlowTheme.of(context)
+                                                    .alternate,
                                               ),
+                                              borderRadius:
+                                                  BorderRadius.circular(16.0),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.max,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
                                               children: [
                                                 Container(
-                                                  width:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          0.26,
                                                   decoration: BoxDecoration(),
                                                   child: Align(
                                                     alignment:
                                                         AlignmentDirectional(
-                                                            0, 0),
+                                                            0.0, 0.0),
                                                     child: Padding(
                                                       padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(
-                                                                  5, 5, 5, 5),
+                                                          EdgeInsets.all(5.0),
                                                       child: Text(
                                                         valueOrDefault<String>(
                                                           functions
@@ -335,31 +442,18 @@ class _DetailedDefectsOfflineWidgetState
                                                           ).toString()),
                                                           '-',
                                                         ),
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color:
-                                                                      valueOrDefault<
-                                                                          Color>(
-                                                                    functions
-                                                                        .colorDefectCopy(
-                                                                            getJsonField(
-                                                                      detailedDefectsOfflineGetDefectsByIDResponse
-                                                                          .jsonBody,
-                                                                      r'''$.status''',
-                                                                    ).toString()),
-                                                                    FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .alternate,
-                                                                  ),
-                                                                  fontSize: 12,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
+                                                        style: FlutterFlowTheme
+                                                                .of(context)
+                                                            .bodyMedium
+                                                            .override(
+                                                              fontFamily:
+                                                                  'SFProText',
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 12.0,
+                                                              letterSpacing:
+                                                                  0.0,
+                                                            ),
                                                       ),
                                                     ),
                                                   ),
@@ -371,130 +465,10 @@ class _DetailedDefectsOfflineWidgetState
                                       ),
                                     ),
                                   ),
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        11.5, 0, 0, 0),
-                                    child: Container(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      decoration: BoxDecoration(),
-                                      child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.pushNamed(
-                                            EquipmentsDetailedWidget.routeName,
-                                            queryParameters: {
-                                              'json': serializeParam(
-                                                getJsonField(
-                                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                                      .jsonBody,
-                                                  r'''$.equipment_info''',
-                                                ),
-                                                ParamType.JSON,
-                                              ),
-                                              'id': serializeParam(
-                                                getJsonField(
-                                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                                      .jsonBody,
-                                                  r'''$.equipment_info.id''',
-                                                ),
-                                                ParamType.int,
-                                              ),
-                                            }.withoutNulls,
-                                          );
-                                        },
-                                        child: RichText(
-                                          textScaler:
-                                              MediaQuery.of(context).textScaler,
-                                          text: TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: getJsonField(
-                                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                                      .jsonBody,
-                                                  r'''$.equipment_info.title''',
-                                                ).toString(),
-                                                style: FlutterFlowTheme.of(
-                                                        context)
-                                                    .bodyMedium
-                                                    .override(
-                                                      fontFamily: 'SFProText',
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                      fontSize: 15,
-                                                      letterSpacing: 0.0,
-                                                      fontWeight:
-                                                          FontWeight.normal,
-                                                    ),
-                                              )
-                                            ],
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'SFProText',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primary,
-                                                  fontSize: 15,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                          ),
-                                          textAlign: TextAlign.start,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        11.5, 0, 0, 0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_today,
-                                          color: Color(0xFF87898F),
-                                          size: 15,
-                                        ),
-                                        Align(
-                                          alignment:
-                                              AlignmentDirectional(-1, -1),
-                                          child: Text(
-                                            dateTimeFormat(
-                                              "d.M.y H:m",
-                                              functions.stringToDateTime(
-                                                  getJsonField(
-                                                detailedDefectsOfflineGetDefectsByIDResponse
-                                                    .jsonBody,
-                                                r'''$.created_on''',
-                                              ).toString()),
-                                              locale:
-                                                  FFLocalizations.of(context)
-                                                      .languageCode,
-                                            ),
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyLarge
-                                                .override(
-                                                  fontFamily: 'SFProText',
-                                                  color: Color(0xFF87898F),
-                                                  fontSize: 14,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
                                 ]
-                                    .divide(SizedBox(height: 15))
-                                    .addToStart(SizedBox(height: 10))
-                                    .addToEnd(SizedBox(height: 10)),
+                                    .divide(SizedBox(height: 5.0))
+                                    .addToStart(SizedBox(height: 10.0))
+                                    .addToEnd(SizedBox(height: 10.0)),
                               ),
                             ),
                           ],
@@ -505,7 +479,7 @@ class _DetailedDefectsOfflineWidgetState
                           child: Column(
                             children: [
                               Align(
-                                alignment: Alignment(0, 0),
+                                alignment: Alignment(0.0, 0),
                                 child: FlutterFlowButtonTabBar(
                                   useToggleButtonStyle: false,
                                   isScrollable: true,
@@ -513,7 +487,7 @@ class _DetailedDefectsOfflineWidgetState
                                       .titleMedium
                                       .override(
                                         fontFamily: 'SFProText',
-                                        fontSize: 14,
+                                        fontSize: 14.0,
                                         letterSpacing: 0.0,
                                       ),
                                   unselectedLabelStyle:
@@ -521,38 +495,154 @@ class _DetailedDefectsOfflineWidgetState
                                           .titleMedium
                                           .override(
                                             fontFamily: 'SFProText',
-                                            fontSize: 14,
+                                            fontSize: 14.0,
                                             letterSpacing: 0.0,
                                           ),
-                                  labelColor: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
+                                  labelColor:
+                                      FlutterFlowTheme.of(context).primaryText,
                                   unselectedLabelColor:
                                       FlutterFlowTheme.of(context).primaryText,
-                                  backgroundColor:
-                                      FlutterFlowTheme.of(context).primary,
-                                  borderWidth: 0,
-                                  borderRadius: 10,
-                                  elevation: 0,
+                                  backgroundColor: FlutterFlowTheme.of(context)
+                                      .secondaryBackground,
+                                  borderWidth: 0.0,
+                                  borderRadius: 12.0,
+                                  elevation: 0.0,
+                                  labelPadding: EdgeInsetsDirectional.fromSTEB(
+                                      10.0, 0.0, 10.0, 0.0),
                                   buttonMargin: EdgeInsetsDirectional.fromSTEB(
-                                      10, 10, 10, 0),
+                                      10.0, 10.0, 10.0, 0.0),
                                   tabs: [
-                                    Tab(
-                                      text: 'Информация',
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 5.0, 0.0),
+                                          child: Icon(
+                                            Icons.list_alt,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: FFLocalizations.of(context)
+                                              .getVariableText(
+                                            ruText: 'Информация',
+                                            kkText: 'Ақпарат',
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Tab(
-                                      text: 'Список работ',
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 5.0, 0.0),
+                                          child: Icon(
+                                            Icons.check_circle_outline_outlined,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: FFLocalizations.of(context)
+                                              .getVariableText(
+                                            ruText: 'Работы',
+                                            kkText: 'Жұмыстар',
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Tab(
-                                      text: 'Список ТМЦ',
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 5.0, 0.0),
+                                          child: FaIcon(
+                                            FontAwesomeIcons.boxOpen,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: FFLocalizations.of(context)
+                                              .getVariableText(
+                                            ruText: 'ТМЦ',
+                                            kkText: 'ТМҚ',
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Tab(
-                                      text: 'Вложения',
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 5.0, 0.0),
+                                          child: FaIcon(
+                                            FontAwesomeIcons.paperclip,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: FFLocalizations.of(context)
+                                              .getVariableText(
+                                            ruText: 'Вложения',
+                                            kkText: 'Медиа',
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Tab(
-                                      text: 'Комментарии',
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 5.0, 0.0),
+                                          child: Icon(
+                                            Icons.comment_sharp,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: FFLocalizations.of(context)
+                                              .getVariableText(
+                                            ruText: 'Комментарии',
+                                            kkText: 'Пікірлер',
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    Tab(
-                                      text: 'История',
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 5.0, 0.0),
+                                          child: Icon(
+                                            Icons.history_sharp,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                        Tab(
+                                          text: FFLocalizations.of(context)
+                                              .getVariableText(
+                                            ruText: 'История',
+                                            kkText: 'Тарих',
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                   controller: _model.tabBarController,
@@ -594,12 +684,12 @@ class _DetailedDefectsOfflineWidgetState
                                         safeSetState(() {});
                                       },
                                       () async {
-                                        _model.photos123 = getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.files''',
-                                          true,
-                                        )!
+                                        _model.photos123 = functions
+                                            .jsonToList(getJsonField(
+                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                  .jsonBody,
+                                              r'''$.files''',
+                                            ))
                                             .toList()
                                             .cast<dynamic>();
                                         safeSetState(() {});
@@ -622,3100 +712,3331 @@ class _DetailedDefectsOfflineWidgetState
                                           Column(
                                             mainAxisSize: MainAxisSize.max,
                                             children: [
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(11.5, 8, 11.5, 0),
-                                                child: Container(
-                                                  width: double.infinity,
-                                                  decoration: BoxDecoration(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryBackground,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0, 10, 0, 10),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 5),
-                                                          child: Text(
-                                                            'Информация о заявке',
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        'Автор',
-                                                                        textAlign:
-                                                                            TextAlign.start,
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodySmall
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              fontSize: 14,
-                                                                              letterSpacing: 0.0,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        '${getJsonField(
-                                                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                                                              .jsonBody,
-                                                                          r'''$.author_info.first_name''',
-                                                                        ).toString()} ${getJsonField(
-                                                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                                                              .jsonBody,
-                                                                          r'''$.author_info.last_name''',
-                                                                        ).toString()}',
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyLarge
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Филиал',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.area_info.title''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          ),
-                                                                          TextSpan(
-                                                                            text:
-                                                                                ' ',
-                                                                            style:
-                                                                                TextStyle(),
-                                                                          ),
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.area_info.object_info.title''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style:
-                                                                                TextStyle(),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        if (!functions
-                                                            .emptyList(
-                                                                getJsonField(
-                                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                                              .jsonBody,
-                                                          r'''$.equipment_info.area_info.branch_schemes''',
-                                                          true,
-                                                        ))!)
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16,
-                                                                        0,
-                                                                        16,
-                                                                        0),
-                                                            child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Container(
-                                                                  decoration:
-                                                                      BoxDecoration(),
-                                                                  child: Column(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Align(
-                                                                        alignment: AlignmentDirectional(
-                                                                            -1,
-                                                                            -1),
-                                                                        child:
-                                                                            Text(
-                                                                          'Схемы филиала',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                      Container(
-                                                                        width: MediaQuery.sizeOf(context).width *
-                                                                            0.8,
-                                                                        decoration:
-                                                                            BoxDecoration(),
-                                                                        child:
-                                                                            Builder(
-                                                                          builder:
-                                                                              (context) {
-                                                                            final shemes =
-                                                                                getJsonField(
-                                                                              detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                              r'''$.equipment_info.area_info.branch_schemes''',
-                                                                            ).toList();
-
-                                                                            return Column(
-                                                                              mainAxisSize: MainAxisSize.max,
-                                                                              children: List.generate(shemes.length, (shemesIndex) {
-                                                                                final shemesItem = shemes[shemesIndex];
-                                                                                return Align(
-                                                                                  alignment: AlignmentDirectional(-1, -1),
-                                                                                  child: InkWell(
-                                                                                    splashColor: Colors.transparent,
-                                                                                    focusColor: Colors.transparent,
-                                                                                    hoverColor: Colors.transparent,
-                                                                                    highlightColor: Colors.transparent,
-                                                                                    onTap: () async {
-                                                                                      context.pushNamed(
-                                                                                        PdfviewerWidget.routeName,
-                                                                                        queryParameters: {
-                                                                                          'title': serializeParam(
-                                                                                            getJsonField(
-                                                                                              shemesItem,
-                                                                                              r'''$.title''',
-                                                                                            ).toString(),
-                                                                                            ParamType.String,
-                                                                                          ),
-                                                                                          'viewer': serializeParam(
-                                                                                            getJsonField(
-                                                                                              shemesItem,
-                                                                                              r'''$.url''',
-                                                                                            ).toString(),
-                                                                                            ParamType.String,
-                                                                                          ),
-                                                                                          'extension': serializeParam(
-                                                                                            getJsonField(
-                                                                                              shemesItem,
-                                                                                              r'''$.extension''',
-                                                                                            ).toString(),
-                                                                                            ParamType.String,
-                                                                                          ),
-                                                                                        }.withoutNulls,
-                                                                                      );
-                                                                                    },
-                                                                                    child: Text(
-                                                                                      getJsonField(
-                                                                                        shemesItem,
-                                                                                        r'''$.title''',
-                                                                                      ).toString(),
-                                                                                      style: FlutterFlowTheme.of(context).bodyLarge.override(
-                                                                                            fontFamily: 'SFProText',
-                                                                                            color: FlutterFlowTheme.of(context).primary,
-                                                                                            fontSize: 16,
-                                                                                            letterSpacing: 0.0,
-                                                                                            fontWeight: FontWeight.normal,
-                                                                                            fontStyle: FontStyle.italic,
-                                                                                            decoration: TextDecoration.underline,
-                                                                                          ),
-                                                                                    ),
-                                                                                  ),
-                                                                                );
-                                                                              }).divide(SizedBox(height: 5)),
-                                                                            );
-                                                                          },
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Тип',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.type_info.title''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Бренд',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.manufacturer_info.title''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Модель',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.model_info.title''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Инвентарный номер',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.inventory_number''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Заводской номер',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.equipment_info.factory_number''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            ),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width *
-                                                                    0.65,
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            0,
-                                                                            0,
-                                                                            0,
-                                                                            3),
-                                                                        child:
-                                                                            Text(
-                                                                          'Приоритетная заявка',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                    RichText(
-                                                                      textScaler:
-                                                                          MediaQuery.of(context)
-                                                                              .textScaler,
-                                                                      text:
-                                                                          TextSpan(
-                                                                        children: [
-                                                                          TextSpan(
-                                                                            text:
-                                                                                functions.yesorno(getJsonField(
-                                                                              detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                              r'''$.priority''',
-                                                                            )),
-                                                                            style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 15,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
-                                                                          )
-                                                                        ],
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyMedium
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(height: 5)),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(11.5, 8, 11.5, 0),
-                                                child: Container(
-                                                  width: double.infinity,
-                                                  decoration: BoxDecoration(
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .secondaryBackground,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                  ),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0, 10, 0, 10),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 5),
-                                                          child: Text(
-                                                            'Информация об устранении',
-                                                            style: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .bodyMedium
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  fontSize: 16,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        if (!functions
-                                                            .emptyList(
-                                                                getJsonField(
-                                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                                              .jsonBody,
-                                                          r'''$.contractors_info''',
-                                                          true,
-                                                        ))!)
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16,
-                                                                        0,
-                                                                        16,
-                                                                        0),
-                                                            child: Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceBetween,
-                                                              children: [
-                                                                Container(
-                                                                  decoration:
-                                                                      BoxDecoration(),
-                                                                  child: Column(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Align(
-                                                                        alignment: AlignmentDirectional(
-                                                                            -1,
-                                                                            -1),
-                                                                        child:
-                                                                            Text(
-                                                                          'Исполнитель',
-                                                                          textAlign:
-                                                                              TextAlign.start,
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodySmall
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                fontSize: 14,
-                                                                                letterSpacing: 0.0,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                      Align(
-                                                                        alignment: AlignmentDirectional(
-                                                                            -1,
-                                                                            -1),
-                                                                        child:
-                                                                            Text(
-                                                                          valueOrDefault<
-                                                                              String>(
-                                                                            '${valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.performers_info[0].first_name''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            )} ${valueOrDefault<String>(
-                                                                              getJsonField(
-                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                r'''$.performers_info[0].last_name''',
-                                                                              )?.toString(),
-                                                                              '-',
-                                                                            )}',
-                                                                            '-',
-                                                                          ),
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodyLarge
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                fontSize: 16,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.normal,
-                                                                              ),
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        'Время прибытия',
-                                                                        textAlign:
-                                                                            TextAlign.start,
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodySmall
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              fontSize: 14,
-                                                                              letterSpacing: 0.0,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        valueOrDefault<
-                                                                            String>(
-                                                                          dateTimeFormat(
-                                                                            "d.M.y H.mm",
-                                                                            functions.stringToDateTime(getJsonField(
-                                                                              detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                              r'''$.datetime_performer_start''',
-                                                                            ).toString()),
-                                                                            locale:
-                                                                                FFLocalizations.of(context).languageCode,
-                                                                          ),
-                                                                          '-',
-                                                                        ),
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyLarge
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        'Время принятия',
-                                                                        textAlign:
-                                                                            TextAlign.start,
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodySmall
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              fontSize: 14,
-                                                                              letterSpacing: 0.0,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        valueOrDefault<
-                                                                            String>(
-                                                                          dateTimeFormat(
-                                                                            "d.M.y H.mm",
-                                                                            functions.stringToDateTime(getJsonField(
-                                                                              detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                              r'''$.datetime_contractor_accept''',
-                                                                            ).toString()),
-                                                                            locale:
-                                                                                FFLocalizations.of(context).languageCode,
-                                                                          ),
-                                                                          '-',
-                                                                        ),
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyLarge
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceBetween,
-                                                            children: [
-                                                              Container(
-                                                                decoration:
-                                                                    BoxDecoration(),
-                                                                child: Column(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        'Время выполнения',
-                                                                        textAlign:
-                                                                            TextAlign.start,
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodySmall
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              fontSize: 14,
-                                                                              letterSpacing: 0.0,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                    Align(
-                                                                      alignment:
-                                                                          AlignmentDirectional(
-                                                                              -1,
-                                                                              -1),
-                                                                      child:
-                                                                          Text(
-                                                                        valueOrDefault<
-                                                                            String>(
-                                                                          dateTimeFormat(
-                                                                            "d.M.y H.mm",
-                                                                            functions.stringToDateTime(getJsonField(
-                                                                              detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                              r'''$.datetime_completed''',
-                                                                            ).toString()),
-                                                                            locale:
-                                                                                FFLocalizations.of(context).languageCode,
-                                                                          ),
-                                                                          '-',
-                                                                        ),
-                                                                        style: FlutterFlowTheme.of(context)
-                                                                            .bodyLarge
-                                                                            .override(
-                                                                              fontFamily: 'SFProText',
-                                                                              fontSize: 16,
-                                                                              letterSpacing: 0.0,
-                                                                              fontWeight: FontWeight.normal,
-                                                                            ),
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ].divide(
-                                                          SizedBox(height: 5)),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ]
-                                            .divide(SizedBox(height: 20))
-                                            .addToEnd(SizedBox(height: 150)),
+                                              // Generated code for this Container Widget...
+// Generated code for this Container Widget...
+Padding(
+  padding: EdgeInsetsDirectional.fromSTEB(11.5, 8, 11.5, 0),
+  child: Container(
+    width: double.infinity,
+    decoration: BoxDecoration(
+      color: FlutterFlowTheme.of(context).secondaryBackground,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(16, 15, 16, 15),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 5),
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Icon(
+                  Icons.list_alt_sharp,
+                  color: FlutterFlowTheme.of(context).primaryText,
+                  size: 20,
+                ),
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                  child: Text(
+                    FFLocalizations.of(context).getVariableText(
+                      ruText: 'Информация о заявке',
+                      kkText: 'Өтінім туралы ақпарат',
+                    ),
+                    style: FlutterFlowTheme.of(context).bodyMedium.override(
+                          fontFamily: 'SFProText',
+                          fontSize: 16,
+                          letterSpacing: 0.0,
+                          fontWeight: FontWeight.w500,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Container(
+                decoration: BoxDecoration(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional(-1, -1),
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 3),
+                        child: Text(
+                          FFLocalizations.of(context).getVariableText(
+                            ruText: 'Описание проблемы',
+                            kkText: 'Мәселе сипаттамасы',
+                          ),
+                          textAlign: TextAlign.start,
+                          style:
+                              FlutterFlowTheme.of(context).bodySmall.override(
+                                    fontFamily: 'SFProText',
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    fontSize: 14,
+                                    letterSpacing: 0.0,
+                                  ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: MediaQuery.sizeOf(context).width * 0.85,
+                      decoration: BoxDecoration(
+                        color: FlutterFlowTheme.of(context).primaryBackground,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Align(
+                        alignment: AlignmentDirectional(-1, 0),
+                        child: Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(10, 10, 10, 10),
+                          child: RichText(
+                            textScaler: MediaQuery.of(context).textScaler,
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: valueOrDefault<String>(
+                                    getJsonField(
+                                      detailedDefectsOfflineGetDefectsByIDResponse
+                                          .jsonBody,
+                                      r'''$.title''',
+                                    )?.toString(),
+                                    '-',
+                                  ),
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'SFProText',
+                                        fontSize: 15,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.normal,
                                       ),
+                                )
+                              ],
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'SFProText',
+                                    fontSize: 16,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Container(
+            width: MediaQuery.sizeOf(context).width * 0.9,
+            decoration: BoxDecoration(),
+            child: // Generated code for this Row Widget...
+Row(
+  mainAxisSize: MainAxisSize.max,
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    FFButtonWidget(
+      onPressed: () {
+        print('Button pressed ...');
+      },
+      text: 'Низкий',
+      options: FFButtonOptions(
+        width: MediaQuery.sizeOf(context).width * 0.27,
+        height: MediaQuery.sizeOf(context).height * 0.04,
+        padding: EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
+        iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+        color: getJsonField(
+                  detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                  r'''$.priority_request''',
+                ).toString() ==
+                'low'
+            ? FlutterFlowTheme.of(context).primary
+            : FlutterFlowTheme.of(context).secondary,
+        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+              fontFamily: 'SFProText',
+              color: getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.priority_request''',
+                      ).toString() ==
+                      'low'
+                  ? FlutterFlowTheme.of(context).secondary
+                  : FlutterFlowTheme.of(context).primaryText,
+              fontSize: 14,
+              letterSpacing: 0.0,
+            ),
+        elevation: 3,
+        borderSide: BorderSide(
+          color: Colors.transparent,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    FFButtonWidget(
+      onPressed: () {
+        print('Button pressed ...');
+      },
+      text: 'Средний',
+      options: FFButtonOptions(
+        width: MediaQuery.sizeOf(context).width * 0.27,
+        height: MediaQuery.sizeOf(context).height * 0.04,
+        padding: EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
+        iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+        color: getJsonField(
+                  detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                  r'''$.priority_request''',
+                ).toString() ==
+                'medium'
+            ? FlutterFlowTheme.of(context).primary
+            : FlutterFlowTheme.of(context).secondary,
+        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+              fontFamily: 'SFProText',
+              color: getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.priority_request''',
+                      ).toString() ==
+                      'medium'
+                  ? FlutterFlowTheme.of(context).secondary
+                  : FlutterFlowTheme.of(context).primaryText,
+              fontSize: 14,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+            ),
+        elevation: 3,
+        borderSide: BorderSide(
+          color: Colors.transparent,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    FFButtonWidget(
+      onPressed: () {
+        print('Button pressed ...');
+      },
+      text: 'Высокий',
+      options: FFButtonOptions(
+        width: MediaQuery.sizeOf(context).width * 0.27,
+        height: MediaQuery.sizeOf(context).height * 0.04,
+        padding: EdgeInsetsDirectional.fromSTEB(24, 0, 24, 0),
+        iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+        color: getJsonField(
+                  detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                  r'''$.priority_request''',
+                ).toString() ==
+                'high'
+            ? FlutterFlowTheme.of(context).primary
+            : FlutterFlowTheme.of(context).secondary,
+        textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+              fontFamily: 'SFProText',
+              color: getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.priority_request''',
+                      ).toString() ==
+                      'high'
+                  ? FlutterFlowTheme.of(context).secondary
+                  : FlutterFlowTheme.of(context).primaryText,
+              fontSize: 14,
+              letterSpacing: 0.0,
+              fontWeight: FontWeight.w500,
+            ),
+        elevation: 3,
+        borderSide: BorderSide(
+          color: Colors.transparent,
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+  ],
+),
+          ),
+          Divider(
+            thickness: 2,
+            color: FlutterFlowTheme.of(context).primaryBackground,
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: AlignmentDirectional(-1, -1),
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 3),
+                      child: Text(
+                        'Оборудование',
+                        textAlign: TextAlign.start,
+                        style: FlutterFlowTheme.of(context)
+                            .bodySmall
+                            .override(
+                              fontFamily: 'SFProText',
+                              color:
+                                  FlutterFlowTheme.of(context).secondaryText,
+                              fontSize: 14,
+                              letterSpacing: 0.0,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                splashColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: () async {
+                  final equipmentId = castToType<int>(getJsonField(
+                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                    r'''$.equipment_info.id''',
+                  ));
+                  if (equipmentId == null) {
+                    return;
+                  }
+                  context.pushNamed(
+                    EquipmentsDetailedWidget.routeName,
+                    queryParameters: {
+                      'json': serializeParam(
+                        getJsonField(
+                          detailedDefectsOfflineGetDefectsByIDResponse
+                              .jsonBody,
+                          r'''$.equipment_info''',
+                        ),
+                        ParamType.JSON,
+                      ),
+                      'id': serializeParam(
+                        equipmentId,
+                        ParamType.int,
+                      ),
+                    }.withoutNulls,
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: FlutterFlowTheme.of(context).primaryBackground,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(15, 10, 15, 10),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        RichText(
+                          textScaler: MediaQuery.of(context).textScaler,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: _defectEquipmentTitle(
+                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                      .jsonBody,
+                                ),
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      fontFamily: 'SFProText',
+                                      color: FlutterFlowTheme.of(context)
+                                          .primary,
+                                      fontSize: 15,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Container(
-                                          height: MediaQuery.sizeOf(context)
-                                                  .height *
-                                              0.55,
-                                          decoration: BoxDecoration(),
-                                          child: Padding(
-                                            padding:
-                                                EdgeInsetsDirectional.fromSTEB(
-                                                    0, 15, 0, 0),
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Builder(
-                                                    builder: (context) {
-                                                      if (FFAppState()
-                                                          .isEdited) {
-                                                        return Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.95,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                          ),
-                                                          child: Padding(
+                              )
+                            ],
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'SFProText',
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  fontSize: 16,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                        RichText(
+                          textScaler: MediaQuery.of(context).textScaler,
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Штрих-код: ',
+                                style: TextStyle(),
+                              ),
+                              TextSpan(
+                                text: valueOrDefault<String>(
+                                  getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.equipment_info.inventory_number''',
+                                  )?.toString(),
+                                  '-',
+                                ),
+                                style: FlutterFlowTheme.of(context)
+                                    .bodyMedium
+                                    .override(
+                                      fontFamily: 'SFProText',
+                                      fontSize: 14,
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                              )
+                            ],
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'SFProText',
+                                  fontSize: 12,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Icon(
+                              Icons.location_pin,
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              size: 16,
+                            ),
+                            Container(
+                              width: MediaQuery.sizeOf(context).width * 0.75,
+                              decoration: BoxDecoration(),
+                              child: RichText(
+                                textScaler: MediaQuery.of(context).textScaler,
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: _defectAreaTitle(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                      ),
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'SFProText',
+                                            fontSize: 14,
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                    ),
+                                    TextSpan(
+                                      text: ' ',
+                                      style: TextStyle(),
+                                    ),
+                                    TextSpan(
+                                      text: _defectObjectTitle(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                    )
+                                  ],
+                                  style: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .override(
+                                        fontFamily: 'SFProText',
+                                        fontSize: 13,
+                                        letterSpacing: 0.0,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ].divide(SizedBox(height: 5)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Divider(
+            thickness: 2,
+            color: FlutterFlowTheme.of(context).primaryBackground,
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: MediaQuery.sizeOf(context).width * 0.4,
+                decoration: BoxDecoration(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Align(
+                          alignment: AlignmentDirectional(-1, -1),
+                          child: Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 0, 0, 3),
+                            child: Text(
+                              FFLocalizations.of(context).getVariableText(
+                                ruText: 'Создал',
+                                kkText: 'Автор',
+                              ),
+                              textAlign: TextAlign.start,
+                              style: FlutterFlowTheme.of(context)
+                                  .bodySmall
+                                  .override(
+                                    fontFamily: 'SFProText',
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    fontSize: 14,
+                                    letterSpacing: 0.0,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional(-1, -1),
+                      child: Text(
+                        '${getJsonField(
+                          detailedDefectsOfflineGetDefectsByIDResponse
+                              .jsonBody,
+                          r'''$.author_info.first_name''',
+                        ).toString()} ${getJsonField(
+                          detailedDefectsOfflineGetDefectsByIDResponse
+                              .jsonBody,
+                          r'''$.author_info.last_name''',
+                        ).toString()}',
+                        style:
+                            FlutterFlowTheme.of(context).bodyLarge.override(
+                                  fontFamily: 'SFProText',
+                                  fontSize: 16,
+                                  letterSpacing: 0.0,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: MediaQuery.sizeOf(context).width * 0.4,
+                decoration: BoxDecoration(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Align(
+                          alignment: AlignmentDirectional(-1, -1),
+                          child: Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 0, 0, 3),
+                            child: Text(
+                              'Дата создания',
+                              textAlign: TextAlign.start,
+                              style: FlutterFlowTheme.of(context)
+                                  .bodySmall
+                                  .override(
+                                    fontFamily: 'SFProText',
+                                    color: FlutterFlowTheme.of(context)
+                                        .secondaryText,
+                                    fontSize: 14,
+                                    letterSpacing: 0.0,
+                                  ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Align(
+                      alignment: AlignmentDirectional(-1, -1),
+                      child: Text(
+                        dateTimeFormat(
+                          "d.M.y H:m",
+                          functions.stringToDateTime(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.created_on''',
+                          ).toString()),
+                          locale: FFLocalizations.of(context).languageCode,
+                        ),
+                        style: FlutterFlowTheme.of(context)
+                            .bodyLarge
+                            .override(
+                              fontFamily: 'SFProText',
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              fontSize: 14,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.normal,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if ((getJsonField(
+                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                    r'''$.contractors_info''',
+                  ) !=
+                  null) ||
+              (functions
+                      .jsonToList(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.performers_info''',
+                      ))
+                      .length >
+                  0))
+            Divider(
+              thickness: 2,
+              color: FlutterFlowTheme.of(context).primaryBackground,
+            ),
+          if (getJsonField(
+                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                r'''$.contractors_info''',
+              ) !=
+              null)
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  decoration: BoxDecoration(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Align(
+                        alignment: AlignmentDirectional(-1, -1),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 3),
+                          child: Text(
+                            'Подрядчик',
+                            textAlign: TextAlign.start,
+                            style: FlutterFlowTheme.of(context)
+                                .bodySmall
+                                .override(
+                                  fontFamily: 'SFProText',
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                  fontSize: 14,
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional(-1, -1),
+                        child: Text(
+                          valueOrDefault<String>(
+                            getJsonField(
+                              detailedDefectsOfflineGetDefectsByIDResponse
+                                  .jsonBody,
+                              r'''$.contractors_info.title''',
+                            )?.toString(),
+                            '-',
+                          ),
+                          style:
+                              FlutterFlowTheme.of(context).bodyLarge.override(
+                                    fontFamily: 'SFProText',
+                                    fontSize: 16,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          if (functions
+                  .jsonToList(getJsonField(
+                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                    r'''$.performers_info''',
+                  ))
+                  .length >
+              0)
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  decoration: BoxDecoration(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Align(
+                        alignment: AlignmentDirectional(-1, -1),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 3),
+                          child: Text(
+                            'Назначено',
+                            textAlign: TextAlign.start,
+                            style: FlutterFlowTheme.of(context)
+                                .bodySmall
+                                .override(
+                                  fontFamily: 'SFProText',
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                  fontSize: 14,
+                                  letterSpacing: 0.0,
+                                ),
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional(-1, -1),
+                        child: Text(
+                          '${getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.performers_info[0].first_name''',
+                          ).toString()} ${getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.performers_info[0].last_name''',
+                          ).toString()}',
+                          style:
+                              FlutterFlowTheme.of(context).bodyLarge.override(
+                                    fontFamily: 'SFProText',
+                                    fontSize: 16,
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          if (((functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) ==
+                      'Открыта') ||
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) ==
+                      'У исполнителя') ||
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) ==
+                      'Отклонена') ||
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) ==
+                      'В работе')) &&
+              (valueOrDefault<String>(
+                    functions.jsonToStringCopy(getJsonField(
+                      FFAppState().account,
+                      r'''$.role''',
+                    )),
+                    '-',
+                  ) ==
+                  '\"engineer\"'))
+            FFButtonWidget(
+              onPressed: () async {
+                await showModalBottomSheet(
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  useSafeArea: true,
+                  context: context,
+                  builder: (context) {
+                    return GestureDetector(
+                      onTap: () {
+                        FocusScope.of(context).unfocus();
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      child: Padding(
+                        padding: MediaQuery.viewInsetsOf(context),
+                        child: ChooseUserWidget(
+                          json: detailedDefectsOfflineGetDefectsByIDResponse
+                              .jsonBody,
+                        ),
+                      ),
+                    );
+                  },
+                ).then((value) => safeSetState(() {}));
+              },
+              text: 'Назначить исполнителя',
+              icon: Icon(
+                Icons.person_add,
+                size: 15,
+              ),
+              options: FFButtonOptions(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height * 0.04,
+                padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                iconPadding: EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                iconColor: FlutterFlowTheme.of(context).primary,
+                color: FlutterFlowTheme.of(context).secondaryBackground,
+                textStyle: FlutterFlowTheme.of(context).titleSmall.override(
+                      font: GoogleFonts.readexPro(
+                        fontWeight: FlutterFlowTheme.of(context)
+                            .titleSmall
+                            .fontWeight,
+                        fontStyle:
+                            FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                      ),
+                      color: FlutterFlowTheme.of(context).primary,
+                      letterSpacing: 0.0,
+                      fontWeight:
+                          FlutterFlowTheme.of(context).titleSmall.fontWeight,
+                      fontStyle:
+                          FlutterFlowTheme.of(context).titleSmall.fontStyle,
+                    ),
+                elevation: 0,
+                borderSide: BorderSide(
+                  color: FlutterFlowTheme.of(context).primary,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+        ].divide(SizedBox(height: 15)),
+      ),
+    ),
+  ),
+),
+
+                                              if ((getJsonField(
+                                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                                            .jsonBody,
+                                                        r'''$.form_result''',
+                                                      ) !=
+                                                      null) &&
+                                                  (functions
+                                                          .jsonToList(
+                                                              getJsonField(
+                                                            detailedDefectsOfflineGetDefectsByIDResponse
+                                                                .jsonBody,
+                                                            r'''$.form_result''',
+                                                          ))
+                                                          .length !=
+                                                      0))
+                                                Padding(
+                                                  padding: EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                          11.5, 8.0, 11.5, 0.0),
+                                                  child: Container(
+                                                    width: double.infinity,
+                                                    decoration: BoxDecoration(
+                                                      color: FlutterFlowTheme
+                                                              .of(context)
+                                                          .secondaryBackground,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10.0),
+                                                    ),
+                                                    child: Padding(
+                                                      padding:
+                                                          EdgeInsetsDirectional
+                                                              .fromSTEB(
+                                                                  16.0,
+                                                                  15.0,
+                                                                  16.0,
+                                                                  15.0),
+                                                      child: Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Padding(
                                                             padding:
                                                                 EdgeInsetsDirectional
                                                                     .fromSTEB(
-                                                                        0,
-                                                                        5,
-                                                                        0,
-                                                                        5),
-                                                            child: Column(
+                                                                        0.0,
+                                                                        0.0,
+                                                                        0.0,
+                                                                        5.0),
+                                                            child: Row(
                                                               mainAxisSize:
                                                                   MainAxisSize
                                                                       .max,
                                                               children: [
-                                                                Container(
-                                                                  width: MediaQuery
-                                                                          .sizeOf(
-                                                                              context)
-                                                                      .width,
-                                                                  height: 50,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
+                                                                Icon(
+                                                                  Icons
+                                                                      .checklist_outlined,
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  size: 20.0,
+                                                                ),
+                                                                Padding(
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          10.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                  child: Text(
+                                                                    'Чеклист проверки',
+                                                                    style: FlutterFlowTheme.of(
                                                                             context)
-                                                                        .secondaryBackground,
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          fontFamily:
+                                                                              'SFProText',
+                                                                          fontSize:
+                                                                              16.0,
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                        ),
                                                                   ),
-                                                                  child:
-                                                                      Padding(
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Builder(
+                                                            builder: (context) {
+                                                              final questions =
+                                                                  (getJsonField(
+                                                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                                                            .jsonBody,
+                                                                        r'''$.form_result''',
+                                                                        true,
+                                                                      )?.toList().map<FormResultStruct?>(FormResultStruct.maybeFromMap).toList()
+                                                                              as Iterable<FormResultStruct?>)
+                                                                          .withoutNulls
+                                                                          .toList() ??
+                                                                      [];
+
+                                                              return Column(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .max,
+                                                                children: List.generate(
+                                                                        questions
+                                                                            .length,
+                                                                        (questionsIndex) {
+                                                                  final questionsItem =
+                                                                      questions[
+                                                                          questionsIndex];
+                                                                  return Padding(
                                                                     padding: EdgeInsetsDirectional
                                                                         .fromSTEB(
-                                                                            16,
-                                                                            5,
-                                                                            16,
-                                                                            0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        Text(
-                                                                          'Список работ',
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: Color(0xFF87898F),
-                                                                                fontSize: 16,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.bold,
-                                                                              ),
-                                                                        ),
-                                                                        InkWell(
-                                                                          splashColor:
-                                                                              Colors.transparent,
-                                                                          focusColor:
-                                                                              Colors.transparent,
-                                                                          hoverColor:
-                                                                              Colors.transparent,
-                                                                          highlightColor:
-                                                                              Colors.transparent,
-                                                                          onTap:
-                                                                              () async {
-                                                                            FFAppState().isEdited =
-                                                                                false;
-                                                                            safeSetState(() {});
-                                                                          },
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons.close,
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).primaryText,
-                                                                            size:
-                                                                                24,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Builder(
-                                                                  builder:
-                                                                      (context) {
-                                                                    final works =
-                                                                        FFAppState()
-                                                                            .works
-                                                                            .toList();
-
-                                                                    return Column(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: List.generate(
-                                                                          works
-                                                                              .length,
-                                                                          (worksIndex) {
-                                                                        final worksItem =
-                                                                            works[worksIndex];
-                                                                        return Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          children: [
-                                                                            Container(
-                                                                              width: MediaQuery.sizeOf(context).width * 0.8,
-                                                                              height: MediaQuery.sizeOf(context).height * 0.05,
-                                                                              decoration: BoxDecoration(
-                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                borderRadius: BorderRadius.circular(8),
-                                                                              ),
-                                                                              child: Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                                                                                child: Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                  children: [
-                                                                                    Padding(
-                                                                                      padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
-                                                                                      child: Column(
-                                                                                        mainAxisSize: MainAxisSize.max,
-                                                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                        children: [
-                                                                                          Container(
-                                                                                            width: MediaQuery.sizeOf(context).width * 0.6,
-                                                                                            decoration: BoxDecoration(),
-                                                                                            child: Text(
-                                                                                              worksItem.title,
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'SFProText',
-                                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                                    fontSize: 15,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.w500,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                    Container(
-                                                                                      width: 39,
-                                                                                      height: 39,
-                                                                                      decoration: BoxDecoration(
-                                                                                        color: Color(0xFF86878F),
-                                                                                        shape: BoxShape.circle,
-                                                                                      ),
-                                                                                      child: Align(
-                                                                                        alignment: AlignmentDirectional(0, 0),
-                                                                                        child: Text(
-                                                                                          worksItem.amount.toString(),
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.readexPro(
-                                                                                                  fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                            InkWell(
-                                                                              splashColor: Colors.transparent,
-                                                                              focusColor: Colors.transparent,
-                                                                              hoverColor: Colors.transparent,
-                                                                              highlightColor: Colors.transparent,
-                                                                              onTap: () async {
-                                                                                FFAppState().removeAtIndexFromWorks(worksIndex);
-                                                                                safeSetState(() {});
-                                                                              },
-                                                                              child: Icon(
-                                                                                Icons.close,
-                                                                                color: FlutterFlowTheme.of(context).primaryText,
-                                                                                size: 24,
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        );
-                                                                      }).divide(SizedBox(
-                                                                          height:
-                                                                              10)),
-                                                                    );
-                                                                  },
-                                                                ),
-                                                                Builder(
-                                                                  builder:
-                                                                      (context) =>
-                                                                          InkWell(
-                                                                    splashColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    focusColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    hoverColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    highlightColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    onTap:
-                                                                        () async {
-                                                                      await showDialog(
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (dialogContext) {
-                                                                          return Dialog(
-                                                                            elevation:
-                                                                                0,
-                                                                            insetPadding:
-                                                                                EdgeInsets.zero,
-                                                                            backgroundColor:
-                                                                                Colors.transparent,
-                                                                            alignment:
-                                                                                AlignmentDirectional(0, 0).resolve(Directionality.of(context)),
-                                                                            child:
-                                                                                GestureDetector(
-                                                                              onTap: () {
-                                                                                FocusScope.of(dialogContext).unfocus();
-                                                                                FocusManager.instance.primaryFocus?.unfocus();
-                                                                              },
-                                                                              child: Container(
-                                                                                height: MediaQuery.sizeOf(context).height * 0.37,
-                                                                                width: MediaQuery.sizeOf(context).width * 0.95,
-                                                                                child: AddWorksWidget(),
-                                                                              ),
-                                                                            ),
-                                                                          );
-                                                                        },
-                                                                      );
-                                                                    },
+                                                                            0.0,
+                                                                            8.0,
+                                                                            0.0,
+                                                                            0.0),
                                                                     child:
                                                                         Container(
-                                                                      width: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width,
-                                                                      height:
-                                                                          50,
                                                                       decoration:
                                                                           BoxDecoration(
                                                                         color: FlutterFlowTheme.of(context)
                                                                             .secondaryBackground,
                                                                         borderRadius:
-                                                                            BorderRadius.circular(8),
+                                                                            BorderRadius.circular(10.0),
                                                                       ),
                                                                       child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            16,
-                                                                            5,
-                                                                            16,
-                                                                            0),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.add,
-                                                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              size: 24,
-                                                                            ),
-                                                                            Text(
-                                                                              'Добавить работу',
-                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                    fontFamily: 'SFProText',
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    fontSize: 16,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                  ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
+                                                                          Builder(
+                                                                        builder:
+                                                                            (context) {
+                                                                          if (questionsItem.type ==
+                                                                              functions.stringToJson('\"radio_defect\"').toString()) {
+                                                                            return RadioDefectShowWidget(
+                                                                              key: Key('Keyup6_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"checkbox\"').toString()) {
+                                                                            return CheckboxesShowWidget(
+                                                                              key: Key('Key0ir_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"radio\"').toString()) {
+                                                                            return IzSpiskaShowWidget(
+                                                                              key: Key('Keyi5s_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"instruction\"').toString()) {
+                                                                            return InstructionWidget(
+                                                                              key: Key('Key7vk_${questionsIndex}_of_${questions.length}'),
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"date\"').toString()) {
+                                                                            return DateShowWidget(
+                                                                              key: Key('Keyqaq_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"measurement\"').toString()) {
+                                                                            return ZameryShowWidget(
+                                                                              key: Key('Keym55_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"range\"').toString()) {
+                                                                            return DiapasonShowWidget(
+                                                                              key: Key('Keyua8_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else if (questionsItem.type == functions.stringToJson('\"short_text\"').toString()) {
+                                                                            return ShortTextShowWidget(
+                                                                              key: Key('Keyqqh_${questionsIndex}_of_${questions.length}'),
+                                                                              index: questionsIndex,
+                                                                              data: questionsItem.toMap(),
+                                                                            );
+                                                                          } else {
+                                                                            return Container(
+                                                                              width: MediaQuery.sizeOf(context).width * 0.657,
+                                                                              decoration: BoxDecoration(),
+                                                                              child: Text(
+                                                                                'Ошибка! Пожалуйста обратитесь к администратору!',
+                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                      font: GoogleFonts.readexPro(
+                                                                                        fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                        fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                      ),
+                                                                                      letterSpacing: 0.0,
+                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                    ),
+                                                                              ),
+                                                                            );
+                                                                          }
+                                                                        },
                                                                       ),
                                                                     ),
-                                                                  ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  height: 5)),
-                                                            ),
+                                                                  );
+                                                                })
+                                                                    .divide(SizedBox(
+                                                                        height:
+                                                                            5.0))
+                                                                    .addToStart(
+                                                                        SizedBox(
+                                                                            height:
+                                                                                10.0))
+                                                                    .addToEnd(SizedBox(
+                                                                        height:
+                                                                            10.0)),
+                                                              );
+                                                            },
                                                           ),
-                                                        );
-                                                      } else {
-                                                        return Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.95,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                          ),
-                                                          child: Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0,
-                                                                        5,
-                                                                        0,
-                                                                        5),
-                                                            child: Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              children: [
-                                                                Container(
-                                                                  width: MediaQuery
-                                                                          .sizeOf(
-                                                                              context)
-                                                                      .width,
-                                                                  height: 50,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryBackground,
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            16,
-                                                                            5,
-                                                                            16,
-                                                                            0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        Text(
-                                                                          'Список работ',
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: Color(0xFF87898F),
-                                                                                fontSize: 16,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.bold,
-                                                                              ),
-                                                                        ),
-                                                                        Builder(
-                                                                          builder:
-                                                                              (context) {
-                                                                            if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"engineer\"') {
-                                                                              return Visibility(
-                                                                                visible: (functions.statusRequest(getJsonField(
-                                                                                          detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                          r'''$.status''',
-                                                                                        ).toString()) !=
-                                                                                        'Закрыта') &&
-                                                                                    (functions.statusRequest(getJsonField(
-                                                                                          detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                          r'''$.status''',
-                                                                                        ).toString()) !=
-                                                                                        'Выполнен'),
-                                                                                child: InkWell(
-                                                                                  splashColor: Colors.transparent,
-                                                                                  focusColor: Colors.transparent,
-                                                                                  hoverColor: Colors.transparent,
-                                                                                  highlightColor: Colors.transparent,
-                                                                                  onTap: () async {
-                                                                                    FFAppState().isEdited = true;
-                                                                                    safeSetState(() {});
-                                                                                  },
-                                                                                  child: Icon(
-                                                                                    Icons.edit,
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    size: 24,
-                                                                                  ),
-                                                                                ),
-                                                                              );
-                                                                            } else if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"admin\"') {
-                                                                              return InkWell(
-                                                                                splashColor: Colors.transparent,
-                                                                                focusColor: Colors.transparent,
-                                                                                hoverColor: Colors.transparent,
-                                                                                highlightColor: Colors.transparent,
-                                                                                onTap: () async {
-                                                                                  FFAppState().isEdited = true;
-                                                                                  safeSetState(() {});
-                                                                                },
-                                                                                child: Icon(
-                                                                                  Icons.edit,
-                                                                                  color: FlutterFlowTheme.of(context).primaryText,
-                                                                                  size: 24,
-                                                                                ),
-                                                                              );
-                                                                            } else if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"performer\"') {
-                                                                              return Visibility(
-                                                                                visible: functions.statusRequest(getJsonField(
-                                                                                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                      r'''$.status''',
-                                                                                    ).toString()) ==
-                                                                                    'В работе',
-                                                                                child: InkWell(
-                                                                                  splashColor: Colors.transparent,
-                                                                                  focusColor: Colors.transparent,
-                                                                                  hoverColor: Colors.transparent,
-                                                                                  highlightColor: Colors.transparent,
-                                                                                  onTap: () async {
-                                                                                    FFAppState().isEdited = true;
-                                                                                    safeSetState(() {});
-                                                                                  },
-                                                                                  child: Icon(
-                                                                                    Icons.edit,
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    size: 24,
-                                                                                  ),
-                                                                                ),
-                                                                              );
-                                                                            } else if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"director\"') {
-                                                                              return Visibility(
-                                                                                visible: functions.statusRequest(getJsonField(
-                                                                                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                      r'''$.status''',
-                                                                                    ).toString()) ==
-                                                                                    'Открыта',
-                                                                                child: InkWell(
-                                                                                  splashColor: Colors.transparent,
-                                                                                  focusColor: Colors.transparent,
-                                                                                  hoverColor: Colors.transparent,
-                                                                                  highlightColor: Colors.transparent,
-                                                                                  onTap: () async {
-                                                                                    FFAppState().isEdited = true;
-                                                                                    safeSetState(() {});
-                                                                                  },
-                                                                                  child: Icon(
-                                                                                    Icons.edit,
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    size: 24,
-                                                                                  ),
-                                                                                ),
-                                                                              );
-                                                                            } else {
-                                                                              return Container(
-                                                                                decoration: BoxDecoration(
-                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                ),
-                                                                              );
-                                                                            }
-                                                                          },
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Builder(
-                                                                  builder:
-                                                                      (context) {
-                                                                    final works =
-                                                                        FFAppState()
-                                                                            .works
-                                                                            .toList();
-
-                                                                    return Column(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: List.generate(
-                                                                          works
-                                                                              .length,
-                                                                          (worksIndex) {
-                                                                        final worksItem =
-                                                                            works[worksIndex];
-                                                                        return Container(
-                                                                          width:
-                                                                              MediaQuery.sizeOf(context).width,
-                                                                          decoration:
-                                                                              BoxDecoration(
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).secondaryBackground,
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(0),
-                                                                          ),
-                                                                          child:
-                                                                              Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                16,
-                                                                                5,
-                                                                                16,
-                                                                                5),
-                                                                            child:
-                                                                                Row(
-                                                                              mainAxisSize: MainAxisSize.max,
-                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                              children: [
-                                                                                Container(
-                                                                                  width: MediaQuery.sizeOf(context).width * 0.7,
-                                                                                  decoration: BoxDecoration(),
-                                                                                  child: Column(
-                                                                                    mainAxisSize: MainAxisSize.max,
-                                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                    children: [
-                                                                                      Text(
-                                                                                        worksItem.title,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              fontFamily: 'SFProText',
-                                                                                              color: FlutterFlowTheme.of(context).primaryText,
-                                                                                              fontSize: 15,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                                Container(
-                                                                                  width: 39,
-                                                                                  height: 39,
-                                                                                  decoration: BoxDecoration(
-                                                                                    color: Color(0xFF86878F),
-                                                                                    shape: BoxShape.circle,
-                                                                                  ),
-                                                                                  child: Align(
-                                                                                    alignment: AlignmentDirectional(0, 0),
-                                                                                    child: Text(
-                                                                                      worksItem.amount.toString(),
-                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                            font: GoogleFonts.readexPro(
-                                                                                              fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                            color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                            letterSpacing: 0.0,
-                                                                                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                          ),
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      }).divide(SizedBox(
-                                                                          height:
-                                                                              10)),
-                                                                    );
-                                                                  },
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  height: 5)),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }
-                                                    },
-                                                  ),
-                                                  if (FFAppState().isEdited)
-                                                    FFButtonWidget(
-                                                      onPressed: () async {
-                                                        var _shouldSetState =
-                                                            false;
-                                                        _model.apiResultg8zCopy =
-                                                            await UpdateDefectsByIdCall
-                                                                .call(
-                                                          access:
-                                                              currentAuthenticationToken,
-                                                          id: getJsonField(
-                                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                                .jsonBody,
-                                                            r'''$.id''',
-                                                          ),
-                                                          bodyJson:
-                                                              EditDefectStruct(
-                                                            works: FFAppState()
-                                                                .works,
-                                                            files:
-                                                                (getJsonField(
-                                                              detailedDefectsOfflineGetDefectsByIDResponse
-                                                                  .jsonBody,
-                                                              r'''$.files''',
-                                                              true,
-                                                            )?.toList().map<FilesStruct?>(FilesStruct.maybeFromMap).toList()
-                                                                        as Iterable<
-                                                                            FilesStruct?>)
-                                                                    .withoutNulls,
-                                                          ).toMap(),
-                                                        );
-
-                                                        _shouldSetState = true;
-                                                        if ((_model
-                                                                .apiResultg8zCopy
-                                                                ?.succeeded ??
-                                                            true)) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                'Дефект успешно отредактирован!',
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                ),
-                                                              ),
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      4000),
-                                                              backgroundColor:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondary,
-                                                            ),
-                                                          );
-                                                        } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                (_model.apiResultg8zCopy
-                                                                            ?.jsonBody ??
-                                                                        '')
-                                                                    .toString(),
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                ),
-                                                              ),
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      4000),
-                                                              backgroundColor:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondary,
-                                                            ),
-                                                          );
-                                                          if (_shouldSetState)
-                                                            safeSetState(() {});
-                                                          return;
-                                                        }
-
-                                                        FFAppState().isEdited =
-                                                            false;
-                                                        safeSetState(() {});
-                                                        if (_shouldSetState)
-                                                          safeSetState(() {});
-                                                      },
-                                                      text: 'Сохранить',
-                                                      options: FFButtonOptions(
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                0.95,
-                                                        height:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .height *
-                                                                0.05,
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(16, 0,
-                                                                    16, 0),
-                                                        iconPadding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0, 0, 0, 0),
-                                                        color:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        textStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: Colors
-                                                                      .white,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                ),
-                                                        elevation: 0,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8),
+                                                        ].divide(SizedBox(
+                                                            height: 15.0)),
                                                       ),
                                                     ),
-                                                ].divide(SizedBox(height: 10)),
-                                              ),
-                                            ),
+                                                  ),
+                                                ),
+                                            ].addToEnd(SizedBox(height:60.0)),
                                           ),
-                                        ),
-                                      ],
+                                        ]
+                                            .divide(SizedBox(height: 20.0))
+                                            .addToEnd(SizedBox(height: 150.0)),
+                                      ),
                                     ),
-                                    Container(
-                                      decoration: BoxDecoration(),
+                                    SingleChildScrollView(
                                       child: Column(
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
-                                          Container(
-                                            height: MediaQuery.sizeOf(context)
-                                                    .height *
-                                                0.55,
-                                            decoration: BoxDecoration(),
-                                            child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(0, 15, 0, 0),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  Builder(
-                                                    builder: (context) {
-                                                      if (FFAppState()
-                                                          .isEdited) {
-                                                        return Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.95,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                          ),
-                                                          child: Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0,
-                                                                        5,
-                                                                        0,
-                                                                        5),
-                                                            child: Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              children: [
-                                                                Container(
-                                                                  width: MediaQuery
-                                                                          .sizeOf(
-                                                                              context)
-                                                                      .width,
-                                                                  height: 50,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryBackground,
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            16,
-                                                                            5,
-                                                                            16,
-                                                                            0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        Text(
-                                                                          'Список ТМЦ',
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: Color(0xFF87898F),
-                                                                                fontSize: 16,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.bold,
-                                                                              ),
-                                                                        ),
-                                                                        InkWell(
-                                                                          splashColor:
-                                                                              Colors.transparent,
-                                                                          focusColor:
-                                                                              Colors.transparent,
-                                                                          hoverColor:
-                                                                              Colors.transparent,
-                                                                          highlightColor:
-                                                                              Colors.transparent,
-                                                                          onTap:
-                                                                              () async {
-                                                                            FFAppState().isEdited =
-                                                                                false;
-                                                                            safeSetState(() {});
-                                                                          },
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons.close_sharp,
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).primaryText,
-                                                                            size:
-                                                                                24,
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Builder(
-                                                                  builder:
-                                                                      (context) {
-                                                                    final spareparts =
-                                                                        FFAppState()
-                                                                            .spareparts
-                                                                            .toList();
-
-                                                                    return Column(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: List.generate(
-                                                                          spareparts
-                                                                              .length,
-                                                                          (sparepartsIndex) {
-                                                                        final sparepartsItem =
-                                                                            spareparts[sparepartsIndex];
-                                                                        return Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.start,
-                                                                          children: [
-                                                                            Container(
-                                                                              width: MediaQuery.sizeOf(context).width * 0.8,
-                                                                              height: 50,
-                                                                              decoration: BoxDecoration(
-                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                borderRadius: BorderRadius.circular(8),
-                                                                              ),
-                                                                              child: Padding(
-                                                                                padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
-                                                                                child: Row(
-                                                                                  mainAxisSize: MainAxisSize.max,
-                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                  children: [
-                                                                                    Container(
-                                                                                      width: MediaQuery.sizeOf(context).width * 0.6,
-                                                                                      decoration: BoxDecoration(),
-                                                                                      child: Padding(
-                                                                                        padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 0),
-                                                                                        child: Column(
-                                                                                          mainAxisSize: MainAxisSize.max,
-                                                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                          children: [
-                                                                                            Text(
-                                                                                              sparepartsItem.title,
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'SFProText',
-                                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                                    fontSize: 15,
-                                                                                                    letterSpacing: 0.0,
-                                                                                                    fontWeight: FontWeight.w500,
-                                                                                                  ),
-                                                                                            ),
-                                                                                            Text(
-                                                                                              sparepartsItem.model,
-                                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                    fontFamily: 'SFProText',
-                                                                                                    letterSpacing: 0.0,
-                                                                                                  ),
-                                                                                            ),
-                                                                                          ],
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                    Container(
-                                                                                      width: 39,
-                                                                                      height: 39,
-                                                                                      decoration: BoxDecoration(
-                                                                                        color: Color(0xFF86878F),
-                                                                                        shape: BoxShape.circle,
-                                                                                      ),
-                                                                                      child: Align(
-                                                                                        alignment: AlignmentDirectional(0, 0),
-                                                                                        child: Text(
-                                                                                          sparepartsItem.amount.toString(),
-                                                                                          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                                font: GoogleFonts.readexPro(
-                                                                                                  fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                  fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                                ),
-                                                                                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                                letterSpacing: 0.0,
-                                                                                                fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                                fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                              ),
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                                  ],
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                            InkWell(
-                                                                              splashColor: Colors.transparent,
-                                                                              focusColor: Colors.transparent,
-                                                                              hoverColor: Colors.transparent,
-                                                                              highlightColor: Colors.transparent,
-                                                                              onTap: () async {
-                                                                                FFAppState().removeAtIndexFromSpareparts(sparepartsIndex);
-                                                                                safeSetState(() {});
-                                                                              },
-                                                                              child: Icon(
-                                                                                Icons.close,
-                                                                                color: FlutterFlowTheme.of(context).primaryText,
-                                                                                size: 24,
-                                                                              ),
-                                                                            ),
-                                                                          ],
-                                                                        );
-                                                                      }).divide(SizedBox(
-                                                                          height:
-                                                                              10)),
-                                                                    );
-                                                                  },
-                                                                ),
-                                                                Builder(
-                                                                  builder:
-                                                                      (context) =>
-                                                                          InkWell(
-                                                                    splashColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    focusColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    hoverColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    highlightColor:
-                                                                        Colors
-                                                                            .transparent,
-                                                                    onTap:
-                                                                        () async {
-                                                                      await showDialog(
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (dialogContext) {
-                                                                          return Dialog(
-                                                                            elevation:
-                                                                                0,
-                                                                            insetPadding:
-                                                                                EdgeInsets.zero,
-                                                                            backgroundColor:
-                                                                                Colors.transparent,
-                                                                            alignment:
-                                                                                AlignmentDirectional(0, 0).resolve(Directionality.of(context)),
-                                                                            child:
-                                                                                GestureDetector(
-                                                                              onTap: () {
-                                                                                FocusScope.of(dialogContext).unfocus();
-                                                                                FocusManager.instance.primaryFocus?.unfocus();
-                                                                              },
-                                                                              child: Container(
-                                                                                height: MediaQuery.sizeOf(context).height * 0.47,
-                                                                                width: MediaQuery.sizeOf(context).width * 0.95,
-                                                                                child: AddTMCWidget(),
-                                                                              ),
-                                                                            ),
-                                                                          );
-                                                                        },
-                                                                      );
-                                                                    },
-                                                                    child:
-                                                                        Container(
-                                                                      width: MediaQuery.sizeOf(
-                                                                              context)
-                                                                          .width,
-                                                                      height:
-                                                                          50,
-                                                                      decoration:
-                                                                          BoxDecoration(
-                                                                        color: FlutterFlowTheme.of(context)
-                                                                            .secondaryBackground,
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(8),
-                                                                      ),
-                                                                      child:
-                                                                          Padding(
-                                                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                                                            16,
-                                                                            5,
-                                                                            16,
-                                                                            0),
-                                                                        child:
-                                                                            Row(
-                                                                          mainAxisSize:
-                                                                              MainAxisSize.max,
-                                                                          mainAxisAlignment:
-                                                                              MainAxisAlignment.center,
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.add,
-                                                                              color: FlutterFlowTheme.of(context).secondaryText,
-                                                                              size: 24,
-                                                                            ),
-                                                                            Text(
-                                                                              'Добавить ТМЦ',
-                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                    fontFamily: 'SFProText',
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    fontSize: 16,
-                                                                                    letterSpacing: 0.0,
-                                                                                    fontWeight: FontWeight.w500,
-                                                                                  ),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Container(
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            12),
-                                                                  ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  height: 5)),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      } else {
-                                                        return Container(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.95,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .secondaryBackground,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                          ),
-                                                          child: Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0,
-                                                                        5,
-                                                                        0,
-                                                                        5),
-                                                            child: Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              children: [
-                                                                Container(
-                                                                  width: MediaQuery
-                                                                          .sizeOf(
-                                                                              context)
-                                                                      .width,
-                                                                  height: 50,
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .secondaryBackground,
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .circular(8),
-                                                                  ),
-                                                                  child:
-                                                                      Padding(
-                                                                    padding: EdgeInsetsDirectional
-                                                                        .fromSTEB(
-                                                                            16,
-                                                                            5,
-                                                                            16,
-                                                                            0),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      mainAxisAlignment:
-                                                                          MainAxisAlignment
-                                                                              .spaceBetween,
-                                                                      children: [
-                                                                        Text(
-                                                                          'Список ТМЦ',
-                                                                          style: FlutterFlowTheme.of(context)
-                                                                              .bodyMedium
-                                                                              .override(
-                                                                                fontFamily: 'SFProText',
-                                                                                color: Color(0xFF87898F),
-                                                                                fontSize: 16,
-                                                                                letterSpacing: 0.0,
-                                                                                fontWeight: FontWeight.bold,
-                                                                              ),
-                                                                        ),
-                                                                        Builder(
-                                                                          builder:
-                                                                              (context) {
-                                                                            if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"engineer\"') {
-                                                                              return Visibility(
-                                                                                visible: (functions.statusRequest(getJsonField(
-                                                                                          detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                          r'''$.status''',
-                                                                                        ).toString()) !=
-                                                                                        'Закрыта') &&
-                                                                                    (functions.statusRequest(getJsonField(
-                                                                                          detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                          r'''$.status''',
-                                                                                        ).toString()) !=
-                                                                                        'Выполнен'),
-                                                                                child: InkWell(
-                                                                                  splashColor: Colors.transparent,
-                                                                                  focusColor: Colors.transparent,
-                                                                                  hoverColor: Colors.transparent,
-                                                                                  highlightColor: Colors.transparent,
-                                                                                  onTap: () async {
-                                                                                    FFAppState().isEdited = true;
-                                                                                    safeSetState(() {});
-                                                                                  },
-                                                                                  child: Icon(
-                                                                                    Icons.edit,
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    size: 24,
-                                                                                  ),
-                                                                                ),
-                                                                              );
-                                                                            } else if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"admin\"') {
-                                                                              return InkWell(
-                                                                                splashColor: Colors.transparent,
-                                                                                focusColor: Colors.transparent,
-                                                                                hoverColor: Colors.transparent,
-                                                                                highlightColor: Colors.transparent,
-                                                                                onTap: () async {
-                                                                                  FFAppState().isEdited = true;
-                                                                                  safeSetState(() {});
-                                                                                },
-                                                                                child: Icon(
-                                                                                  Icons.edit,
-                                                                                  color: FlutterFlowTheme.of(context).primaryText,
-                                                                                  size: 24,
-                                                                                ),
-                                                                              );
-                                                                            } else if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"performer\"') {
-                                                                              return Visibility(
-                                                                                visible: functions.statusRequest(getJsonField(
-                                                                                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                      r'''$.status''',
-                                                                                    ).toString()) ==
-                                                                                    'В работе',
-                                                                                child: InkWell(
-                                                                                  splashColor: Colors.transparent,
-                                                                                  focusColor: Colors.transparent,
-                                                                                  hoverColor: Colors.transparent,
-                                                                                  highlightColor: Colors.transparent,
-                                                                                  onTap: () async {
-                                                                                    FFAppState().isEdited = true;
-                                                                                    safeSetState(() {});
-                                                                                  },
-                                                                                  child: Icon(
-                                                                                    Icons.edit,
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    size: 24,
-                                                                                  ),
-                                                                                ),
-                                                                              );
-                                                                            } else if (valueOrDefault<String>(
-                                                                                  functions.jsonToStringCopy(getJsonField(
-                                                                                    FFAppState().account,
-                                                                                    r'''$.role''',
-                                                                                  )),
-                                                                                  '-',
-                                                                                ) ==
-                                                                                '\"director\"') {
-                                                                              return Visibility(
-                                                                                visible: functions.statusRequest(getJsonField(
-                                                                                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
-                                                                                      r'''$.status''',
-                                                                                    ).toString()) ==
-                                                                                    'Открыта',
-                                                                                child: InkWell(
-                                                                                  splashColor: Colors.transparent,
-                                                                                  focusColor: Colors.transparent,
-                                                                                  hoverColor: Colors.transparent,
-                                                                                  highlightColor: Colors.transparent,
-                                                                                  onTap: () async {
-                                                                                    FFAppState().isEdited = true;
-                                                                                    safeSetState(() {});
-                                                                                  },
-                                                                                  child: Icon(
-                                                                                    Icons.edit,
-                                                                                    color: FlutterFlowTheme.of(context).primaryText,
-                                                                                    size: 24,
-                                                                                  ),
-                                                                                ),
-                                                                              );
-                                                                            } else {
-                                                                              return Container(
-                                                                                decoration: BoxDecoration(
-                                                                                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                ),
-                                                                              );
-                                                                            }
-                                                                          },
-                                                                        ),
-                                                                      ],
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Builder(
-                                                                  builder:
-                                                                      (context) {
-                                                                    final spareparts =
-                                                                        FFAppState()
-                                                                            .spareparts
-                                                                            .toList();
-
-                                                                    return Column(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: List.generate(
-                                                                          spareparts
-                                                                              .length,
-                                                                          (sparepartsIndex) {
-                                                                        final sparepartsItem =
-                                                                            spareparts[sparepartsIndex];
-                                                                        return Container(
-                                                                          width:
-                                                                              MediaQuery.sizeOf(context).width,
-                                                                          decoration:
-                                                                              BoxDecoration(
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).secondaryBackground,
-                                                                            borderRadius:
-                                                                                BorderRadius.circular(0),
-                                                                          ),
-                                                                          child:
-                                                                              Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                16,
-                                                                                5,
-                                                                                16,
-                                                                                5),
-                                                                            child:
-                                                                                Row(
-                                                                              mainAxisSize: MainAxisSize.max,
-                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                              children: [
-                                                                                Container(
-                                                                                  width: MediaQuery.sizeOf(context).width * 0.7,
-                                                                                  decoration: BoxDecoration(),
-                                                                                  child: Column(
-                                                                                    mainAxisSize: MainAxisSize.max,
-                                                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                                    children: [
-                                                                                      Text(
-                                                                                        sparepartsItem.title,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              fontFamily: 'SFProText',
-                                                                                              color: FlutterFlowTheme.of(context).primaryText,
-                                                                                              fontSize: 15,
-                                                                                              letterSpacing: 0.0,
-                                                                                              fontWeight: FontWeight.w500,
-                                                                                            ),
-                                                                                      ),
-                                                                                      Text(
-                                                                                        sparepartsItem.model,
-                                                                                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                              fontFamily: 'SFProText',
-                                                                                              letterSpacing: 0.0,
-                                                                                            ),
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                ),
-                                                                                Container(
-                                                                                  width: 39,
-                                                                                  height: 39,
-                                                                                  decoration: BoxDecoration(
-                                                                                    color: Color(0xFF86878F),
-                                                                                    shape: BoxShape.circle,
-                                                                                  ),
-                                                                                  child: Align(
-                                                                                    alignment: AlignmentDirectional(0, 0),
-                                                                                    child: Text(
-                                                                                      sparepartsItem.amount.toString(),
-                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                            font: GoogleFonts.readexPro(
-                                                                                              fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                              fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                            ),
-                                                                                            color: FlutterFlowTheme.of(context).secondaryBackground,
-                                                                                            letterSpacing: 0.0,
-                                                                                            fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
-                                                                                            fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
-                                                                                          ),
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          ),
-                                                                        );
-                                                                      }).divide(SizedBox(
-                                                                          height:
-                                                                              10)),
-                                                                    );
-                                                                  },
-                                                                ),
-                                                                Container(
-                                                                  decoration:
-                                                                      BoxDecoration(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            12),
-                                                                  ),
-                                                                ),
-                                                              ].divide(SizedBox(
-                                                                  height: 5)),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }
-                                                    },
-                                                  ),
-                                                  if (FFAppState().isEdited)
-                                                    FFButtonWidget(
-                                                      onPressed: () async {
-                                                        var _shouldSetState =
-                                                            false;
-                                                        _model.apiResultg8zCopyCopy =
-                                                            await UpdateDefectsByIdCall
-                                                                .call(
-                                                          access:
-                                                              currentAuthenticationToken,
-                                                          id: getJsonField(
-                                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                                .jsonBody,
-                                                            r'''$.id''',
-                                                          ),
-                                                          bodyJson:
-                                                              EditDefectStruct(
-                                                            spareParts:
-                                                                FFAppState()
-                                                                    .spareparts,
-                                                            files:
-                                                                (getJsonField(
-                                                              detailedDefectsOfflineGetDefectsByIDResponse
-                                                                  .jsonBody,
-                                                              r'''$.files''',
-                                                              true,
-                                                            )?.toList().map<FilesStruct?>(FilesStruct.maybeFromMap).toList()
-                                                                        as Iterable<
-                                                                            FilesStruct?>)
-                                                                    .withoutNulls,
-                                                          ).toMap(),
-                                                        );
-
-                                                        _shouldSetState = true;
-                                                        if ((_model
-                                                                .apiResultg8zCopyCopy
-                                                                ?.succeeded ??
-                                                            true)) {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                'Дефект успешно отредактирован!',
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                ),
-                                                              ),
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      4000),
-                                                              backgroundColor:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondary,
-                                                            ),
-                                                          );
-                                                        } else {
-                                                          ScaffoldMessenger.of(
-                                                                  context)
-                                                              .showSnackBar(
-                                                            SnackBar(
-                                                              content: Text(
-                                                                (_model.apiResultg8zCopyCopy
-                                                                            ?.jsonBody ??
-                                                                        '')
-                                                                    .toString(),
-                                                                style:
-                                                                    TextStyle(
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                ),
-                                                              ),
-                                                              duration: Duration(
-                                                                  milliseconds:
-                                                                      4000),
-                                                              backgroundColor:
-                                                                  FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .secondary,
-                                                            ),
-                                                          );
-                                                          if (_shouldSetState)
-                                                            safeSetState(() {});
-                                                          return;
-                                                        }
-
-                                                        FFAppState().isEdited =
-                                                            false;
-                                                        safeSetState(() {});
-                                                        if (_shouldSetState)
-                                                          safeSetState(() {});
-                                                      },
-                                                      text: 'Сохранить',
-                                                      options: FFButtonOptions(
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                0.95,
-                                                        height:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .height *
-                                                                0.05,
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(16, 0,
-                                                                    16, 0),
-                                                        iconPadding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0, 0, 0, 0),
-                                                        color:
+                                          if (FFAppState().works.length > 0)
+                                            Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryBackground,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          10.0),
+                                                ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsetsDirectional
+                                                              .fromSTEB(
+                                                                  16.0,
+                                                                  10.0,
+                                                                  0.0,
+                                                                  10.0),
+                                                      child: Text(
+                                                        'Список работ',
+                                                        style:
                                                             FlutterFlowTheme.of(
                                                                     context)
-                                                                .primary,
-                                                        textStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleSmall
+                                                                .bodyMedium
                                                                 .override(
                                                                   fontFamily:
                                                                       'SFProText',
-                                                                  color: Colors
-                                                                      .white,
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  fontSize:
+                                                                      17.0,
                                                                   letterSpacing:
                                                                       0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .normal,
                                                                 ),
-                                                        elevation: 0,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8),
                                                       ),
                                                     ),
-                                                ].divide(SizedBox(height: 10)),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Column(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Builder(
-                                          builder: (context) {
-                                            if (!FFAppState().isEdited) {
-                                              return Visibility(
-                                                visible: !FFAppState().isEdited,
-                                                child: Container(
-                                                  height:
-                                                      MediaQuery.sizeOf(context)
-                                                              .height *
-                                                          0.5,
-                                                  decoration: BoxDecoration(),
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(11.5, 15,
-                                                                11.5, 0),
-                                                    child: Builder(
+                                                    Builder(
                                                       builder: (context) {
-                                                        final todo =
-                                                            getJsonField(
-                                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                                              .jsonBody,
-                                                          r'''$.files''',
-                                                        ).toList();
+                                                        final works =
+                                                            FFAppState()
+                                                                .works
+                                                                .toList();
 
-                                                        return GridView.builder(
-                                                          padding:
-                                                              EdgeInsets.zero,
-                                                          gridDelegate:
-                                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                                            crossAxisCount: 3,
-                                                            crossAxisSpacing:
-                                                                10,
-                                                            mainAxisSpacing: 10,
-                                                            childAspectRatio: 1,
-                                                          ),
-                                                          scrollDirection:
-                                                              Axis.vertical,
-                                                          itemCount:
-                                                              todo.length,
-                                                          itemBuilder: (context,
-                                                              todoIndex) {
-                                                            final todoItem =
-                                                                todo[todoIndex];
-                                                            return InkWell(
-                                                              splashColor: Colors
-                                                                  .transparent,
-                                                              focusColor: Colors
-                                                                  .transparent,
-                                                              hoverColor: Colors
-                                                                  .transparent,
-                                                              highlightColor:
-                                                                  Colors
-                                                                      .transparent,
-                                                              onTap: () async {
-                                                                await Navigator
-                                                                    .push(
-                                                                  context,
-                                                                  PageTransition(
-                                                                    type: PageTransitionType
-                                                                        .fade,
-                                                                    child:
-                                                                        FlutterFlowExpandedImageView(
-                                                                      image: Image
-                                                                          .network(
-                                                                        'https://magnum.etry.kz${getJsonField(
-                                                                          todoItem,
-                                                                          r'''$.url''',
-                                                                        ).toString()}',
-                                                                        fit: BoxFit
-                                                                            .contain,
-                                                                      ),
-                                                                      allowRotation:
-                                                                          false,
-                                                                      tag:
-                                                                          'https://magnum.etry.kz${getJsonField(
-                                                                        todoItem,
-                                                                        r'''$.url''',
-                                                                      ).toString()}',
-                                                                      useHeroAnimation:
-                                                                          true,
+                                                        return Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.max,
+                                                          children:
+                                                              List.generate(
+                                                                  works.length,
+                                                                  (worksIndex) {
+                                                            final worksItem =
+                                                                works[
+                                                                    worksIndex];
+                                                            return Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          16.0,
+                                                                          0.0,
+                                                                          16.0,
+                                                                          0.0),
+                                                              child: Row(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .max,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceAround,
+                                                                children: [
+                                                                  Container(
+                                                                    width: MediaQuery.sizeOf(context)
+                                                                            .width *
+                                                                        0.7,
+                                                                    height:
+                                                                        50.0,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondaryBackground,
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              8.0),
+                                                                    ),
+                                                                    child: Row(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .max,
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      children: [
+                                                                        Padding(
+                                                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                                                              0.0,
+                                                                              5.0,
+                                                                              0.0,
+                                                                              0.0),
+                                                                          child:
+                                                                              Column(
+                                                                            mainAxisSize:
+                                                                                MainAxisSize.max,
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.center,
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.start,
+                                                                            children: [
+                                                                              Container(
+                                                                                width: MediaQuery.sizeOf(context).width * 0.6,
+                                                                                decoration: BoxDecoration(),
+                                                                                child: Text(
+                                                                                  worksItem.title,
+                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                        fontFamily: 'SFProText',
+                                                                                        color: FlutterFlowTheme.of(context).primaryText,
+                                                                                        fontSize: 15.0,
+                                                                                        letterSpacing: 0.0,
+                                                                                        fontWeight: FontWeight.w500,
+                                                                                      ),
+                                                                                ),
+                                                                              ),
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                        Container(
+                                                                          width:
+                                                                              39.0,
+                                                                          height:
+                                                                              39.0,
+                                                                          decoration:
+                                                                              BoxDecoration(
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).primary,
+                                                                            shape:
+                                                                                BoxShape.circle,
+                                                                          ),
+                                                                          child:
+                                                                              Align(
+                                                                            alignment:
+                                                                                AlignmentDirectional(0.0, 0.0),
+                                                                            child:
+                                                                                Text(
+                                                                              worksItem.amount.toString(),
+                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                    font: GoogleFonts.readexPro(
+                                                                                      fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                      fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                    ),
+                                                                                    color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                    letterSpacing: 0.0,
+                                                                                    fontWeight: FlutterFlowTheme.of(context).bodyMedium.fontWeight,
+                                                                                    fontStyle: FlutterFlowTheme.of(context).bodyMedium.fontStyle,
+                                                                                  ),
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
                                                                     ),
                                                                   ),
-                                                                );
-                                                              },
-                                                              child: Hero(
-                                                                tag:
-                                                                    'https://magnum.etry.kz${getJsonField(
-                                                                  todoItem,
-                                                                  r'''$.url''',
-                                                                ).toString()}',
-                                                                transitionOnUserGestures:
-                                                                    true,
-                                                                child:
-                                                                    ClipRRect(
-                                                                  borderRadius:
-                                                                      BorderRadius
-                                                                          .circular(
-                                                                              8),
-                                                                  child: Image
-                                                                      .network(
-                                                                    'https://magnum.etry.kz${getJsonField(
-                                                                      todoItem,
-                                                                      r'''$.url''',
-                                                                    ).toString()}',
-                                                                    width: 300,
-                                                                    height: 200,
-                                                                    fit: BoxFit
-                                                                        .cover,
-                                                                  ),
-                                                                ),
+                                                                  if (((functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) !=
+                                                                              'Закрыта') &&
+                                                                          (functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) !=
+                                                                              'На проверке') &&
+                                                                          (functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) !=
+                                                                              'Отклонена') &&
+                                                                          (valueOrDefault<String>(
+                                                                                functions.jsonToStringCopy(getJsonField(
+                                                                                  FFAppState().account,
+                                                                                  r'''$.role''',
+                                                                                )),
+                                                                                '-',
+                                                                              ) ==
+                                                                              '\"engineer\"')) ||
+                                                                      ((functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) !=
+                                                                              'Закрыта') &&
+                                                                          (functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) !=
+                                                                              'На проверке') &&
+                                                                          (functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) !=
+                                                                              'Отклонена') &&
+                                                                          (valueOrDefault<String>(
+                                                                                functions.jsonToStringCopy(getJsonField(
+                                                                                  FFAppState().account,
+                                                                                  r'''$.role''',
+                                                                                )),
+                                                                                '-',
+                                                                              ) ==
+                                                                              '\"admin\"')) ||
+                                                                      ((functions.statusRequest(getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.status''',
+                                                                              ).toString()) ==
+                                                                              'В работе') &&
+                                                                          (valueOrDefault<String>(
+                                                                                functions.jsonToStringCopy(getJsonField(
+                                                                                  FFAppState().account,
+                                                                                  r'''$.role''',
+                                                                                )),
+                                                                                '-',
+                                                                              ) ==
+                                                                              '\"performer\"')) ||
+                                                                      (((functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) ==
+                                                                                  'В работе') ||
+                                                                              (functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) ==
+                                                                                  'Выполнен')) &&
+                                                                          (valueOrDefault<String>(
+                                                                                functions.jsonToStringCopy(getJsonField(
+                                                                                  FFAppState().account,
+                                                                                  r'''$.role''',
+                                                                                )),
+                                                                                '-',
+                                                                              ) ==
+                                                                              '\"technician\"')))
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          10.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          InkWell(
+                                                                        splashColor:
+                                                                            Colors.transparent,
+                                                                        focusColor:
+                                                                            Colors.transparent,
+                                                                        hoverColor:
+                                                                            Colors.transparent,
+                                                                        highlightColor:
+                                                                            Colors.transparent,
+                                                                        onTap:
+                                                                            () async {
+                                                                          var confirmDialogResponse = await showDialog<bool>(
+                                                                                context: context,
+                                                                                builder: (alertDialogContext) {
+                                                                                  return AlertDialog(
+                                                                                    title: Text('Удаление'),
+                                                                                    content: Text('Вы точно хотите удалить работы?'),
+                                                                                    actions: [
+                                                                                      TextButton(
+                                                                                        onPressed: () => Navigator.pop(alertDialogContext, false),
+                                                                                        child: Text('Отмена'),
+                                                                                      ),
+                                                                                      TextButton(
+                                                                                        onPressed: () => Navigator.pop(alertDialogContext, true),
+                                                                                        child: Text('Удалить'),
+                                                                                      ),
+                                                                                    ],
+                                                                                  );
+                                                                                },
+                                                                              ) ??
+                                                                              false;
+                                                                          if (confirmDialogResponse) {
+                                                                            FFAppState().removeAtIndexFromWorks(worksIndex);
+                                                                            safeSetState(() {});
+                                                                            _model.apiResur =
+                                                                                await UpdateDefectsByIdCall.call(
+                                                                              access: currentAuthenticationToken,
+                                                                              id: getJsonField(
+                                                                                detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                r'''$.id''',
+                                                                              ),
+                                                                              bodyJson: EditDefectStruct(
+                                                                                works: FFAppState().works,
+                                                                                files: (getJsonField(
+                                                                                  detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                  r'''$.files''',
+                                                                                  true,
+                                                                                )?.toList().map<FilesStruct?>(FilesStruct.maybeFromMap).toList() as Iterable<FilesStruct?>)
+                                                                                    .withoutNulls,
+                                                                              ).toMap(),
+                                                                            );
+                                                                          }
+
+                                                                          safeSetState(
+                                                                              () {});
+                                                                        },
+                                                                        child:
+                                                                            Icon(
+                                                                          Icons
+                                                                              .delete_forever,
+                                                                          color:
+                                                                              FlutterFlowTheme.of(context).error,
+                                                                          size:
+                                                                              24.0,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                ],
                                                               ),
                                                             );
-                                                          },
+                                                          }),
                                                         );
                                                       },
                                                     ),
-                                                  ),
+                                                  ].addToEnd(
+                                                      SizedBox(height: 5.0)),
                                                 ),
-                                              );
-                                            } else {
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Row(
+                                              ),
+                                            ),
+                                          // Generated code for this Container Widget...
+Padding(
+  padding: EdgeInsets.all(8),
+  child: Container(
+    decoration: BoxDecoration(
+      color: FlutterFlowTheme.of(context).secondaryBackground,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Container(
+            width: MediaQuery.sizeOf(context).width,
+            height: 50,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.build_rounded,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 20,
+                  ),
+                  Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                    child: Text(
+                      'Добавить работу',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: FlutterFlowTheme.of(context).primaryText,
+                            fontSize: 17,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.normal,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Название работы',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: Color(0xFF87898F),
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    Container(
+                      height: MediaQuery.sizeOf(context).height * 0.04,
+                      decoration: BoxDecoration(),
+                      child: TextFormField(
+                        controller: _model.nameTextController1,
+                        focusNode: _model.nameFocusNode1,
+                        autofocus: false,
+                        textInputAction: TextInputAction.next,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          labelStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          hintText: 'Например: Замена предохранителя ',
+                          hintStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0x00000000),
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).primary,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                          contentPadding: EdgeInsets.all(10),
+                        ),
+                        style:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.readexPro(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                        validator: _model.nameTextController1Validator
+                            .asValidator(context),
+                      ),
+                    ),
+                  ].divide(SizedBox(height: 5)),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Количество работы',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: Color(0xFF87898F),
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    Container(
+                      height: MediaQuery.sizeOf(context).height * 0.04,
+                      decoration: BoxDecoration(),
+                      child: TextFormField(
+                        controller: _model.sumTextController1,
+                        focusNode: _model.sumFocusNode1,
+                        autofocus: false,
+                        textInputAction: TextInputAction.done,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          labelStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          hintText: '0',
+                          hintStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0x00000000),
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).primary,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                          contentPadding: EdgeInsets.all(10),
+                        ),
+                        style:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.readexPro(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            signed: true, decimal: true),
+                        validator: _model.sumTextController1Validator
+                            .asValidator(context),
+                      ),
+                    ),
+                  ].divide(SizedBox(height: 5)),
+                ),
+              ].divide(SizedBox(height: 5)),
+            ),
+          ),
+          if (((functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) !=
+                      'Закрыта') &&
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) !=
+                      'На проверке') &&
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) !=
+                      'Отклонена') &&
+                  (valueOrDefault<String>(
+                        functions.jsonToStringCopy(getJsonField(
+                          FFAppState().account,
+                          r'''$.role''',
+                        )),
+                        '-',
+                      ) ==
+                      '\"engineer\"')) ||
+              ((functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) !=
+                      'Закрыта') &&
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) !=
+                      'На проверке') &&
+                  (functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) !=
+                      'Отклонена') &&
+                  (valueOrDefault<String>(
+                        functions.jsonToStringCopy(getJsonField(
+                          FFAppState().account,
+                          r'''$.role''',
+                        )),
+                        '-',
+                      ) ==
+                      '\"admin\"')) ||
+              ((functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) ==
+                      'В работе') &&
+                  (valueOrDefault<String>(
+                        functions.jsonToStringCopy(getJsonField(
+                          FFAppState().account,
+                          r'''$.role''',
+                        )),
+                        '-',
+                      ) ==
+                      '\"performer\"')) ||
+              (((functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) ==
+                          'В работе') ||
+                      (functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) ==
+                          'Выполнен')) &&
+                  (valueOrDefault<String>(
+                        functions.jsonToStringCopy(getJsonField(
+                          FFAppState().account,
+                          r'''$.role''',
+                        )),
+                        '-',
+                      ) ==
+                      '\"technician\"')))
+            InkWell(
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: () async {
+                if ((_model.nameTextController1.text != null &&
+                        _model.nameTextController1.text != '') &&
+                    (_model.sumTextController1.text != null &&
+                        _model.sumTextController1.text != '')) {
+                  FFAppState().addToWorks(WorksStruct(
+                    title: _model.nameTextController1.text,
+                    amount: int.tryParse(_model.sumTextController1.text),
+                  ));
+                  FFAppState().update(() {});
+                  _model.apiResultg8zCopy = await UpdateDefectsByIdCall.call(
+                    access: currentAuthenticationToken,
+                    id: getJsonField(
+                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                      r'''$.id''',
+                    ),
+                    bodyJson: EditDefectStruct(
+                      works: FFAppState().works,
+                      files: (getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.files''',
+                        true,
+                      )
+                              ?.toList()
+                              .map<FilesStruct?>(FilesStruct.maybeFromMap)
+                              .toList() as Iterable<FilesStruct?>)
+                          .withoutNulls,
+                    ).toMap(),
+                  );
+                  safeSetState(() {
+                    _model.nameTextController1?.clear();
+                    _model.sumTextController1?.clear();
+                  });
+                }
+                safeSetState(() {});
+              },
+              child: Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add,
+                        color: FlutterFlowTheme.of(context).secondaryText,
+                        size: 24,
+                      ),
+                      Text(
+                        'Добавить работу',
+                        style: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              fontFamily: 'SFProText',
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              fontSize: 16,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ].divide(SizedBox(height: 5)),
+      ),
+    ),
+  ),
+)
+
+                                        ].addToEnd(SizedBox(height: 100.0)),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          0.0, 0.0, 0.0, 10.0),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            if (FFAppState().spareparts.length >
+                                                0)
+                                              Padding(
+                                                padding: EdgeInsets.all(8.0),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryBackground,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.0),
+                                                  ),
+                                                  child: Column(
                                                     mainAxisSize:
                                                         MainAxisSize.max,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.end,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
                                                       Padding(
                                                         padding:
                                                             EdgeInsetsDirectional
-                                                                .fromSTEB(0, 0,
-                                                                    11.5, 0),
+                                                                .fromSTEB(
+                                                                    16.0,
+                                                                    10.0,
+                                                                    0.0,
+                                                                    10.0),
+                                                        child: Text(
+                                                          'Список материалов',
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'SFProText',
+                                                                color: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .primaryText,
+                                                                fontSize: 17.0,
+                                                                letterSpacing:
+                                                                    0.0,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    0.0,
+                                                                    0.0,
+                                                                    0.0,
+                                                                    10.0),
+                                                        child: Builder(
+                                                          builder: (context) {
+                                                            final spareparts =
+                                                                FFAppState()
+                                                                    .spareparts
+                                                                    .toList();
+
+                                                            return Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              children: List.generate(
+                                                                  spareparts
+                                                                      .length,
+                                                                  (sparepartsIndex) {
+                                                                final sparepartsItem =
+                                                                    spareparts[
+                                                                        sparepartsIndex];
+                                                                return Padding(
+                                                                  padding: EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          16.0,
+                                                                          0.0,
+                                                                          16.0,
+                                                                          0.0),
+                                                                  child: Row(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .max,
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .spaceAround,
+                                                                    children: [
+                                                                      Container(
+                                                                        width: MediaQuery.sizeOf(context).width *
+                                                                            0.7,
+                                                                        height:
+                                                                            50.0,
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          color:
+                                                                              FlutterFlowTheme.of(context).secondaryBackground,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(8.0),
+                                                                        ),
+                                                                        child:
+                                                                            Row(
+                                                                          mainAxisSize:
+                                                                              MainAxisSize.max,
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.spaceBetween,
+                                                                          children: [
+                                                                            Padding(
+                                                                              padding: EdgeInsetsDirectional.fromSTEB(0.0, 5.0, 0.0, 0.0),
+                                                                              child: Column(
+                                                                                mainAxisSize: MainAxisSize.max,
+                                                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                                children: [
+                                                                                  Container(
+                                                                                    width: MediaQuery.sizeOf(context).width * 0.6,
+                                                                                    decoration: BoxDecoration(),
+                                                                                    child: Text(
+                                                                                      sparepartsItem.title,
+                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                            fontFamily: 'SFProText',
+                                                                                            color: FlutterFlowTheme.of(context).primaryText,
+                                                                                            fontSize: 15.0,
+                                                                                            letterSpacing: 0.0,
+                                                                                            fontWeight: FontWeight.w500,
+                                                                                          ),
+                                                                                    ),
+                                                                                  ),
+                                                                                  Container(
+                                                                                    width: MediaQuery.sizeOf(context).width * 0.6,
+                                                                                    decoration: BoxDecoration(),
+                                                                                    child: Text(
+                                                                                      sparepartsItem.model,
+                                                                                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                            fontFamily: 'SFProText',
+                                                                                            letterSpacing: 0.0,
+                                                                                          ),
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                            Container(
+                                                                              width: 39.0,
+                                                                              height: 39.0,
+                                                                              decoration: BoxDecoration(
+                                                                                color: FlutterFlowTheme.of(context).primary,
+                                                                                shape: BoxShape.circle,
+                                                                              ),
+                                                                              child: Align(
+                                                                                alignment: AlignmentDirectional(0.0, 0.0),
+                                                                                child: Text(
+                                                                                  sparepartsItem.amount.toString(),
+                                                                                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                        fontFamily: 'SFProText',
+                                                                                        color: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                        letterSpacing: 0.0,
+                                                                                      ),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      if (((functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) !=
+                                                                                  'Закрыта') &&
+                                                                              (functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) !=
+                                                                                  'На проверке') &&
+                                                                              (functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) !=
+                                                                                  'Отклонена') &&
+                                                                              (valueOrDefault<String>(
+                                                                                    functions.jsonToStringCopy(getJsonField(
+                                                                                      FFAppState().account,
+                                                                                      r'''$.role''',
+                                                                                    )),
+                                                                                    '-',
+                                                                                  ) ==
+                                                                                  '\"engineer\"')) ||
+                                                                          ((functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) !=
+                                                                                  'Закрыта') &&
+                                                                              (functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) !=
+                                                                                  'На проверке') &&
+                                                                              (functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) !=
+                                                                                  'Отклонена') &&
+                                                                              (valueOrDefault<String>(
+                                                                                    functions.jsonToStringCopy(getJsonField(
+                                                                                      FFAppState().account,
+                                                                                      r'''$.role''',
+                                                                                    )),
+                                                                                    '-',
+                                                                                  ) ==
+                                                                                  '\"admin\"')) ||
+                                                                          ((functions.statusRequest(getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.status''',
+                                                                                  ).toString()) ==
+                                                                                  'В работе') &&
+                                                                              (valueOrDefault<String>(
+                                                                                    functions.jsonToStringCopy(getJsonField(
+                                                                                      FFAppState().account,
+                                                                                      r'''$.role''',
+                                                                                    )),
+                                                                                    '-',
+                                                                                  ) ==
+                                                                                  '\"performer\"')) ||
+                                                                          (((functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) ==
+                                                                                      'В работе') ||
+                                                                                  (functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) ==
+                                                                                      'Выполнен')) &&
+                                                                              (valueOrDefault<String>(
+                                                                                    functions.jsonToStringCopy(getJsonField(
+                                                                                      FFAppState().account,
+                                                                                      r'''$.role''',
+                                                                                    )),
+                                                                                    '-',
+                                                                                  ) ==
+                                                                                  '\"technician\"')))
+                                                                        Padding(
+                                                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                                                              10.0,
+                                                                              0.0,
+                                                                              0.0,
+                                                                              0.0),
+                                                                          child:
+                                                                              InkWell(
+                                                                            splashColor:
+                                                                                Colors.transparent,
+                                                                            focusColor:
+                                                                                Colors.transparent,
+                                                                            hoverColor:
+                                                                                Colors.transparent,
+                                                                            highlightColor:
+                                                                                Colors.transparent,
+                                                                            onTap:
+                                                                                () async {
+                                                                              var confirmDialogResponse = await showDialog<bool>(
+                                                                                    context: context,
+                                                                                    builder: (alertDialogContext) {
+                                                                                      return AlertDialog(
+                                                                                        title: Text('Удаление'),
+                                                                                        content: Text('Вы точно хотите удалить ТМЦ?'),
+                                                                                        actions: [
+                                                                                          TextButton(
+                                                                                            onPressed: () => Navigator.pop(alertDialogContext, false),
+                                                                                            child: Text('Отмена '),
+                                                                                          ),
+                                                                                          TextButton(
+                                                                                            onPressed: () => Navigator.pop(alertDialogContext, true),
+                                                                                            child: Text('Удалить'),
+                                                                                          ),
+                                                                                        ],
+                                                                                      );
+                                                                                    },
+                                                                                  ) ??
+                                                                                  false;
+                                                                              if (confirmDialogResponse) {
+                                                                                FFAppState().removeAtIndexFromSpareparts(sparepartsIndex);
+                                                                                safeSetState(() {});
+                                                                                _model.apiResur2 = await UpdateDefectsByIdCall.call(
+                                                                                  access: currentAuthenticationToken,
+                                                                                  id: getJsonField(
+                                                                                    detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                    r'''$.id''',
+                                                                                  ),
+                                                                                  bodyJson: EditDefectStruct(
+                                                                                    spareParts: FFAppState().spareparts,
+                                                                                    files: (getJsonField(
+                                                                                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                      r'''$.files''',
+                                                                                      true,
+                                                                                    )?.toList().map<FilesStruct?>(FilesStruct.maybeFromMap).toList() as Iterable<FilesStruct?>)
+                                                                                        .withoutNulls,
+                                                                                  ).toMap(),
+                                                                                );
+                                                                              }
+
+                                                                              safeSetState(() {});
+                                                                            },
+                                                                            child:
+                                                                                Icon(
+                                                                              Icons.delete_forever,
+                                                                              color: FlutterFlowTheme.of(context).error,
+                                                                              size: 24.0,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                    ],
+                                                                  ),
+                                                                );
+                                                              }),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            // Generated code for this Container Widget...
+Padding(
+  padding: EdgeInsets.all(8),
+  child: Container(
+    decoration: BoxDecoration(
+      color: FlutterFlowTheme.of(context).secondaryBackground,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Padding(
+      padding: EdgeInsetsDirectional.fromSTEB(0, 5, 0, 5),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Container(
+            width: MediaQuery.sizeOf(context).width,
+            height: 50,
+            decoration: BoxDecoration(
+              color: FlutterFlowTheme.of(context).secondaryBackground,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.boxOpen,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                    size: 20,
+                  ),
+                  Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(10, 0, 0, 0),
+                    child: Text(
+                      'Добавить материал',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: FlutterFlowTheme.of(context).primaryText,
+                            fontSize: 17,
+                            letterSpacing: 0.0,
+                            fontWeight: FontWeight.normal,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Название ТМЦ',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: Color(0xFF87898F),
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    Container(
+                      height: MediaQuery.sizeOf(context).height * 0.04,
+                      decoration: BoxDecoration(),
+                      child: TextFormField(
+                        controller: _model.nameTextController2,
+                        focusNode: _model.nameFocusNode2,
+                        autofocus: false,
+                        textInputAction: TextInputAction.next,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          labelStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          hintText: 'Например: Предохранитель 10A',
+                          hintStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0x00000000),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).primary,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                          contentPadding: EdgeInsets.all(10),
+                        ),
+                        style:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.readexPro(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                        validator: _model.nameTextController2Validator
+                            .asValidator(context),
+                      ),
+                    ),
+                  ].divide(SizedBox(height: 5)),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Артикул',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: Color(0xFF87898F),
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    Container(
+                      height: MediaQuery.sizeOf(context).height * 0.04,
+                      decoration: BoxDecoration(),
+                      child: TextFormField(
+                        controller: _model.attributeTextController,
+                        focusNode: _model.attributeFocusNode,
+                        autofocus: false,
+                        textInputAction: TextInputAction.next,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          labelStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          hintText: '00002045',
+                          hintStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0x00000000),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).primary,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                          contentPadding: EdgeInsets.all(10),
+                        ),
+                        style:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.readexPro(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                        validator: _model.attributeTextControllerValidator
+                            .asValidator(context),
+                      ),
+                    ),
+                  ].divide(SizedBox(height: 5)),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Количество ТМЦ',
+                      style: FlutterFlowTheme.of(context).bodyMedium.override(
+                            fontFamily: 'SFProText',
+                            color: Color(0xFF87898F),
+                            letterSpacing: 0.0,
+                          ),
+                    ),
+                    Container(
+                      height: MediaQuery.sizeOf(context).height * 0.04,
+                      decoration: BoxDecoration(),
+                      child: TextFormField(
+                        controller: _model.sumTextController2,
+                        focusNode: _model.sumFocusNode2,
+                        autofocus: false,
+                        textInputAction: TextInputAction.done,
+                        obscureText: false,
+                        decoration: InputDecoration(
+                          labelStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          hintText: '0',
+                          hintStyle: FlutterFlowTheme.of(context)
+                              .labelMedium
+                              .override(
+                                fontFamily: 'SFProText',
+                                letterSpacing: 0.0,
+                              ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Color(0x00000000),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).primary,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                          contentPadding: EdgeInsets.all(10),
+                        ),
+                        style:
+                            FlutterFlowTheme.of(context).bodyMedium.override(
+                                  font: GoogleFonts.readexPro(
+                                    fontWeight: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontWeight,
+                                    fontStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .fontStyle,
+                                  ),
+                                  letterSpacing: 0.0,
+                                  fontWeight: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontWeight,
+                                  fontStyle: FlutterFlowTheme.of(context)
+                                      .bodyMedium
+                                      .fontStyle,
+                                ),
+                        keyboardType: const TextInputType.numberWithOptions(
+                            signed: true, decimal: true),
+                        validator: _model.sumTextController2Validator
+                            .asValidator(context),
+                      ),
+                    ),
+                  ].divide(SizedBox(height: 5)),
+                ),
+              ].divide(SizedBox(height: 5)),
+            ),
+          ),
+          if ((((functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) !=
+                          'Закрыта') &&
+                      (functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) !=
+                          'На проверке') &&
+                      (functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) !=
+                          'Отклонена')) &&
+                  ((valueOrDefault<String>(
+                            functions.jsonToStringCopy(getJsonField(
+                              FFAppState().account,
+                              r'''$.role''',
+                            )),
+                            '-',
+                          ) ==
+                          '\"engineer\"') ||
+                      (valueOrDefault<String>(
+                            functions.jsonToStringCopy(getJsonField(
+                              FFAppState().account,
+                              r'''$.role''',
+                            )),
+                            '-',
+                          ) ==
+                          '\"admin\"'))) ||
+              ((functions.statusRequest(getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.status''',
+                      ).toString()) ==
+                      'В работе') &&
+                  (valueOrDefault<String>(
+                        functions.jsonToStringCopy(getJsonField(
+                          FFAppState().account,
+                          r'''$.role''',
+                        )),
+                        '-',
+                      ) ==
+                      '\"performer\"') &&
+                  ((functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) !=
+                          'Закрыта') &&
+                      (functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) !=
+                          'На проверке') &&
+                      (functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) !=
+                          'Отклонена'))) ||
+              (((functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) ==
+                          'В работе') ||
+                      (functions.statusRequest(getJsonField(
+                            detailedDefectsOfflineGetDefectsByIDResponse
+                                .jsonBody,
+                            r'''$.status''',
+                          ).toString()) ==
+                          'Выполнен')) &&
+                  (valueOrDefault<String>(
+                        functions.jsonToStringCopy(getJsonField(
+                          FFAppState().account,
+                          r'''$.role''',
+                        )),
+                        '-',
+                      ) ==
+                      '\"technician\"')))
+            InkWell(
+              splashColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              onTap: () async {
+                if ((_model.nameTextController2.text != null &&
+                        _model.nameTextController2.text != '') &&
+                    (_model.sumTextController2.text != null &&
+                        _model.sumTextController2.text != '')) {
+                  FFAppState().addToSpareparts(TmcStruct(
+                    title: _model.nameTextController2.text,
+                    amount: int.tryParse(_model.sumTextController2.text),
+                    model: _model.attributeTextController.text,
+                  ));
+                  FFAppState().update(() {});
+                  _model.wewe = await UpdateDefectsByIdCall.call(
+                    access: currentAuthenticationToken,
+                    id: getJsonField(
+                      detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                      r'''$.id''',
+                    ),
+                    bodyJson: EditDefectStruct(
+                      spareParts: FFAppState().spareparts,
+                      files: (getJsonField(
+                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                        r'''$.files''',
+                        true,
+                      )
+                              ?.toList()
+                              .map<FilesStruct?>(FilesStruct.maybeFromMap)
+                              .toList() as Iterable<FilesStruct?>)
+                          .withoutNulls,
+                    ).toMap(),
+                  );
+                  safeSetState(() {
+                    _model.nameTextController2?.clear();
+                    _model.attributeTextController?.clear();
+                    _model.sumTextController2?.clear();
+                  });
+                }
+                safeSetState(() {});
+              },
+              child: Container(
+                width: MediaQuery.sizeOf(context).width,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: FlutterFlowTheme.of(context).secondaryBackground,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add,
+                        color: FlutterFlowTheme.of(context).secondaryText,
+                        size: 24,
+                      ),
+                      Text(
+                        'Добавить ТМЦ',
+                        style: FlutterFlowTheme.of(context)
+                            .bodyMedium
+                            .override(
+                              fontFamily: 'SFProText',
+                              color: FlutterFlowTheme.of(context).primaryText,
+                              fontSize: 16,
+                              letterSpacing: 0.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ].divide(SizedBox(height: 5)),
+      ),
+    ),
+  ),
+)
+
+                                          ].addToEnd(SizedBox(height: 100.0)),
+                                        ),
+                                      ),
+                                    ),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0),
+                                            ),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                Container(
+                                                  width:
+                                                      MediaQuery.sizeOf(context)
+                                                              .width *
+                                                          1.0,
+                                                  height: 50.0,
+                                                  decoration: BoxDecoration(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryBackground,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0),
+                                                  ),
+                                                  child: Padding(
+                                                    padding:
+                                                        EdgeInsetsDirectional
+                                                            .fromSTEB(16.0, 5.0,
+                                                                16.0, 0.0),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        FaIcon(
+                                                          FontAwesomeIcons
+                                                              .paperclip,
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .primaryText,
+                                                          size: 20.0,
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(
+                                                                      10.0,
+                                                                      0.0,
+                                                                      0.0,
+                                                                      0.0),
+                                                          child: Text(
+                                                            'Добавить вложение',
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  fontFamily:
+                                                                      'SFProText',
+                                                                  color: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .primaryText,
+                                                                  fontSize:
+                                                                      17.0,
+                                                                  letterSpacing:
+                                                                      0.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .normal,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                SingleChildScrollView(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                    11.5,
+                                                                    0.0,
+                                                                    11.5,
+                                                                    0.0),
+                                                        child: Builder(
+                                                          builder: (context) {
+                                                            final files = _model
+                                                                .photos123
+                                                                .toList();
+
+                                                            return Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              children: List.generate(
+                                                                  files.length,
+                                                                  (filesIndex) {
+                                                                final filesItem =
+                                                                    files[
+                                                                        filesIndex];
+                                                                return Stack(
+                                                                  children: [
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          115.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Container(
+                                                                        width: MediaQuery.sizeOf(context).width *
+                                                                            0.05,
+                                                                        height: MediaQuery.sizeOf(context).height *
+                                                                            0.025,
+                                                                        decoration:
+                                                                            BoxDecoration(),
+                                                                        child:
+                                                                            Visibility(
+                                                                          visible: ((functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) !=
+                                                                                      'Закрыта') &&
+                                                                                  (functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) !=
+                                                                                      'На проверке') &&
+                                                                                  (functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) !=
+                                                                                      'Отклонена') &&
+                                                                                  (valueOrDefault<String>(
+                                                                                        functions.jsonToStringCopy(getJsonField(
+                                                                                          FFAppState().account,
+                                                                                          r'''$.role''',
+                                                                                        )),
+                                                                                        '-',
+                                                                                      ) ==
+                                                                                      '\"engineer\"')) ||
+                                                                              ((functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) !=
+                                                                                      'Закрыта') &&
+                                                                                  (functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) !=
+                                                                                      'На проверке') &&
+                                                                                  (functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) !=
+                                                                                      'Отклонена') &&
+                                                                                  (valueOrDefault<String>(
+                                                                                        functions.jsonToStringCopy(getJsonField(
+                                                                                          FFAppState().account,
+                                                                                          r'''$.role''',
+                                                                                        )),
+                                                                                        '-',
+                                                                                      ) ==
+                                                                                      '\"admin\"')) ||
+                                                                              ((functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) ==
+                                                                                      'В работе') &&
+                                                                                  (valueOrDefault<String>(
+                                                                                        functions.jsonToStringCopy(getJsonField(
+                                                                                          FFAppState().account,
+                                                                                          r'''$.role''',
+                                                                                        )),
+                                                                                        '-',
+                                                                                      ) ==
+                                                                                      '\"performer\"')) ||
+                                                                              ((functions.statusRequest(getJsonField(
+                                                                                        detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                        r'''$.status''',
+                                                                                      ).toString()) ==
+                                                                                      'Открыта') &&
+                                                                                  (valueOrDefault<String>(
+                                                                                        functions.jsonToStringCopy(getJsonField(
+                                                                                          FFAppState().account,
+                                                                                          r'''$.role''',
+                                                                                        )),
+                                                                                        '-',
+                                                                                      ) ==
+                                                                                      '\"director\"')) ||
+                                                                              (((functions.statusRequest(getJsonField(
+                                                                                            detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                            r'''$.status''',
+                                                                                          ).toString()) ==
+                                                                                          'В работе') ||
+                                                                                      (functions.statusRequest(getJsonField(
+                                                                                            detailedDefectsOfflineGetDefectsByIDResponse.jsonBody,
+                                                                                            r'''$.status''',
+                                                                                          ).toString()) ==
+                                                                                          'Выполнен')) &&
+                                                                                  (valueOrDefault<String>(
+                                                                                        functions.jsonToStringCopy(getJsonField(
+                                                                                          FFAppState().account,
+                                                                                          r'''$.role''',
+                                                                                        )),
+                                                                                        '-',
+                                                                                      ) ==
+                                                                                      '\"technician\"')),
+                                                                          child:
+                                                                              InkWell(
+                                                                            splashColor:
+                                                                                Colors.transparent,
+                                                                            focusColor:
+                                                                                Colors.transparent,
+                                                                            hoverColor:
+                                                                                Colors.transparent,
+                                                                            highlightColor:
+                                                                                Colors.transparent,
+                                                                            onTap:
+                                                                                () async {
+                                                                              _model.removeAtIndexFromPhotos123(filesIndex);
+                                                                              safeSetState(() {});
+                                                                            },
+                                                                            child:
+                                                                                Icon(
+                                                                              Icons.close,
+                                                                              color: FlutterFlowTheme.of(context).secondaryText,
+                                                                              size: 24.0,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Builder(
+                      builder: (context) {
+                        if ((functions.getFileExtension(getJsonField(
+                                  filesItem,
+                                  r'''$.url''',
+                                ).toString()) ==
+                                'MOV') ||
+                            (functions.getFileExtension(getJsonField(
+                                  filesItem,
+                                  r'''$.url''',
+                                ).toString()) ==
+                                'mp4')) {
+                          return Align(
+                            alignment: AlignmentDirectional(0, 0),
+                            child: InkWell(
+                              splashColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () async {
+                                context.pushNamed(
+                                  VideoPlayerWidget.routeName,
+                                  queryParameters: {
+                                    'url': serializeParam(
+                                      getJsonField(
+                                        filesItem,
+                                        r'''$.url''',
+                                      ).toString(),
+                                      ParamType.String,
+                                    ),
+                                  }.withoutNulls,
+                                );
+                              },
+                              child: Container(
+                                width: MediaQuery.sizeOf(context).width * 0.3,
+                                height:
+                                    MediaQuery.sizeOf(context).height * 0.15,
+                                child: Stack(
+                                  children: [
+                                    FlutterFlowVideoPlayer(
+                                      path:
+                                          'https://app.etry.kz${getJsonField(
+                                        filesItem,
+                                        r'''$.url''',
+                                      ).toString()}',
+                                      videoType: VideoType.network,
+                                      width:
+                                          MediaQuery.sizeOf(context).width *
+                                              0.3,
+                                      height:
+                                          MediaQuery.sizeOf(context).height *
+                                              0.15,
+                                      autoPlay: false,
+                                      looping: false,
+                                      showControls: false,
+                                      allowFullScreen: false,
+                                      allowPlaybackSpeedMenu: false,
+                                      lazyLoad: false,
+                                      pauseOnNavigate: false,
+                                    ),
+                                    Align(
+                                      alignment: AlignmentDirectional(0, 0),
+                                      child: Icon(
+                                        Icons.play_arrow,
+                                        color: FlutterFlowTheme.of(context)
+                                            .primaryText,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        } else {
+                          return InkWell(
+                            splashColor: Colors.transparent,
+                            focusColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                PageTransition(
+                                  type: PageTransitionType.fade,
+                                  child: FlutterFlowExpandedImageView(
+                                    image: Image.network(
+                                      'https://app.etry.kz${getJsonField(
+                                        filesItem,
+                                        r'''$.url''',
+                                      ).toString()}',
+                                      fit: BoxFit.contain,
+                                    ),
+                                    allowRotation: false,
+                                    tag:
+                                        'https://app.etry.kz${getJsonField(
+                                      filesItem,
+                                      r'''$.url''',
+                                    ).toString()}',
+                                    useHeroAnimation: true,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Hero(
+                              tag: 'https://app.etry.kz${getJsonField(
+                                filesItem,
+                                r'''$.url''',
+                              ).toString()}',
+                              transitionOnUserGestures: true,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  'https://app.etry.kz${getJsonField(
+                                    filesItem,
+                                    r'''$.url''',
+                                  ).toString()}',
+                                  width:
+                                      MediaQuery.sizeOf(context).width * 0.3,
+                                  height: MediaQuery.sizeOf(context).height *
+                                      0.15,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                                                                  ],
+                                                                );
+                                                              }),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                      Align(
+                                                        alignment:
+                                                            AlignmentDirectional(
+                                                                0.0, 0.0),
+                                                        child: Builder(
+                                                          builder: (context) {
+                                                            final fotki =
+                                                                FFAppState()
+                                                                    .photos
+                                                                    .toList();
+
+                                                            return Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .max,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              children: List.generate(
+                                                                  fotki.length,
+                                                                  (fotkiIndex) {
+                                                                final fotkiItem =
+                                                                    fotki[
+                                                                        fotkiIndex];
+                                                                return Stack(
+                                                                  children: [
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          0.0,
+                                                                          10.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          Container(
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(12.0),
+                                                                          border:
+                                                                              Border.all(
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondary,
+                                                                          ),
+                                                                        ),
+                                                                        child:
+                                                                            Builder(
+                                                                          builder:
+                                                                              (context) {
+                                                                            if ((functions.getFileExtension(getJsonField(
+                                                                                      fotkiItem,
+                                                                                      r'''$.url''',
+                                                                                    ).toString()) ==
+                                                                                    'MOV') ||
+                                                                                (functions.getFileExtension(getJsonField(
+                                                                                      fotkiItem,
+                                                                                      r'''$.url''',
+                                                                                    ).toString()) ==
+                                                                                    'mp4')) {
+                                                                              return FlutterFlowVideoPlayer(
+                                                                                path: 'https://app.etry.kz${getJsonField(
+                                                                                  fotkiItem,
+                                                                                  r'''$.url''',
+                                                                                ).toString()}',
+                                                                                videoType: VideoType.network,
+                                                                                width: MediaQuery.sizeOf(context).width * 0.3,
+                                                                                height: MediaQuery.sizeOf(context).height * 0.15,
+                                                                                autoPlay: false,
+                                                                                looping: false,
+                                                                                showControls: true,
+                                                                                allowFullScreen: true,
+                                                                                allowPlaybackSpeedMenu: false,
+                                                                                lazyLoad: true,
+                                                                              );
+                                                                            } else {
+                                                                              return InkWell(
+                                                                                splashColor: Colors.transparent,
+                                                                                focusColor: Colors.transparent,
+                                                                                hoverColor: Colors.transparent,
+                                                                                highlightColor: Colors.transparent,
+                                                                                onTap: () async {
+                                                                                  await Navigator.push(
+                                                                                    context,
+                                                                                    PageTransition(
+                                                                                      type: PageTransitionType.fade,
+                                                                                      child: FlutterFlowExpandedImageView(
+                                                                                        image: Image.network(
+                                                                                          'https://app.etry.kz${getJsonField(
+                                                                                            fotkiItem,
+                                                                                            r'''$.url''',
+                                                                                          ).toString()}',
+                                                                                          fit: BoxFit.contain,
+                                                                                        ),
+                                                                                        allowRotation: false,
+                                                                                        tag: 'https://app.etry.kz${getJsonField(
+                                                                                          fotkiItem,
+                                                                                          r'''$.url''',
+                                                                                        ).toString()}',
+                                                                                        useHeroAnimation: true,
+                                                                                      ),
+                                                                                    ),
+                                                                                  );
+                                                                                },
+                                                                                child: Hero(
+                                                                                  tag: 'https://app.etry.kz${getJsonField(
+                                                                                    fotkiItem,
+                                                                                    r'''$.url''',
+                                                                                  ).toString()}',
+                                                                                  transitionOnUserGestures: true,
+                                                                                  child: ClipRRect(
+                                                                                    borderRadius: BorderRadius.circular(8.0),
+                                                                                    child: Image.network(
+                                                                                      'https://app.etry.kz${getJsonField(
+                                                                                        fotkiItem,
+                                                                                        r'''$.url''',
+                                                                                      ).toString()}',
+                                                                                      width: MediaQuery.sizeOf(context).width * 0.3,
+                                                                                      height: MediaQuery.sizeOf(context).height * 0.15,
+                                                                                      fit: BoxFit.cover,
+                                                                                    ),
+                                                                                  ),
+                                                                                ),
+                                                                              );
+                                                                            }
+                                                                          },
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          115.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
+                                                                      child:
+                                                                          InkWell(
+                                                                        splashColor:
+                                                                            Colors.transparent,
+                                                                        focusColor:
+                                                                            Colors.transparent,
+                                                                        hoverColor:
+                                                                            Colors.transparent,
+                                                                        highlightColor:
+                                                                            Colors.transparent,
+                                                                        onTap:
+                                                                            () async {
+                                                                          FFAppState()
+                                                                              .removeAtIndexFromPhotos(fotkiIndex);
+                                                                          safeSetState(
+                                                                              () {});
+                                                                        },
+                                                                        child:
+                                                                            Container(
+                                                                          width:
+                                                                              MediaQuery.sizeOf(context).width * 0.05,
+                                                                          height:
+                                                                              MediaQuery.sizeOf(context).height * 0.025,
+                                                                          decoration:
+                                                                              BoxDecoration(),
+                                                                          child:
+                                                                              Icon(
+                                                                            Icons.close,
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).secondaryText,
+                                                                            size:
+                                                                                24.0,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                );
+                                                              }).divide(
+                                                                  SizedBox(
+                                                                      width:
+                                                                          5.0)),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                if (((functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) !=
+                                                            'Закрыта') &&
+                                                        (functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) !=
+                                                            'На проверке') &&
+                                                        (functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) !=
+                                                            'Отклонена') &&
+                                                        (valueOrDefault<String>(
+                                                              functions
+                                                                  .jsonToStringCopy(
+                                                                      getJsonField(
+                                                                FFAppState()
+                                                                    .account,
+                                                                r'''$.role''',
+                                                              )),
+                                                              '-',
+                                                            ) ==
+                                                            '\"engineer\"')) ||
+                                                    ((functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) !=
+                                                            'Закрыта') &&
+                                                        (functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) !=
+                                                            'На проверке') &&
+                                                        (functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) !=
+                                                            'Отклонена') &&
+                                                        (valueOrDefault<String>(
+                                                              functions
+                                                                  .jsonToStringCopy(
+                                                                      getJsonField(
+                                                                FFAppState()
+                                                                    .account,
+                                                                r'''$.role''',
+                                                              )),
+                                                              '-',
+                                                            ) ==
+                                                            '\"admin\"')) ||
+                                                    ((functions.statusRequest(
+                                                                getJsonField(
+                                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                                  .jsonBody,
+                                                              r'''$.status''',
+                                                            ).toString()) ==
+                                                            'В работе') &&
+                                                        (valueOrDefault<String>(
+                                                              functions
+                                                                  .jsonToStringCopy(
+                                                                      getJsonField(
+                                                                FFAppState()
+                                                                    .account,
+                                                                r'''$.role''',
+                                                              )),
+                                                              '-',
+                                                            ) ==
+                                                            '\"performer\"')) ||
+                                                    (((functions.statusRequest(
+                                                                    getJsonField(
+                                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                                      .jsonBody,
+                                                                  r'''$.status''',
+                                                                ).toString()) ==
+                                                                'В работе') ||
+                                                            (functions.statusRequest(
+                                                                    getJsonField(
+                                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                                      .jsonBody,
+                                                                  r'''$.status''',
+                                                                ).toString()) ==
+                                                                'Выполнен')) &&
+                                                        (valueOrDefault<String>(
+                                                              functions
+                                                                  .jsonToStringCopy(
+                                                                      getJsonField(
+                                                                FFAppState()
+                                                                    .account,
+                                                                r'''$.role''',
+                                                              )),
+                                                              '-',
+                                                            ) ==
+                                                            '\"technician\"')))
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Padding(
+                                                        padding: EdgeInsets.all(
+                                                            15.0),
                                                         child: InkWell(
                                                           splashColor: Colors
                                                               .transparent,
@@ -3726,917 +4047,397 @@ class _DetailedDefectsOfflineWidgetState
                                                           highlightColor: Colors
                                                               .transparent,
                                                           onTap: () async {
+                                                            safeSetState(() {
+                                                              _model.isDataUploading_uploadD1112 =
+                                                                  false;
+                                                              _model.uploadedLocalFile_uploadD1112 =
+                                                                  FFUploadedFile(
+                                                                      bytes: Uint8List
+                                                                          .fromList(
+                                                                              []),
+                                                                      originalFilename:
+                                                                          '');
+                                                            });
+
+                                                            final selectedMedia =
+                                                                await selectMedia(
+                                                              maxWidth: 1000.00,
+                                                              maxHeight:
+                                                                  1300.00,
+                                                              imageQuality: 71,
+                                                              multiImage: false,
+                                                            );
+                                                            if (selectedMedia !=
+                                                                    null &&
+                                                                selectedMedia.every((m) =>
+                                                                    validateFileFormat(
+                                                                        m.storagePath,
+                                                                        context))) {
+                                                              safeSetState(() =>
+                                                                  _model.isDataUploading_uploadD1112 =
+                                                                      true);
+                                                              var selectedUploadedFiles =
+                                                                  <FFUploadedFile>[];
+
+                                                              try {
+                                                                selectedUploadedFiles =
+                                                                    selectedMedia
+                                                                        .map((m) =>
+                                                                            FFUploadedFile(
+                                                                              name: m.storagePath.split('/').last,
+                                                                              bytes: m.bytes,
+                                                                              height: m.dimensions?.height,
+                                                                              width: m.dimensions?.width,
+                                                                              blurHash: m.blurHash,
+                                                                              originalFilename: m.originalFilename,
+                                                                            ))
+                                                                        .toList();
+                                                              } finally {
+                                                                _model.isDataUploading_uploadD1112 =
+                                                                    false;
+                                                              }
+                                                              if (selectedUploadedFiles
+                                                                      .length ==
+                                                                  selectedMedia
+                                                                      .length) {
+                                                                safeSetState(
+                                                                    () {
+                                                                  _model.uploadedLocalFile_uploadD1112 =
+                                                                      selectedUploadedFiles
+                                                                          .first;
+                                                                });
+                                                              } else {
+                                                                safeSetState(
+                                                                    () {});
+                                                                return;
+                                                              }
+                                                            }
+
+                                                            _model.tet =
+                                                                await PostFilesCall
+                                                                    .call(
+                                                              access:
+                                                                  currentAuthenticationToken,
+                                                              content: _model
+                                                                  .uploadedLocalFile_uploadD1112,
+                                                            );
+
                                                             FFAppState()
-                                                                    .isEdited =
-                                                                false;
+                                                                .addToPhotos(
+                                                                    getJsonField(
+                                                              (_model.tet
+                                                                      ?.jsonBody ??
+                                                                  ''),
+                                                              r'''$[0]''',
+                                                            ));
                                                             FFAppState()
-                                                                .photos = [];
+                                                                .update(() {});
+                                                            _model.apiResultg8zCo =
+                                                                await UpdateDefectsByIdCall
+                                                                    .call(
+                                                              access:
+                                                                  currentAuthenticationToken,
+                                                              id: getJsonField(
+                                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                                    .jsonBody,
+                                                                r'''$.id''',
+                                                              ),
+                                                              bodyJson:
+                                                                  EditDefectStruct(
+                                                                fileIds: (functions
+                                                                        .combineArrays(FFAppState().photos.toList(), _model.photos123.toList())
+                                                                        .map((e) => getJsonField(
+                                                                              e,
+                                                                              r'''$.id''',
+                                                                            ))
+                                                                        .toList())
+                                                                    .cast<int>(),
+                                                              ).toMap(),
+                                                            );
+
                                                             safeSetState(() {});
                                                           },
-                                                          child: Icon(
-                                                            Icons.close,
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primaryText,
-                                                            size: 24,
+                                                          child: Container(
+                                                            width: MediaQuery
+                                                                        .sizeOf(
+                                                                            context)
+                                                                    .width *
+                                                                0.4,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .secondaryBackground,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  blurRadius:
+                                                                      4.0,
+                                                                  color: Color(
+                                                                      0x33000000),
+                                                                  offset:
+                                                                      Offset(
+                                                                    0.0,
+                                                                    2.0,
+                                                                  ),
+                                                                )
+                                                              ],
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          12.0),
+                                                            ),
+                                                            child: Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          12.0,
+                                                                          0.0,
+                                                                          12.0),
+                                                              child: Column(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .max,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .end,
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Container(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondaryBackground,
+                                                                    ),
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          0.0,
+                                                                          8.0,
+                                                                          0.0,
+                                                                          8.0),
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.max,
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        children: [
+                                                                          Icon(
+                                                                            Icons.photo_camera,
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).primaryText,
+                                                                            size:
+                                                                                20.0,
+                                                                          ),
+                                                                          Padding(
+                                                                            padding: EdgeInsetsDirectional.fromSTEB(
+                                                                                10.0,
+                                                                                0.0,
+                                                                                0.0,
+                                                                                0.0),
+                                                                            child:
+                                                                                Text(
+                                                                              'Фото',
+                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                    fontFamily: 'SFProText',
+                                                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                                                    letterSpacing: 0.0,
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                  ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Padding(
+                                                        padding: EdgeInsets.all(
+                                                            15.0),
+                                                        child: InkWell(
+                                                          splashColor: Colors
+                                                              .transparent,
+                                                          focusColor: Colors
+                                                              .transparent,
+                                                          hoverColor: Colors
+                                                              .transparent,
+                                                          highlightColor: Colors
+                                                              .transparent,
+                                                          onTap: () async {
+                                                            await requestPermission(
+                                                                microphonePermission);
+                                                            _model.rer =
+                                                                await actions
+                                                                    .pickCameraVideo();
+                                                            _model.asas =
+                                                                await PostFilesCall
+                                                                    .call(
+                                                              access:
+                                                                  currentAuthenticationToken,
+                                                              content:
+                                                                  _model.rer,
+                                                            );
+
+                                                            FFAppState()
+                                                                .addToPhotos(
+                                                                    getJsonField(
+                                                              (_model.asas
+                                                                      ?.jsonBody ??
+                                                                  ''),
+                                                              r'''$[0]''',
+                                                            ));
+                                                            FFAppState()
+                                                                .update(() {});
+                                                            _model.apiResultg8zCopy12 =
+                                                                await UpdateDefectsByIdCall
+                                                                    .call(
+                                                              access:
+                                                                  currentAuthenticationToken,
+                                                              id: getJsonField(
+                                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                                    .jsonBody,
+                                                                r'''$.id''',
+                                                              ),
+                                                              bodyJson:
+                                                                  EditDefectStruct(
+                                                                fileIds: (functions
+                                                                        .combineArrays(FFAppState().photos.toList(), _model.photos123.toList())
+                                                                        .map((e) => getJsonField(
+                                                                              e,
+                                                                              r'''$.id''',
+                                                                            ))
+                                                                        .toList())
+                                                                    .cast<int>(),
+                                                              ).toMap(),
+                                                            );
+
+                                                            safeSetState(() {});
+                                                          },
+                                                          child: Container(
+                                                            width: MediaQuery
+                                                                        .sizeOf(
+                                                                            context)
+                                                                    .width *
+                                                                0.4,
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .secondaryBackground,
+                                                              boxShadow: [
+                                                                BoxShadow(
+                                                                  blurRadius:
+                                                                      4.0,
+                                                                  color: Color(
+                                                                      0x33000000),
+                                                                  offset:
+                                                                      Offset(
+                                                                    0.0,
+                                                                    2.0,
+                                                                  ),
+                                                                )
+                                                              ],
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          12.0),
+                                                            ),
+                                                            child: Padding(
+                                                              padding:
+                                                                  EdgeInsetsDirectional
+                                                                      .fromSTEB(
+                                                                          0.0,
+                                                                          12.0,
+                                                                          0.0,
+                                                                          12.0),
+                                                              child: Column(
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .max,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .end,
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Container(
+                                                                    width: double
+                                                                        .infinity,
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: FlutterFlowTheme.of(
+                                                                              context)
+                                                                          .secondaryBackground,
+                                                                    ),
+                                                                    child:
+                                                                        Padding(
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          0.0,
+                                                                          8.0,
+                                                                          0.0,
+                                                                          8.0),
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.max,
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.center,
+                                                                        children: [
+                                                                          FaIcon(
+                                                                            FontAwesomeIcons.video,
+                                                                            color:
+                                                                                FlutterFlowTheme.of(context).primaryText,
+                                                                            size:
+                                                                                20.0,
+                                                                          ),
+                                                                          Padding(
+                                                                            padding: EdgeInsetsDirectional.fromSTEB(
+                                                                                10.0,
+                                                                                0.0,
+                                                                                0.0,
+                                                                                0.0),
+                                                                            child:
+                                                                                Text(
+                                                                              'Видео',
+                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                    fontFamily: 'SFProText',
+                                                                                    color: FlutterFlowTheme.of(context).primaryText,
+                                                                                    letterSpacing: 0.0,
+                                                                                    fontWeight: FontWeight.w500,
+                                                                                  ),
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                  if (FFAppState().isEdited)
-                                                    SingleChildScrollView(
-                                                      scrollDirection:
-                                                          Axis.horizontal,
-                                                      child: Row(
-                                                        mainAxisSize:
-                                                            MainAxisSize.max,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        11.5,
-                                                                        0,
-                                                                        11.5,
-                                                                        0),
-                                                            child: Builder(
-                                                              builder:
-                                                                  (context) {
-                                                                final files = _model
-                                                                    .photos123
-                                                                    .toList();
-
-                                                                return Row(
-                                                                  mainAxisSize:
-                                                                      MainAxisSize
-                                                                          .max,
-                                                                  children: List
-                                                                      .generate(
-                                                                          files
-                                                                              .length,
-                                                                          (filesIndex) {
-                                                                    final filesItem =
-                                                                        files[
-                                                                            filesIndex];
-                                                                    return Stack(
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              0,
-                                                                              10,
-                                                                              0,
-                                                                              0),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                MediaQuery.sizeOf(context).width * 0.2,
-                                                                            height:
-                                                                                MediaQuery.sizeOf(context).height * 0.1,
-                                                                            decoration:
-                                                                                BoxDecoration(
-                                                                              borderRadius: BorderRadius.circular(12),
-                                                                              border: Border.all(
-                                                                                color: FlutterFlowTheme.of(context).secondary,
-                                                                              ),
-                                                                            ),
-                                                                            child:
-                                                                                ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(12),
-                                                                              child: Image.network(
-                                                                                'https://magnum.etry.kz${getJsonField(
-                                                                                  filesItem,
-                                                                                  r'''$.url''',
-                                                                                ).toString()}',
-                                                                                width: MediaQuery.sizeOf(context).width * 0.2,
-                                                                                height: MediaQuery.sizeOf(context).height * 0.1,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: EdgeInsetsDirectional.fromSTEB(
-                                                                              65,
-                                                                              0,
-                                                                              0,
-                                                                              0),
-                                                                          child:
-                                                                              Container(
-                                                                            width:
-                                                                                MediaQuery.sizeOf(context).width * 0.05,
-                                                                            height:
-                                                                                MediaQuery.sizeOf(context).height * 0.025,
-                                                                            decoration:
-                                                                                BoxDecoration(),
-                                                                            child:
-                                                                                InkWell(
-                                                                              splashColor: Colors.transparent,
-                                                                              focusColor: Colors.transparent,
-                                                                              hoverColor: Colors.transparent,
-                                                                              highlightColor: Colors.transparent,
-                                                                              onTap: () async {
-                                                                                _model.removeAtIndexFromPhotos123(filesIndex);
-                                                                                safeSetState(() {});
-                                                                              },
-                                                                              child: Icon(
-                                                                                Icons.close,
-                                                                                color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                size: 24,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ),
-                                                                      ],
-                                                                    );
-                                                                  }),
-                                                                );
-                                                              },
-                                                            ),
-                                                          ),
-                                                          Align(
-                                                            alignment:
-                                                                AlignmentDirectional(
-                                                                    0, 0),
-                                                            child: Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0,
-                                                                          0,
-                                                                          11.5,
-                                                                          0),
-                                                              child: Builder(
-                                                                builder:
-                                                                    (context) {
-                                                                  final fotki =
-                                                                      FFAppState()
-                                                                          .photos
-                                                                          .toList();
-
-                                                                  return Row(
-                                                                    mainAxisSize:
-                                                                        MainAxisSize
-                                                                            .max,
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .start,
-                                                                    children: List.generate(
-                                                                        fotki
-                                                                            .length,
-                                                                        (fotkiIndex) {
-                                                                      final fotkiItem =
-                                                                          fotki[
-                                                                              fotkiIndex];
-                                                                      return Stack(
-                                                                        children: [
-                                                                          Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                0,
-                                                                                10,
-                                                                                0,
-                                                                                0),
-                                                                            child:
-                                                                                Container(
-                                                                              decoration: BoxDecoration(
-                                                                                borderRadius: BorderRadius.circular(12),
-                                                                                border: Border.all(
-                                                                                  color: FlutterFlowTheme.of(context).secondary,
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          Padding(
-                                                                            padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                65,
-                                                                                0,
-                                                                                0,
-                                                                                0),
-                                                                            child:
-                                                                                InkWell(
-                                                                              splashColor: Colors.transparent,
-                                                                              focusColor: Colors.transparent,
-                                                                              hoverColor: Colors.transparent,
-                                                                              highlightColor: Colors.transparent,
-                                                                              onTap: () async {
-                                                                                FFAppState().removeAtIndexFromPhotos(fotkiIndex);
-                                                                                safeSetState(() {});
-                                                                              },
-                                                                              child: Container(
-                                                                                width: MediaQuery.sizeOf(context).width * 0.05,
-                                                                                height: MediaQuery.sizeOf(context).height * 0.025,
-                                                                                decoration: BoxDecoration(),
-                                                                                child: Icon(
-                                                                                  Icons.close,
-                                                                                  color: FlutterFlowTheme.of(context).secondaryText,
-                                                                                  size: 24,
-                                                                                ),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      );
-                                                                    }).divide(SizedBox(
-                                                                        width:
-                                                                            5)),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(11.5, 0,
-                                                                11.5, 0),
-                                                    child: FFButtonWidget(
-                                                      onPressed: () async {
-                                                        safeSetState(() {
-                                                          _model.isDataUploading_uploadDataTbt501123 =
-                                                              false;
-                                                          _model.uploadedLocalFile_uploadDataTbt501123 =
-                                                              FFUploadedFile(
-                                                                  bytes: Uint8List
-                                                                      .fromList(
-                                                                          []));
-                                                        });
-
-                                                        final selectedMedia =
-                                                            await selectMedia(
-                                                          maxWidth: 1000.00,
-                                                          maxHeight: 1300.00,
-                                                          imageQuality: 71,
-                                                          multiImage: false,
-                                                        );
-                                                        if (selectedMedia !=
-                                                                null &&
-                                                            selectedMedia.every((m) =>
-                                                                validateFileFormat(
-                                                                    m.storagePath,
-                                                                    context))) {
-                                                          safeSetState(() =>
-                                                              _model.isDataUploading_uploadDataTbt501123 =
-                                                                  true);
-                                                          var selectedUploadedFiles =
-                                                              <FFUploadedFile>[];
-
-                                                          try {
-                                                            selectedUploadedFiles =
-                                                                selectedMedia
-                                                                    .map((m) =>
-                                                                        FFUploadedFile(
-                                                                          name: m
-                                                                              .storagePath
-                                                                              .split('/')
-                                                                              .last,
-                                                                          bytes:
-                                                                              m.bytes,
-                                                                          height: m
-                                                                              .dimensions
-                                                                              ?.height,
-                                                                          width: m
-                                                                              .dimensions
-                                                                              ?.width,
-                                                                          blurHash:
-                                                                              m.blurHash,
-                                                                        ))
-                                                                    .toList();
-                                                          } finally {
-                                                            _model.isDataUploading_uploadDataTbt501123 =
-                                                                false;
-                                                          }
-                                                          if (selectedUploadedFiles
-                                                                  .length ==
-                                                              selectedMedia
-                                                                  .length) {
-                                                            safeSetState(() {
-                                                              _model.uploadedLocalFile_uploadDataTbt501123 =
-                                                                  selectedUploadedFiles
-                                                                      .first;
-                                                            });
-                                                          } else {
-                                                            safeSetState(() {});
-                                                            return;
-                                                          }
-                                                        }
-
-                                                        _model.qq = await actions
-                                                            .uploadFileAndConvertToBase64toList(
-                                                          _model
-                                                              .uploadedLocalFile_uploadDataTbt501123,
-                                                        );
-                                                        if (!functions
-                                                            .imageNull(
-                                                                _model.qq!)) {
-                                                          FFAppState()
-                                                              .addToPhotos(
-                                                                  _model.qq!);
-                                                          safeSetState(() {});
-                                                        }
-
-                                                        safeSetState(() {});
-                                                      },
-                                                      text: 'Медиафайл',
-                                                      icon: Icon(
-                                                        Icons.camera_alt,
-                                                        size: 15,
-                                                      ),
-                                                      options: FFButtonOptions(
-                                                        width:
-                                                            MediaQuery.sizeOf(
-                                                                        context)
-                                                                    .width *
-                                                                0.95,
-                                                        height: 40,
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(24, 0,
-                                                                    24, 0),
-                                                        iconPadding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(10, 0,
-                                                                    0, 0),
-                                                        iconColor:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .primary,
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
-                                                        textStyle:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .titleSmall
-                                                                .override(
-                                                                  fontFamily:
-                                                                      'SFProText',
-                                                                  color: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .primaryText,
-                                                                  fontSize: 14,
-                                                                  letterSpacing:
-                                                                      0.0,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .normal,
-                                                                ),
-                                                        elevation: 3,
-                                                        borderSide: BorderSide(
-                                                          color: Colors
-                                                              .transparent,
-                                                          width: 1,
-                                                        ),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ]
-                                                    .divide(
-                                                        SizedBox(height: 15))
-                                                    .addToStart(
-                                                        SizedBox(height: 15))
-                                                    .addToEnd(
-                                                        SizedBox(height: 15)),
-                                              );
-                                            }
-                                          },
-                                        ),
-                                        Builder(
-                                          builder: (context) {
-                                            if (!FFAppState().isEdited) {
-                                              return Builder(
-                                                builder: (context) {
-                                                  if (valueOrDefault<String>(
-                                                        functions
-                                                            .jsonToStringCopy(
-                                                                getJsonField(
-                                                          FFAppState().account,
-                                                          r'''$.role''',
-                                                        )),
-                                                        '-',
-                                                      ) ==
-                                                      '\"engineer\"') {
-                                                    return Visibility(
-                                                      visible: (functions
-                                                                  .statusRequest(
-                                                                      getJsonField(
-                                                                detailedDefectsOfflineGetDefectsByIDResponse
-                                                                    .jsonBody,
-                                                                r'''$.status''',
-                                                              ).toString()) !=
-                                                              'Закрыта') &&
-                                                          (functions.statusRequest(
-                                                                  getJsonField(
-                                                                detailedDefectsOfflineGetDefectsByIDResponse
-                                                                    .jsonBody,
-                                                                r'''$.status''',
-                                                              ).toString()) !=
-                                                              'Выполнен'),
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(11.5,
-                                                                    0, 11.5, 0),
-                                                        child: FFButtonWidget(
-                                                          onPressed: () async {
-                                                            FFAppState()
-                                                                    .isEdited =
-                                                                true;
-                                                            safeSetState(() {});
-                                                            _model.photos123 =
-                                                                getJsonField(
-                                                              detailedDefectsOfflineGetDefectsByIDResponse
-                                                                  .jsonBody,
-                                                              r'''$.files''',
-                                                              true,
-                                                            )!
-                                                                    .toList()
-                                                                    .cast<
-                                                                        dynamic>();
-                                                            safeSetState(() {});
-                                                          },
-                                                          text: 'Редактировать',
-                                                          icon: Icon(
-                                                            Icons.edit,
-                                                            size: 20,
-                                                          ),
-                                                          options:
-                                                              FFButtonOptions(
-                                                            width: MediaQuery
-                                                                        .sizeOf(
-                                                                            context)
-                                                                    .width *
-                                                                0.95,
-                                                            height: 40,
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16,
-                                                                        0,
-                                                                        16,
-                                                                        0),
-                                                            iconPadding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0,
-                                                                        0,
-                                                                        0,
-                                                                        0),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
-                                                            textStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .override(
-                                                                      fontFamily:
-                                                                          'SFProText',
-                                                                      color: Colors
-                                                                          .white,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                    ),
-                                                            elevation: 0,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  } else if (valueOrDefault<
-                                                          String>(
-                                                        functions
-                                                            .jsonToStringCopy(
-                                                                getJsonField(
-                                                          FFAppState().account,
-                                                          r'''$.role''',
-                                                        )),
-                                                        '-',
-                                                      ) ==
-                                                      '\"admin\"') {
-                                                    return Padding(
-                                                      padding:
-                                                          EdgeInsetsDirectional
-                                                              .fromSTEB(11.5, 0,
-                                                                  11.5, 0),
-                                                      child: FFButtonWidget(
-                                                        onPressed: () async {
-                                                          FFAppState()
-                                                              .isEdited = true;
-                                                          safeSetState(() {});
-                                                          _model.photos123 =
-                                                              getJsonField(
-                                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                                .jsonBody,
-                                                            r'''$.files''',
-                                                            true,
-                                                          )!
-                                                                  .toList()
-                                                                  .cast<
-                                                                      dynamic>();
-                                                          safeSetState(() {});
-                                                        },
-                                                        text: 'Редактировать',
-                                                        icon: Icon(
-                                                          Icons.edit,
-                                                          size: 20,
-                                                        ),
-                                                        options:
-                                                            FFButtonOptions(
-                                                          width:
-                                                              MediaQuery.sizeOf(
-                                                                          context)
-                                                                      .width *
-                                                                  0.95,
-                                                          height: 40,
-                                                          padding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(16,
-                                                                      0, 16, 0),
-                                                          iconPadding:
-                                                              EdgeInsetsDirectional
-                                                                  .fromSTEB(0,
-                                                                      0, 0, 0),
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .primary,
-                                                          textStyle:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .titleSmall
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'SFProText',
-                                                                    color: Colors
-                                                                        .white,
-                                                                    letterSpacing:
-                                                                        0.0,
-                                                                  ),
-                                                          elevation: 0,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(8),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  } else if (valueOrDefault<
-                                                          String>(
-                                                        functions
-                                                            .jsonToStringCopy(
-                                                                getJsonField(
-                                                          FFAppState().account,
-                                                          r'''$.role''',
-                                                        )),
-                                                        '-',
-                                                      ) ==
-                                                      '\"performer\"') {
-                                                    return Visibility(
-                                                      visible: functions
-                                                              .statusRequest(
-                                                                  getJsonField(
-                                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                                .jsonBody,
-                                                            r'''$.status''',
-                                                          ).toString()) ==
-                                                          'В работе',
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(11.5,
-                                                                    0, 11.5, 0),
-                                                        child: FFButtonWidget(
-                                                          onPressed: () async {
-                                                            FFAppState()
-                                                                    .isEdited =
-                                                                true;
-                                                            safeSetState(() {});
-                                                            _model.photos123 =
-                                                                getJsonField(
-                                                              detailedDefectsOfflineGetDefectsByIDResponse
-                                                                  .jsonBody,
-                                                              r'''$.files''',
-                                                              true,
-                                                            )!
-                                                                    .toList()
-                                                                    .cast<
-                                                                        dynamic>();
-                                                            safeSetState(() {});
-                                                          },
-                                                          text: 'Редактировать',
-                                                          icon: Icon(
-                                                            Icons.edit,
-                                                            size: 20,
-                                                          ),
-                                                          options:
-                                                              FFButtonOptions(
-                                                            width: MediaQuery
-                                                                        .sizeOf(
-                                                                            context)
-                                                                    .width *
-                                                                0.95,
-                                                            height: 40,
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16,
-                                                                        0,
-                                                                        16,
-                                                                        0),
-                                                            iconPadding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0,
-                                                                        0,
-                                                                        0,
-                                                                        0),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
-                                                            textStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .override(
-                                                                      fontFamily:
-                                                                          'SFProText',
-                                                                      color: Colors
-                                                                          .white,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                    ),
-                                                            elevation: 0,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  } else if (valueOrDefault<
-                                                          String>(
-                                                        functions
-                                                            .jsonToStringCopy(
-                                                                getJsonField(
-                                                          FFAppState().account,
-                                                          r'''$.role''',
-                                                        )),
-                                                        '-',
-                                                      ) ==
-                                                      '\"director\"') {
-                                                    return Visibility(
-                                                      visible: functions
-                                                              .statusRequest(
-                                                                  getJsonField(
-                                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                                .jsonBody,
-                                                            r'''$.status''',
-                                                          ).toString()) ==
-                                                          'Открыта',
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(11.5,
-                                                                    0, 11.5, 0),
-                                                        child: FFButtonWidget(
-                                                          onPressed: () async {
-                                                            FFAppState()
-                                                                    .isEdited =
-                                                                true;
-                                                            safeSetState(() {});
-                                                            _model.photos123 =
-                                                                getJsonField(
-                                                              detailedDefectsOfflineGetDefectsByIDResponse
-                                                                  .jsonBody,
-                                                              r'''$.files''',
-                                                              true,
-                                                            )!
-                                                                    .toList()
-                                                                    .cast<
-                                                                        dynamic>();
-                                                            safeSetState(() {});
-                                                          },
-                                                          text: 'Редактировать',
-                                                          icon: Icon(
-                                                            Icons.edit,
-                                                            size: 20,
-                                                          ),
-                                                          options:
-                                                              FFButtonOptions(
-                                                            width: MediaQuery
-                                                                        .sizeOf(
-                                                                            context)
-                                                                    .width *
-                                                                0.95,
-                                                            height: 40,
-                                                            padding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        16,
-                                                                        0,
-                                                                        16,
-                                                                        0),
-                                                            iconPadding:
-                                                                EdgeInsetsDirectional
-                                                                    .fromSTEB(
-                                                                        0,
-                                                                        0,
-                                                                        0,
-                                                                        0),
-                                                            color: FlutterFlowTheme
-                                                                    .of(context)
-                                                                .primary,
-                                                            textStyle:
-                                                                FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .titleSmall
-                                                                    .override(
-                                                                      fontFamily:
-                                                                          'SFProText',
-                                                                      color: Colors
-                                                                          .white,
-                                                                      letterSpacing:
-                                                                          0.0,
-                                                                    ),
-                                                            elevation: 0,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        8),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  } else {
-                                                    return Container(
-                                                      decoration: BoxDecoration(
-                                                        color: FlutterFlowTheme
-                                                                .of(context)
-                                                            .secondaryBackground,
-                                                      ),
-                                                    );
-                                                  }
-                                                },
-                                              );
-                                            } else {
-                                              return Padding(
-                                                padding: EdgeInsetsDirectional
-                                                    .fromSTEB(11.5, 0, 11.5, 0),
-                                                child: FFButtonWidget(
-                                                  onPressed: () async {
-                                                    var _shouldSetState = false;
-                                                    _model.apiRes =
-                                                        await UpdateDefectsByIdCall
-                                                            .call(
-                                                      access:
-                                                          currentAuthenticationToken,
-                                                      id: getJsonField(
-                                                        detailedDefectsOfflineGetDefectsByIDResponse
-                                                            .jsonBody,
-                                                        r'''$.id''',
-                                                      ),
-                                                      bodyJson:
-                                                          EditDefectStruct(
-                                                        files: functions
-                                                            .combineArraysfiles(
-                                                                FFAppState()
-                                                                    .photos
-                                                                    .map((e) =>
-                                                                        FilesStruct.maybeFromMap(
-                                                                            getJsonField(
-                                                                          e,
-                                                                          r'''$''',
-                                                                        )))
-                                                                    .withoutNulls
-                                                                    .toList(),
-                                                                _model.photos123
-                                                                    .map((e) =>
-                                                                        FilesStruct.maybeFromMap(
-                                                                            getJsonField(
-                                                                          e,
-                                                                          r'''$''',
-                                                                        )))
-                                                                    .withoutNulls
-                                                                    .toList()),
-                                                      ).toMap(),
-                                                    );
-
-                                                    _shouldSetState = true;
-                                                    if ((_model.apiRes
-                                                            ?.succeeded ??
-                                                        true)) {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            'Дефект успешно отредактирован!',
-                                                            style: TextStyle(
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .primaryText,
-                                                            ),
-                                                          ),
-                                                          duration: Duration(
-                                                              milliseconds:
-                                                                  4000),
-                                                          backgroundColor:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .secondary,
-                                                        ),
-                                                      );
-                                                    } else {
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        SnackBar(
-                                                          content: Text(
-                                                            (_model.apiRes
-                                                                        ?.jsonBody ??
-                                                                    '')
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              color: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .primaryText,
-                                                            ),
-                                                          ),
-                                                          duration: Duration(
-                                                              milliseconds:
-                                                                  4000),
-                                                          backgroundColor:
-                                                              FlutterFlowTheme.of(
-                                                                      context)
-                                                                  .secondary,
-                                                        ),
-                                                      );
-                                                      if (_shouldSetState)
-                                                        safeSetState(() {});
-                                                      return;
-                                                    }
-
-                                                    FFAppState().isEdited =
-                                                        false;
-                                                    FFAppState().photos = [];
-                                                    safeSetState(() {});
-                                                    _model.photos123 =
-                                                        getJsonField(
-                                                      detailedDefectsOfflineGetDefectsByIDResponse
-                                                          .jsonBody,
-                                                      r'''$.files''',
-                                                      true,
-                                                    )!
-                                                            .toList()
-                                                            .cast<dynamic>();
-                                                    safeSetState(() {});
-                                                    if (_shouldSetState)
-                                                      safeSetState(() {});
-                                                  },
-                                                  text: 'Сохранить',
-                                                  options: FFButtonOptions(
-                                                    width: MediaQuery.sizeOf(
-                                                                context)
-                                                            .width *
-                                                        0.95,
-                                                    height: 40,
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                16, 0, 16, 0),
-                                                    iconPadding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(
-                                                                0, 0, 0, 0),
-                                                    color: FlutterFlowTheme.of(
-                                                            context)
-                                                        .primary,
-                                                    textStyle: FlutterFlowTheme
-                                                            .of(context)
-                                                        .titleSmall
-                                                        .override(
-                                                          fontFamily:
-                                                              'SFProText',
-                                                          color: Colors.white,
-                                                          letterSpacing: 0.0,
-                                                        ),
-                                                    elevation: 0,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
+                                              ]
+                                                  .divide(
+                                                      SizedBox(height: 15.0))
+                                                  .addToEnd(
+                                                      SizedBox(height: 15.0)),
+                                            ),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -4654,7 +4455,8 @@ class _DetailedDefectsOfflineWidgetState
                                               children: [
                                                 Padding(
                                                   padding: EdgeInsetsDirectional
-                                                      .fromSTEB(0, 15, 0, 0),
+                                                      .fromSTEB(
+                                                          0.0, 15.0, 0.0, 0.0),
                                                   child: FutureBuilder<
                                                       ApiCallResponse>(
                                                     future:
@@ -4662,7 +4464,7 @@ class _DetailedDefectsOfflineWidgetState
                                                             .call(
                                                       access:
                                                           currentAuthenticationToken,
-                                                      id: widget!.id,
+                                                      id: widget.id,
                                                     ),
                                                     builder:
                                                         (context, snapshot) {
@@ -4670,8 +4472,8 @@ class _DetailedDefectsOfflineWidgetState
                                                       if (!snapshot.hasData) {
                                                         return Center(
                                                           child: SizedBox(
-                                                            width: 50,
-                                                            height: 50,
+                                                            width: 50.0,
+                                                            height: 50.0,
                                                             child:
                                                                 CircularProgressIndicator(
                                                               valueColor:
@@ -4711,19 +4513,20 @@ class _DetailedDefectsOfflineWidgetState
                                                               return Align(
                                                                 alignment:
                                                                     AlignmentDirectional(
-                                                                        0, 0),
+                                                                        0.0,
+                                                                        0.0),
                                                                 child: Padding(
                                                                   padding: EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          16,
-                                                                          0,
-                                                                          16,
-                                                                          0),
+                                                                          16.0,
+                                                                          0.0,
+                                                                          16.0,
+                                                                          0.0),
                                                                   child:
                                                                       Container(
-                                                                    width: MediaQuery.sizeOf(
-                                                                            context)
-                                                                        .width,
+                                                                    width: MediaQuery.sizeOf(context)
+                                                                            .width *
+                                                                        1.0,
                                                                     decoration:
                                                                         BoxDecoration(
                                                                       color: FlutterFlowTheme.of(
@@ -4731,16 +4534,15 @@ class _DetailedDefectsOfflineWidgetState
                                                                           .secondaryBackground,
                                                                       borderRadius:
                                                                           BorderRadius.circular(
-                                                                              10),
+                                                                              10.0),
                                                                     ),
                                                                     child:
                                                                         Padding(
-                                                                      padding: EdgeInsetsDirectional
-                                                                          .fromSTEB(
-                                                                              15,
-                                                                              0,
-                                                                              15,
-                                                                              0),
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          15.0,
+                                                                          0.0,
+                                                                          15.0,
+                                                                          0.0),
                                                                       child:
                                                                           Column(
                                                                         mainAxisSize:
@@ -4765,7 +4567,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                   children: [
                                                                                     Align(
-                                                                                      alignment: AlignmentDirectional(0, 0),
+                                                                                      alignment: AlignmentDirectional(0.0, 0.0),
                                                                                       child: Text(
                                                                                         '${getJsonField(
                                                                                           commentItem,
@@ -4777,7 +4579,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                               fontFamily: 'SFProText',
                                                                                               color: FlutterFlowTheme.of(context).primaryText,
-                                                                                              fontSize: 14,
+                                                                                              fontSize: 14.0,
                                                                                               letterSpacing: 0.0,
                                                                                               fontWeight: FontWeight.normal,
                                                                                             ),
@@ -4792,7 +4594,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                               fontFamily: 'SFProText',
                                                                                               color: Color(0xFFD3A625),
-                                                                                              fontSize: 12,
+                                                                                              fontSize: 12.0,
                                                                                               letterSpacing: 0.0,
                                                                                               fontWeight: FontWeight.normal,
                                                                                             ),
@@ -4810,7 +4612,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                   ).toString()),
                                                                                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                         fontFamily: 'SFProText',
-                                                                                        fontSize: 16,
+                                                                                        fontSize: 16.0,
                                                                                         letterSpacing: 0.0,
                                                                                         fontWeight: FontWeight.w500,
                                                                                       ),
@@ -4834,7 +4636,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                         ).toString(),
                                                                                         style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                               fontFamily: 'SFProText',
-                                                                                              fontSize: 12,
+                                                                                              fontSize: 12.0,
                                                                                               letterSpacing: 0.0,
                                                                                             ),
                                                                                       ),
@@ -4861,7 +4663,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                                 child: Container(
                                                                                                   height: MediaQuery.sizeOf(context).height * 0.3,
                                                                                                   child: EditcommentWidget(
-                                                                                                    id: widget!.id!,
+                                                                                                    id: widget.id!,
                                                                                                     index: getJsonField(
                                                                                                       commentItem,
                                                                                                       r'''$.id''',
@@ -4884,29 +4686,27 @@ class _DetailedDefectsOfflineWidgetState
                                                                                       child: Icon(
                                                                                         Icons.keyboard_control,
                                                                                         color: FlutterFlowTheme.of(context).primaryText,
-                                                                                        size: 24,
+                                                                                        size: 24.0,
                                                                                       ),
                                                                                     ),
                                                                                   ],
                                                                                 ),
                                                                               ),
-                                                                            ].divide(SizedBox(height: 3)),
+                                                                            ].divide(SizedBox(height: 3.0)),
                                                                           ),
-                                                                        ].addToStart(SizedBox(height: 10)).addToEnd(SizedBox(height: 10)),
+                                                                        ].addToStart(SizedBox(height: 10.0)).addToEnd(SizedBox(height: 10.0)),
                                                                       ),
                                                                     ),
                                                                   ),
                                                                 ),
                                                               );
                                                             })
-                                                                .divide(
-                                                                    SizedBox(
-                                                                        height:
-                                                                            10))
-                                                                .addToEnd(
-                                                                    SizedBox(
-                                                                        height:
-                                                                            10)),
+                                                                .divide(SizedBox(
+                                                                    height:
+                                                                        10.0))
+                                                                .addToEnd(SizedBox(
+                                                                    height:
+                                                                        10.0)),
                                                           );
                                                         },
                                                       );
@@ -4929,7 +4729,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                 Colors
                                                                     .transparent,
                                                             alignment: AlignmentDirectional(
-                                                                    0, 0)
+                                                                    0.0, 0.0)
                                                                 .resolve(
                                                                     Directionality.of(
                                                                         context)),
@@ -4948,14 +4748,14 @@ class _DetailedDefectsOfflineWidgetState
                                                                 height: MediaQuery.sizeOf(
                                                                             context)
                                                                         .height *
-                                                                    0.3,
+                                                                    0.35,
                                                                 width: MediaQuery.sizeOf(
                                                                             context)
                                                                         .width *
                                                                     0.95,
                                                                 child:
                                                                     AddCommentCopyWidget(
-                                                                  id: widget!
+                                                                  id: widget
                                                                       .id!,
                                                                   title: '',
                                                                   recommendation:
@@ -4969,7 +4769,14 @@ class _DetailedDefectsOfflineWidgetState
                                                       );
                                                     },
                                                     text:
-                                                        'Оставить комментарий',
+                                                        FFLocalizations.of(
+                                                                context)
+                                                            .getVariableText(
+                                                          ruText:
+                                                              'Оставить комментарий',
+                                                          kkText:
+                                                              'Пікір қалдыру',
+                                                        ),
                                                     options: FFButtonOptions(
                                                       width: MediaQuery.sizeOf(
                                                                   context)
@@ -4982,11 +4789,17 @@ class _DetailedDefectsOfflineWidgetState
                                                       padding:
                                                           EdgeInsetsDirectional
                                                               .fromSTEB(
-                                                                  16, 0, 16, 0),
+                                                                  16.0,
+                                                                  0.0,
+                                                                  16.0,
+                                                                  0.0),
                                                       iconPadding:
                                                           EdgeInsetsDirectional
                                                               .fromSTEB(
-                                                                  0, 0, 0, 0),
+                                                                  0.0,
+                                                                  0.0,
+                                                                  0.0,
+                                                                  0.0),
                                                       color:
                                                           FlutterFlowTheme.of(
                                                                   context)
@@ -5003,10 +4816,10 @@ class _DetailedDefectsOfflineWidgetState
                                                                 letterSpacing:
                                                                     0.0,
                                                               ),
-                                                      elevation: 0,
+                                                      elevation: 0.0,
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                              8),
+                                                              8.0),
                                                     ),
                                                   ),
                                                 ),
@@ -5027,22 +4840,22 @@ class _DetailedDefectsOfflineWidgetState
                                           child: Padding(
                                             padding:
                                                 EdgeInsetsDirectional.fromSTEB(
-                                                    0, 15, 0, 0),
+                                                    0.0, 15.0, 0.0, 0.0),
                                             child:
                                                 FutureBuilder<ApiCallResponse>(
                                               future: GetDefectsHistoryByIDCall
                                                   .call(
                                                 access:
                                                     currentAuthenticationToken,
-                                                id: widget!.id,
+                                                id: widget.id,
                                               ),
                                               builder: (context, snapshot) {
                                                 // Customize what your widget looks like when it's loading.
                                                 if (!snapshot.hasData) {
                                                   return Center(
                                                     child: SizedBox(
-                                                      width: 50,
-                                                      height: 50,
+                                                      width: 50.0,
+                                                      height: 50.0,
                                                       child:
                                                           CircularProgressIndicator(
                                                         valueColor:
@@ -5081,20 +4894,20 @@ class _DetailedDefectsOfflineWidgetState
                                                           return Align(
                                                             alignment:
                                                                 AlignmentDirectional(
-                                                                    0, 0),
+                                                                    0.0, 0.0),
                                                             child: Padding(
                                                               padding:
                                                                   EdgeInsetsDirectional
                                                                       .fromSTEB(
-                                                                          16,
-                                                                          0,
-                                                                          16,
-                                                                          0),
+                                                                          16.0,
+                                                                          0.0,
+                                                                          16.0,
+                                                                          0.0),
                                                               child: Container(
-                                                                width: MediaQuery
-                                                                        .sizeOf(
+                                                                width: MediaQuery.sizeOf(
                                                                             context)
-                                                                    .width,
+                                                                        .width *
+                                                                    1.0,
                                                                 decoration:
                                                                     BoxDecoration(
                                                                   color: FlutterFlowTheme.of(
@@ -5103,7 +4916,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                   borderRadius:
                                                                       BorderRadius
                                                                           .circular(
-                                                                              10),
+                                                                              10.0),
                                                                 ),
                                                                 child: Column(
                                                                   mainAxisSize:
@@ -5117,12 +4930,11 @@ class _DetailedDefectsOfflineWidgetState
                                                                           .start,
                                                                   children: [
                                                                     Padding(
-                                                                      padding: EdgeInsetsDirectional
-                                                                          .fromSTEB(
-                                                                              15,
-                                                                              0,
-                                                                              0,
-                                                                              0),
+                                                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                                                          15.0,
+                                                                          0.0,
+                                                                          0.0,
+                                                                          0.0),
                                                                       child:
                                                                           Row(
                                                                         mainAxisSize:
@@ -5135,17 +4947,17 @@ class _DetailedDefectsOfflineWidgetState
                                                                             [
                                                                           Padding(
                                                                             padding: EdgeInsetsDirectional.fromSTEB(
-                                                                                5,
-                                                                                0,
-                                                                                5,
-                                                                                0),
+                                                                                5.0,
+                                                                                0.0,
+                                                                                5.0,
+                                                                                0.0),
                                                                             child:
                                                                                 Column(
                                                                               mainAxisSize: MainAxisSize.max,
                                                                               crossAxisAlignment: CrossAxisAlignment.start,
                                                                               children: [
                                                                                 Align(
-                                                                                  alignment: AlignmentDirectional(0, 0),
+                                                                                  alignment: AlignmentDirectional(0.0, 0.0),
                                                                                   child: Text(
                                                                                     getJsonField(
                                                                                       historyItem,
@@ -5154,7 +4966,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                     style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                           fontFamily: 'SFProText',
                                                                                           color: FlutterFlowTheme.of(context).primaryText,
-                                                                                          fontSize: 16,
+                                                                                          fontSize: 16.0,
                                                                                           letterSpacing: 0.0,
                                                                                           fontWeight: FontWeight.w500,
                                                                                         ),
@@ -5180,7 +4992,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                           ).toString()}',
                                                                                           style: FlutterFlowTheme.of(context).headlineSmall.override(
                                                                                                 fontFamily: 'SFProText',
-                                                                                                fontSize: 14,
+                                                                                                fontSize: 14.0,
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.normal,
                                                                                               ),
@@ -5207,7 +5019,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                           ).toString(),
                                                                                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                                                                                 fontFamily: 'SFProText',
-                                                                                                fontSize: 12,
+                                                                                                fontSize: 12.0,
                                                                                                 letterSpacing: 0.0,
                                                                                               ),
                                                                                         ),
@@ -5223,10 +5035,10 @@ class _DetailedDefectsOfflineWidgetState
                                                                                       Icon(
                                                                                         Icons.calendar_today,
                                                                                         color: Color(0xFF87898F),
-                                                                                        size: 15,
+                                                                                        size: 15.0,
                                                                                       ),
                                                                                       Align(
-                                                                                        alignment: AlignmentDirectional(-1, -1),
+                                                                                        alignment: AlignmentDirectional(-1.0, -1.0),
                                                                                         child: Text(
                                                                                           dateTimeFormat(
                                                                                             "d.M.y H:mm",
@@ -5239,7 +5051,7 @@ class _DetailedDefectsOfflineWidgetState
                                                                                           style: FlutterFlowTheme.of(context).bodyLarge.override(
                                                                                                 fontFamily: 'SFProText',
                                                                                                 color: Color(0xFF87898F),
-                                                                                                fontSize: 14,
+                                                                                                fontSize: 14.0,
                                                                                                 letterSpacing: 0.0,
                                                                                                 fontWeight: FontWeight.normal,
                                                                                               ),
@@ -5248,28 +5060,28 @@ class _DetailedDefectsOfflineWidgetState
                                                                                     ],
                                                                                   ),
                                                                                 ),
-                                                                              ].divide(SizedBox(height: 3)),
+                                                                              ].divide(SizedBox(height: 3.0)),
                                                                             ),
                                                                           ),
-                                                                        ].divide(SizedBox(width: 5)),
+                                                                        ].divide(SizedBox(width: 5.0)),
                                                                       ),
                                                                     ),
                                                                   ]
                                                                       .addToStart(SizedBox(
                                                                           height:
-                                                                              10))
+                                                                              10.0))
                                                                       .addToEnd(SizedBox(
                                                                           height:
-                                                                              10)),
+                                                                              10.0)),
                                                                 ),
                                                               ),
                                                             ),
                                                           );
                                                         })
                                                             .divide(SizedBox(
-                                                                height: 10))
+                                                                height: 10.0))
                                                             .addToEnd(SizedBox(
-                                                                height: 10)),
+                                                                height: 10.0)),
                                                       ),
                                                     );
                                                   },
@@ -5294,857 +5106,2173 @@ class _DetailedDefectsOfflineWidgetState
                     decoration: BoxDecoration(),
                     child: Builder(
                       builder: (context) {
-                        if ((functions.statusRequest(getJsonField(
-                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                      .jsonBody,
-                                  r'''$.status''',
-                                ).toString()) ==
-                                'Подрядчик назначен') &&
-                            (valueOrDefault<String>(
-                                  functions.jsonToStringCopy(getJsonField(
-                                    FFAppState().account,
-                                    r'''$.role''',
-                                  )),
-                                  '-',
-                                ) ==
-                                '\"admin\"')) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      _model.apiResultss9 =
-                                          await UpdateDefectsByIdCall.call(
-                                        access: currentAuthenticationToken,
-                                        id: getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.id''',
-                                        ),
-                                        bodyJson: RequestStruct(
-                                          status: 'contractor_accept',
-                                        ).toMap(),
-                                      );
-
-                                      if (!(_model.apiResultss9?.succeeded ??
-                                          true)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              (_model.apiResultss9?.jsonBody ??
-                                                      '')
-                                                  .toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
+                        if (valueOrDefault<String>(
+                              functions.jsonToStringCopy(getJsonField(
+                                FFAppState().account,
+                                r'''$.role''',
+                              )),
+                              '-',
+                            ) ==
+                            '\"admin\"') {
+                          return Builder(
+                            builder: (context) {
+                              if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Подрядчик назначен') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResultss9 =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
                                               ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                      }
+                                              bodyJson: RequestStruct(
+                                                status: 'contractor_accept',
+                                              ).toMap(),
+                                            );
 
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Принять',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      elevation: 3,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
-                          );
-                        } else if (((functions.statusRequest(getJsonField(
-                                      detailedDefectsOfflineGetDefectsByIDResponse
-                                          .jsonBody,
-                                      r'''$.status''',
-                                    ).toString()) ==
-                                    'У исполнителя') ||
-                                (functions.statusRequest(getJsonField(
-                                      detailedDefectsOfflineGetDefectsByIDResponse
-                                          .jsonBody,
-                                      r'''$.status''',
-                                    ).toString()) ==
-                                    'Открыта')) &&
-                            ((valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"performer\"') ||
-                                (valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"engineer\"'))) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      _model.apiResultss9Copy123 =
-                                          await UpdateDefectsByIdCall.call(
-                                        access: currentAuthenticationToken,
-                                        id: getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.id''',
-                                        ),
-                                        bodyJson: RequestStruct(
-                                          status: 'in_progress',
-                                        ).toMap(),
-                                      );
-
-                                      if (!(_model
-                                              .apiResultss9Copy123?.succeeded ??
-                                          true)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              (_model.apiResultss9Copy123
-                                                          ?.jsonBody ??
-                                                      '')
-                                                  .toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                      }
-
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Начать',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
-                          );
-                        } else if ((functions.statusRequest(getJsonField(
-                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                      .jsonBody,
-                                  r'''$.status''',
-                                ).toString()) ==
-                                'В работе') &&
-                            ((valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"performer\"') ||
-                                (valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"admin\"') ||
-                                (valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"engineer\"'))) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      var confirmDialogResponse =
-                                          await showDialog<bool>(
-                                                context: context,
-                                                builder: (alertDialogContext) {
-                                                  return AlertDialog(
-                                                    title: Text(
-                                                        'Выбор подрядчика'),
-                                                    content: Text(
-                                                        'Вы уверены что хотите выполнить заявку?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                alertDialogContext,
-                                                                false),
-                                                        child: Text('Отменить'),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () =>
-                                                            Navigator.pop(
-                                                                alertDialogContext,
-                                                                true),
-                                                        child: Text('Выбрать'),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              ) ??
-                                              false;
-                                      if (confirmDialogResponse) {
-                                        _model.apiResusdsdf =
-                                            await UpdateDefectsByIdCall.call(
-                                          access: currentAuthenticationToken,
-                                          id: getJsonField(
-                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                .jsonBody,
-                                            r'''$.id''',
-                                          ),
-                                          bodyJson: RequestStruct(
-                                            status: 'completed',
-                                          ).toMap(),
-                                        );
-
-                                        if (!(_model.apiResusdsdf?.succeeded ??
-                                            true)) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                (_model.apiResusdsdf
-                                                            ?.jsonBody ??
-                                                        '')
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
+                                            if (!(_model
+                                                    .apiResultss9?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResultss9
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
                                                 ),
-                                              ),
-                                              duration:
-                                                  Duration(milliseconds: 2000),
-                                              backgroundColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondary,
-                                            ),
-                                          );
-                                        }
-                                      } else {
-                                        context.safePop();
-                                      }
+                                              );
+                                            }
 
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Выполнена',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color: Color(0xFF51B48A),
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      borderSide: BorderSide(
-                                        color: FlutterFlowTheme.of(context)
-                                            .alternate,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
-                          );
-                        } else if ((functions.statusRequest(getJsonField(
-                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                      .jsonBody,
-                                  r'''$.status''',
-                                ).toString()) ==
-                                'На проверке') &&
-                            (valueOrDefault<String>(
-                                  functions.jsonToStringCopy(getJsonField(
-                                    FFAppState().account,
-                                    r'''$.role''',
-                                  )),
-                                  '-',
-                                ) ==
-                                '\"engineer\"')) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      _model.aaaa =
-                                          await UpdateDefectsByIdCall.call(
-                                        access: currentAuthenticationToken,
-                                        id: getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.id''',
-                                        ),
-                                        bodyJson: RequestStruct(
-                                          status: 'completed',
-                                        ).toMap(),
-                                      );
-
-                                      if (!(_model.aaaa?.succeeded ?? true)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              (_model.aaaa?.jsonBody ?? '')
-                                                  .toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            backgroundColor:
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Принять',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
                                                 FlutterFlowTheme.of(context)
-                                                    .secondary,
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                           ),
-                                        );
-                                      }
-
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Подтвердить',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      elevation: 3,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1,
+                                        ),
                                       ),
-                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                  ),
-                                ),
-                              ),
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      if (functions.emptyList(getJsonField(
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'В работе') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            var confirmDialogResponse =
+                                                await showDialog<bool>(
+                                                      context: context,
+                                                      builder:
+                                                          (alertDialogContext) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              'Выбор подрядчика'),
+                                                          content: Text(
+                                                              'Вы уверены что хотите выполнить заявку?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      false),
+                                                              child: Text(
+                                                                  'Отменить'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      true),
+                                                              child: Text(
+                                                                  'Выбрать'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    ) ??
+                                                    false;
+                                            if (confirmDialogResponse) {
+                                              _model.apiResusdsdf =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'completed',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.apiResusdsdf
+                                                      ?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.apiResusdsdf
+                                                                  ?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              context.safePop();
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Выполнена',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF51B48A),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderSide: BorderSide(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .alternate,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Открыта') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResultss9CopyCopy =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'under_review',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiResultss9CopyCopy
+                                                    ?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResultss9CopyCopy
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Отправить на проверку',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Принят подрядчиком') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResultss9Copy1Copy =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'in_progress',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiResultss9Copy1Copy
+                                                    ?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResultss9Copy1Copy
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Начать',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else {
+                                return Container(
+                                  decoration: BoxDecoration(),
+                                );
+                              }
+                            },
+                          );
+                        } else if (valueOrDefault<String>(
+                              functions.jsonToStringCopy(getJsonField(
+                                FFAppState().account,
+                                r'''$.role''',
+                              )),
+                              '-',
+                            ) ==
+                            '\"performer\"') {
+                          return Builder(
+                            builder: (context) {
+                              if ((functions.statusRequest(getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.status''',
+                                      ).toString()) ==
+                                      'У исполнителя') ||
+                                  (functions.statusRequest(getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.status''',
+                                      ).toString()) ==
+                                      'Открыта')) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResultss9Copy123 =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'at_performer',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiResultss9Copy123
+                                                    ?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResultss9Copy123
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Начать',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'В работе') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            var confirmDialogResponse =
+                                                await showDialog<bool>(
+                                                      context: context,
+                                                      builder:
+                                                          (alertDialogContext) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              'Выбор подрядчика'),
+                                                          content: Text(
+                                                              'Вы уверены что хотите выполнить заявку?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      false),
+                                                              child: Text(
+                                                                  'Отменить'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      true),
+                                                              child: Text(
+                                                                  'Выбрать'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    ) ??
+                                                    false;
+                                            if (confirmDialogResponse) {
+                                              _model.apiResusdsdfz =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'completed',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.apiResusdsdfz
+                                                      ?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.apiResusdsdfz
+                                                                  ?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              context.safePop();
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Выполнена',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF51B48A),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderSide: BorderSide(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .alternate,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else {
+                                return Container(
+                                  decoration: BoxDecoration(),
+                                );
+                              }
+                            },
+                          );
+                        } else if (valueOrDefault<String>(
+                              functions.jsonToStringCopy(getJsonField(
+                                FFAppState().account,
+                                r'''$.role''',
+                              )),
+                              '-',
+                            ) ==
+                            '\"engineer\"') {
+                          return Builder(
+                            builder: (context) {
+                              if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'На проверке') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.aaaa =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'completed',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.aaaa?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.aaaa?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Подтвердить',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            if (functions
+                                                .emptyList(getJsonField(
+                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                  .jsonBody,
+                                              r'''$.performers''',
+                                              true,
+                                            ))!) {
+                                              _model.apiResuldfsdfsss =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'open',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.apiResuldfsdfsss
+                                                      ?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.apiResuldfsdfsss
+                                                                  ?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              _model.apiResuldfsdfsss1 =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'at_performer',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.apiResuldfsdfsss1
+                                                      ?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.apiResuldfsdfsss1
+                                                                  ?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Отклонить работу',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Выполнен') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.aaaaa =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'closed',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.aaaaa?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.aaaaa?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Закрыть',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF30AE67),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResul =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'rejected',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiResul?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResul
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Отказать',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .alternate,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Принят подрядчиком') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiRe =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'in_progress',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiRe?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiRe?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Начать',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Открыта') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResu =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'completed',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiResu?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResu?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Выполнить',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.aaaaa1 =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'closed',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.aaaaa1?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.aaaaa1?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Закрыть',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF30AE67),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if ((functions.statusRequest(getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.status''',
+                                      ).toString()) ==
+                                      'В работе') ||
+                                  (functions.statusRequest(getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.status''',
+                                      ).toString()) ==
+                                      'У исполнителя')) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.aaaaaaaa =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'closed',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.aaaaaaaa?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.aaaaaaaa
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Закрыть',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF30AE67),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else {
+                                return Container(
+                                  decoration: BoxDecoration(),
+                                );
+                              }
+                            },
+                          );
+                        } else if (valueOrDefault<String>(
+                              functions.jsonToStringCopy(getJsonField(
+                                FFAppState().account,
+                                r'''$.role''',
+                              )),
+                              '-',
+                            ) ==
+                            '\"director\"') {
+                          return Builder(
+                            builder: (context) {
+                              if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Выполнен') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.aaaaaasd =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'closed',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.aaaaaasd?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.aaaaaasd
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Закрыть',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF30AE67),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            if (functions
+                                                .emptyList(getJsonField(
+                                              detailedDefectsOfflineGetDefectsByIDResponse
+                                                  .jsonBody,
+                                              r'''$.performers''',
+                                              true,
+                                            ))!) {
+                                              _model.apiResuldfsdfsssas =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'open',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.apiResuldfsdfsssas
+                                                      ?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.apiResuldfsdfsssas
+                                                                  ?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              _model.apiResuldfsdfs =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'at_performer',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.apiResuldfsdfs
+                                                      ?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.apiResuldfsdfs
+                                                                  ?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Отклонить работу',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else {
+                                return Container(
+                                  decoration: BoxDecoration(),
+                                );
+                              }
+                            },
+                          );
+                        } else if (valueOrDefault<String>(
+                              functions.jsonToStringCopy(getJsonField(
+                                FFAppState().account,
+                                r'''$.role''',
+                              )),
+                              '-',
+                            ) ==
+                            '\"technician\"') {
+                          return Builder(
+                            builder: (context) {
+                              if (functions.statusRequest(getJsonField(
+                                    detailedDefectsOfflineGetDefectsByIDResponse
+                                        .jsonBody,
+                                    r'''$.status''',
+                                  ).toString()) ==
+                                  'Открыта') {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiResultss9Copy123q =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'at_performer',
+                                                performers: functions.inttolist(
+                                                    functions.stringToInt(
+                                                        functions
+                                                            .jsonToStringCopy(
+                                                                getJsonField(
+                                                  FFAppState().account,
+                                                  r'''$.id''',
+                                                )))!),
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiResultss9Copy123q
+                                                    ?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiResultss9Copy123q
+                                                                ?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
+                                                ),
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Принять',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if ((functions.statusRequest(getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.status''',
+                                      ).toString()) ==
+                                      'У исполнителя') &&
+                                  functions.containsInt(
+                                      (getJsonField(
                                         detailedDefectsOfflineGetDefectsByIDResponse
                                             .jsonBody,
                                         r'''$.performers''',
                                         true,
-                                      ))!) {
-                                        _model.apiResuldfsdfsss =
-                                            await UpdateDefectsByIdCall.call(
-                                          access: currentAuthenticationToken,
-                                          id: getJsonField(
-                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                .jsonBody,
-                                            r'''$.id''',
-                                          ),
-                                          bodyJson: RequestStruct(
-                                            status: 'open',
-                                          ).toMap(),
-                                        );
+                                      ) as List?)
+                                          ?.cast<int>(),
+                                      functions.stringToInt(functions
+                                          .jsonToStringCopy(getJsonField(
+                                        FFAppState().account,
+                                        r'''$.id''',
+                                      )))!)) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.aaaasd =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'in_progress',
+                                              ).toMap(),
+                                            );
 
-                                        if (!(_model
-                                                .apiResuldfsdfsss?.succeeded ??
-                                            true)) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                (_model.apiResuldfsdfsss
-                                                            ?.jsonBody ??
-                                                        '')
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
+                                            if (!(_model.aaaasd?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.aaaasd?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
                                                 ),
-                                              ),
-                                              duration:
-                                                  Duration(milliseconds: 2000),
-                                              backgroundColor:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondary,
-                                            ),
-                                          );
-                                        }
-                                      } else {
-                                        _model.apiResuldfsdfsss1 =
-                                            await UpdateDefectsByIdCall.call(
-                                          access: currentAuthenticationToken,
-                                          id: getJsonField(
-                                            detailedDefectsOfflineGetDefectsByIDResponse
-                                                .jsonBody,
-                                            r'''$.id''',
-                                          ),
-                                          bodyJson: RequestStruct(
-                                            status: 'at_performer',
-                                          ).toMap(),
-                                        );
+                                              );
+                                            }
 
-                                        if (!(_model
-                                                .apiResuldfsdfsss1?.succeeded ??
-                                            true)) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                (_model.apiResuldfsdfsss1
-                                                            ?.jsonBody ??
-                                                        '')
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .primaryText,
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Начать',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .primary,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            _model.apiR =
+                                                await UpdateDefectsByIdCall
+                                                    .call(
+                                              access:
+                                                  currentAuthenticationToken,
+                                              id: getJsonField(
+                                                detailedDefectsOfflineGetDefectsByIDResponse
+                                                    .jsonBody,
+                                                r'''$.id''',
+                                              ),
+                                              bodyJson: RequestStruct(
+                                                status: 'rejected',
+                                              ).toMap(),
+                                            );
+
+                                            if (!(_model.apiR?.succeeded ??
+                                                true)) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    (_model.apiR?.jsonBody ??
+                                                            '')
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .primaryText,
+                                                    ),
+                                                  ),
+                                                  duration: Duration(
+                                                      milliseconds: 2000),
+                                                  backgroundColor:
+                                                      FlutterFlowTheme.of(
+                                                              context)
+                                                          .secondary,
                                                 ),
-                                              ),
-                                              duration:
-                                                  Duration(milliseconds: 2000),
-                                              backgroundColor:
+                                              );
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Отказать',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: FlutterFlowTheme.of(context)
+                                                .error,
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            elevation: 3.0,
+                                            borderSide: BorderSide(
+                                              color: Colors.transparent,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else if ((functions.statusRequest(getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.status''',
+                                      ).toString()) ==
+                                      'В работе') &&
+                                  functions.containsInt(
+                                      (getJsonField(
+                                        detailedDefectsOfflineGetDefectsByIDResponse
+                                            .jsonBody,
+                                        r'''$.performers''',
+                                        true,
+                                      ) as List?)
+                                          ?.cast<int>(),
+                                      functions.stringToInt(functions
+                                          .jsonToStringCopy(getJsonField(
+                                        FFAppState().account,
+                                        r'''$.id''',
+                                      )))!)) {
+                                return Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: AlignmentDirectional(0.0, 0.0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            11.5, 0.0, 11.5, 0.0),
+                                        child: FFButtonWidget(
+                                          onPressed: () async {
+                                            var confirmDialogResponse =
+                                                await showDialog<bool>(
+                                                      context: context,
+                                                      builder:
+                                                          (alertDialogContext) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              'Выбор подрядчика'),
+                                                          content: Text(
+                                                              'Вы уверены что хотите выполнить заявку?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      false),
+                                                              child: Text(
+                                                                  'Отменить'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      true),
+                                                              child: Text(
+                                                                  'Выбрать'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    ) ??
+                                                    false;
+                                            if (confirmDialogResponse) {
+                                              _model.ap =
+                                                  await UpdateDefectsByIdCall
+                                                      .call(
+                                                access:
+                                                    currentAuthenticationToken,
+                                                id: getJsonField(
+                                                  detailedDefectsOfflineGetDefectsByIDResponse
+                                                      .jsonBody,
+                                                  r'''$.id''',
+                                                ),
+                                                bodyJson: RequestStruct(
+                                                  status: 'completed',
+                                                ).toMap(),
+                                              );
+
+                                              if (!(_model.ap?.succeeded ??
+                                                  true)) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      (_model.ap?.jsonBody ??
+                                                              '')
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        color:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .primaryText,
+                                                      ),
+                                                    ),
+                                                    duration: Duration(
+                                                        milliseconds: 2000),
+                                                    backgroundColor:
+                                                        FlutterFlowTheme.of(
+                                                                context)
+                                                            .secondary,
+                                                  ),
+                                                );
+                                              }
+                                            } else {
+                                              context.safePop();
+                                            }
+
+                                            safeSetState(() {});
+                                          },
+                                          text: 'Выполнена',
+                                          options: FFButtonOptions(
+                                            width: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.95,
+                                            height: 40.0,
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    24.0, 0.0, 24.0, 0.0),
+                                            iconPadding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0.0, 0.0, 0.0, 0.0),
+                                            color: Color(0xFF51B48A),
+                                            textStyle:
+                                                FlutterFlowTheme.of(context)
+                                                    .titleSmall
+                                                    .override(
+                                                      fontFamily: 'SFProText',
+                                                      color: Colors.white,
+                                                      letterSpacing: 0.0,
+                                                    ),
+                                            borderSide: BorderSide(
+                                              color:
                                                   FlutterFlowTheme.of(context)
-                                                      .secondary,
+                                                      .alternate,
+                                              width: 1.0,
                                             ),
-                                          );
-                                        }
-                                      }
-
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Отклонить работу',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color: FlutterFlowTheme.of(context).error,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                           ),
-                                      elevation: 3,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1,
+                                        ),
                                       ),
-                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
-                          );
-                        } else if ((functions.statusRequest(getJsonField(
-                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                      .jsonBody,
-                                  r'''$.status''',
-                                ).toString()) ==
-                                'Выполнен') &&
-                            ((valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"engineer\"') ||
-                                (valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"director\"'))) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      _model.aaaaa =
-                                          await UpdateDefectsByIdCall.call(
-                                        access: currentAuthenticationToken,
-                                        id: getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.id''',
-                                        ),
-                                        bodyJson: RequestStruct(
-                                          status: 'closed',
-                                        ).toMap(),
-                                      );
-
-                                      if (!(_model.aaaaa?.succeeded ?? true)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              (_model.aaaaa?.jsonBody ?? '')
-                                                  .toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                      }
-
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Закрыть',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color: Color(0xFF30AE67),
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      elevation: 3,
-                                      borderSide: BorderSide(
-                                        color: Colors.transparent,
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
-                          );
-                        } else if ((functions.statusRequest(getJsonField(
-                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                      .jsonBody,
-                                  r'''$.status''',
-                                ).toString()) ==
-                                'Открыта') &&
-                            (valueOrDefault<String>(
-                                  functions.jsonToStringCopy(getJsonField(
-                                    FFAppState().account,
-                                    r'''$.role''',
-                                  )),
-                                  '-',
-                                ) ==
-                                '\"admin\"')) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      _model.apiResultss9CopyCopy =
-                                          await UpdateDefectsByIdCall.call(
-                                        access: currentAuthenticationToken,
-                                        id: getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.id''',
-                                        ),
-                                        bodyJson: RequestStruct(
-                                          status: 'under_review',
-                                        ).toMap(),
-                                      );
-
-                                      if (!(_model.apiResultss9CopyCopy
-                                              ?.succeeded ??
-                                          true)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              (_model.apiResultss9CopyCopy
-                                                          ?.jsonBody ??
-                                                      '')
-                                                  .toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                      }
-
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Отправить на проверку',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
-                          );
-                        } else if ((functions.statusRequest(getJsonField(
-                                  detailedDefectsOfflineGetDefectsByIDResponse
-                                      .jsonBody,
-                                  r'''$.status''',
-                                ).toString()) ==
-                                'Принят подрядчиком') &&
-                            ((valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"admin\"') ||
-                                (valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) ==
-                                    '\"engineer\"'))) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Align(
-                                alignment: AlignmentDirectional(0, 0),
-                                child: Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      11.5, 0, 11.5, 0),
-                                  child: FFButtonWidget(
-                                    onPressed: () async {
-                                      _model.apiResultss9Copy1Copy =
-                                          await UpdateDefectsByIdCall.call(
-                                        access: currentAuthenticationToken,
-                                        id: getJsonField(
-                                          detailedDefectsOfflineGetDefectsByIDResponse
-                                              .jsonBody,
-                                          r'''$.id''',
-                                        ),
-                                        bodyJson: RequestStruct(
-                                          status: 'in_progress',
-                                        ).toMap(),
-                                      );
-
-                                      if (!(_model.apiResultss9Copy1Copy
-                                              ?.succeeded ??
-                                          true)) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              (_model.apiResultss9Copy1Copy
-                                                          ?.jsonBody ??
-                                                      '')
-                                                  .toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    FlutterFlowTheme.of(context)
-                                                        .primaryText,
-                                              ),
-                                            ),
-                                            duration:
-                                                Duration(milliseconds: 2000),
-                                            backgroundColor:
-                                                FlutterFlowTheme.of(context)
-                                                    .secondary,
-                                          ),
-                                        );
-                                      }
-
-                                      safeSetState(() {});
-                                    },
-                                    text: 'Начать',
-                                    options: FFButtonOptions(
-                                      width: MediaQuery.sizeOf(context).width *
-                                          0.95,
-                                      height: 40,
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          24, 0, 24, 0),
-                                      iconPadding:
-                                          EdgeInsetsDirectional.fromSTEB(
-                                              0, 0, 0, 0),
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      textStyle: FlutterFlowTheme.of(context)
-                                          .titleSmall
-                                          .override(
-                                            fontFamily: 'SFProText',
-                                            color: Colors.white,
-                                            letterSpacing: 0.0,
-                                          ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ].divide(SizedBox(height: 10)),
+                                  ].divide(SizedBox(height: 10.0)),
+                                );
+                              } else {
+                                return Container(
+                                  decoration: BoxDecoration(),
+                                );
+                              }
+                            },
                           );
                         } else {
                           return Container(

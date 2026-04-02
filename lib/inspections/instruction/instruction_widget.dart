@@ -1,13 +1,7 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'instruction_model.dart';
 export 'instruction_model.dart';
 
@@ -15,19 +9,9 @@ class InstructionWidget extends StatefulWidget {
   const InstructionWidget({
     super.key,
     required this.data,
-    required this.searchID,
-    required this.equipmentId,
-    required this.name,
-    required this.index,
-    required this.nextIndex,
   });
 
   final dynamic data;
-  final int? searchID;
-  final int? equipmentId;
-  final dynamic name;
-  final int? index;
-  final int? nextIndex;
 
   @override
   State<InstructionWidget> createState() => _InstructionWidgetState();
@@ -72,49 +56,82 @@ class _InstructionWidgetState extends State<InstructionWidget> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                getJsonField(
-                  widget!.data,
-                  r'''$.data.title''',
-                ).toString(),
-                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                      fontFamily: 'SFProText',
-                      fontSize: 14.0,
-                      letterSpacing: 0.0,
-                      fontWeight: FontWeight.w500,
-                    ),
+              Container(
+                width: MediaQuery.sizeOf(context).width * 0.9,
+                decoration: BoxDecoration(),
+                child: Text(
+                  getJsonField(
+                    widget.data,
+                    r'''$.data.title''',
+                  ).toString(),
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: 'SFProText',
+                        fontSize: 16.0,
+                        letterSpacing: 0.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
               ),
-              if (getJsonField(
-                    widget!.data,
-                    r'''$.data.image''',
-                  ) !=
-                  null)
-                Container(
+              Align(
+                alignment: AlignmentDirectional(0.0, 0.0),
+                child: Container(
                   width: MediaQuery.sizeOf(context).width * 1.0,
-                  height: MediaQuery.sizeOf(context).height * 0.4,
+                  height: MediaQuery.sizeOf(context).height * 0.25,
                   child: custom_widgets.Base64Media(
                     width: MediaQuery.sizeOf(context).width * 1.0,
-                    height: MediaQuery.sizeOf(context).height * 0.4,
-                    base64Data: functions.stringtoBase64(getJsonField(
-                      widget!.data,
+                    height: MediaQuery.sizeOf(context).height * 0.25,
+                    base64Data: getJsonField(
+                      widget.data,
                       r'''$.data.image''',
-                    ).toString()),
+                    ).toString(),
+                    controllable: false,
                   ),
                 ),
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Text(
-                    getJsonField(
-                      widget!.data,
-                      r'''$.data.description''',
-                    ).toString(),
-                    style: FlutterFlowTheme.of(context).bodyMedium.override(
-                          fontFamily: 'SFProText',
-                          letterSpacing: 0.0,
+              ),
+              Container(
+                width: MediaQuery.sizeOf(context).width * 0.9,
+                decoration: BoxDecoration(),
+                child: Text(
+                  getJsonField(
+                    widget.data,
+                    r'''$.data.description''',
+                  ).toString(),
+                  style: FlutterFlowTheme.of(context).bodyMedium.override(
+                        fontFamily: 'SFProText',
+                        letterSpacing: 0.0,
+                      ),
+                ),
+              ),
+              Builder(
+                builder: (context) {
+                  final descriptions = getJsonField(
+                    widget.data,
+                    r'''$.data.descriptions''',
+                  ).toList();
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children:
+                        List.generate(descriptions.length, (descriptionsIndex) {
+                      final descriptionsItem = descriptions[descriptionsIndex];
+                      return Container(
+                        width: MediaQuery.sizeOf(context).width * 0.9,
+                        decoration: BoxDecoration(),
+                        child: Text(
+                          getJsonField(
+                            descriptionsItem,
+                            r'''$.text''',
+                          ).toString(),
+                          style:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'SFProText',
+                                    letterSpacing: 0.0,
+                                  ),
                         ),
-                  ),
-                ],
+                      );
+                    }),
+                  );
+                },
               ),
             ].divide(SizedBox(height: 10.0)),
           ),

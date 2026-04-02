@@ -1,6 +1,5 @@
 // ignore_for_file: unnecessary_getters_setters
 
-import '/backend/schema/util/schema_util.dart';
 
 import 'index.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -20,6 +19,11 @@ class EditDefectStruct extends BaseStruct {
     String? note,
     List<int>? contractors,
     List<int>? performers,
+    List<int>? fileIds,
+    List<int>? newFileIds,
+    int? form,
+    String priorityRequest = 'medium',
+    List<FormResultStruct>? formResult,
   })  : _equipment = equipment,
         _title = title,
         _files = files,
@@ -32,7 +36,12 @@ class EditDefectStruct extends BaseStruct {
         _errorMonitoring = errorMonitoring,
         _note = note,
         _contractors = contractors,
-        _performers = performers;
+        _performers = performers,
+        _fileIds = fileIds,
+        _newFileIds = newFileIds,
+        _form = form,
+        _priorityRequest = priorityRequest,
+        _formResult = formResult;
 
   // "equipment" field.
   int? _equipment;
@@ -49,6 +58,12 @@ class EditDefectStruct extends BaseStruct {
   set title(String? val) => _title = val;
 
   bool hasTitle() => _title != null;
+
+  String? _priorityRequest;
+  String get priorityRequest => _priorityRequest ?? 'medium';
+  set priorityRequest(String? val) => _priorityRequest = val;
+
+  bool hasPriorityRequest() => _priorityRequest != null;
 
   // "files" field.
   List<FilesStruct>? _files;
@@ -147,6 +162,48 @@ class EditDefectStruct extends BaseStruct {
 
   bool hasPerformers() => _performers != null;
 
+  // "file_ids" field.
+  List<int>? _fileIds;
+  List<int> get fileIds => _fileIds ?? const [];
+  set fileIds(List<int>? val) => _fileIds = val;
+
+  void updateFileIds(Function(List<int>) updateFn) {
+    updateFn(_fileIds ??= []);
+  }
+
+  bool hasFileIds() => _fileIds != null;
+
+  // "new_file_ids" field.
+  List<int>? _newFileIds;
+  List<int> get newFileIds => _newFileIds ?? const [];
+  set newFileIds(List<int>? val) => _newFileIds = val;
+
+  void updateNewFileIds(Function(List<int>) updateFn) {
+    updateFn(_newFileIds ??= []);
+  }
+
+  bool hasNewFileIds() => _newFileIds != null;
+
+  // "form" field.
+  int? _form;
+  int get form => _form ?? 0;
+  set form(int? val) => _form = val;
+
+  void incrementForm(int amount) => form = form + amount;
+
+  bool hasForm() => _form != null;
+
+  // "form_result" field.
+  List<FormResultStruct>? _formResult;
+  List<FormResultStruct> get formResult => _formResult ?? const [];
+  set formResult(List<FormResultStruct>? val) => _formResult = val;
+
+  void updateFormResult(Function(List<FormResultStruct>) updateFn) {
+    updateFn(_formResult ??= []);
+  }
+
+  bool hasFormResult() => _formResult != null;
+
   static EditDefectStruct fromMap(Map<String, dynamic> data) =>
       EditDefectStruct(
         equipment: castToType<int>(data['equipment']),
@@ -171,6 +228,14 @@ class EditDefectStruct extends BaseStruct {
         note: data['note'] as String?,
         contractors: getDataList(data['contractors']),
         performers: getDataList(data['performers']),
+        fileIds: getDataList(data['file_ids']),
+        newFileIds: getDataList(data['new_file_ids']),
+        form: castToType<int>(data['form']),
+        priorityRequest: data['priority_request'] as String? ?? 'medium',
+        formResult: getStructList(
+          data['form_result'],
+          FormResultStruct.fromMap,
+        ),
       );
 
   static EditDefectStruct? maybeFromMap(dynamic data) => data is Map
@@ -191,6 +256,11 @@ class EditDefectStruct extends BaseStruct {
         'note': _note,
         'contractors': _contractors,
         'performers': _performers,
+        'file_ids': _fileIds,
+        'new_file_ids': _newFileIds,
+        'form': _form,
+        'priority_request': _priorityRequest,
+        'form_result': _formResult?.map((e) => e.toMap()).toList(),
       }.withoutNulls;
 
   @override
@@ -250,6 +320,29 @@ class EditDefectStruct extends BaseStruct {
         'performers': serializeParam(
           _performers,
           ParamType.int,
+          isList: true,
+        ),
+        'file_ids': serializeParam(
+          _fileIds,
+          ParamType.int,
+          isList: true,
+        ),
+        'new_file_ids': serializeParam(
+          _newFileIds,
+          ParamType.int,
+          isList: true,
+        ),
+        'form': serializeParam(
+          _form,
+          ParamType.int,
+        ),
+        'priority_request': serializeParam(
+          _priorityRequest,
+          ParamType.String,
+        ),
+        'form_result': serializeParam(
+          _formResult,
+          ParamType.DataStruct,
           isList: true,
         ),
       }.withoutNulls;
@@ -324,6 +417,32 @@ class EditDefectStruct extends BaseStruct {
           ParamType.int,
           true,
         ),
+        fileIds: deserializeParam<int>(
+          data['file_ids'],
+          ParamType.int,
+          true,
+        ),
+        newFileIds: deserializeParam<int>(
+          data['new_file_ids'],
+          ParamType.int,
+          true,
+        ),
+        form: deserializeParam(
+          data['form'],
+          ParamType.int,
+          false,
+        ),
+        priorityRequest: deserializeParam(
+          data['priority_request'],
+          ParamType.String,
+          false,
+        ),
+        formResult: deserializeStructParam<FormResultStruct>(
+          data['form_result'],
+          ParamType.DataStruct,
+          true,
+          structBuilder: FormResultStruct.fromSerializableMap,
+        ),
       );
 
   @override
@@ -345,7 +464,12 @@ class EditDefectStruct extends BaseStruct {
         errorMonitoring == other.errorMonitoring &&
         note == other.note &&
         listEquality.equals(contractors, other.contractors) &&
-        listEquality.equals(performers, other.performers);
+        listEquality.equals(performers, other.performers) &&
+        listEquality.equals(fileIds, other.fileIds) &&
+        listEquality.equals(newFileIds, other.newFileIds) &&
+        form == other.form &&
+        priorityRequest == other.priorityRequest &&
+        listEquality.equals(formResult, other.formResult);
   }
 
   @override
@@ -362,7 +486,12 @@ class EditDefectStruct extends BaseStruct {
         errorMonitoring,
         note,
         contractors,
-        performers
+        performers,
+        fileIds,
+        newFileIds,
+        form,
+        priorityRequest,
+        formResult
       ]);
 }
 
@@ -375,6 +504,8 @@ EditDefectStruct createEditDefectStruct({
   bool? priority,
   bool? errorMonitoring,
   String? note,
+  int? form,
+  String priorityRequest = 'medium',
 }) =>
     EditDefectStruct(
       equipment: equipment,
@@ -385,4 +516,6 @@ EditDefectStruct createEditDefectStruct({
       priority: priority,
       errorMonitoring: errorMonitoring,
       note: note,
+      form: form,
+      priorityRequest: priorityRequest,
     );

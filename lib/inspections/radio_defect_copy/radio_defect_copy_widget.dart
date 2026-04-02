@@ -1,12 +1,10 @@
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'radio_defect_copy_model.dart';
 export 'radio_defect_copy_model.dart';
 
@@ -43,7 +41,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
     // On component load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       if (getJsonField(
-            widget!.data,
+            widget.data,
             r'''$.result.response''',
           ) ==
           null) {
@@ -51,7 +49,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
         safeSetState(() {});
       } else {
         if (getJsonField(
-              widget!.data,
+              widget.data,
               r'''$.result.response''',
             ) ==
             functions.stringToJson('\"normal\"')) {
@@ -87,7 +85,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
           children: [
             Text(
               getJsonField(
-                widget!.data,
+                widget.data,
                 r'''$.data.title''',
               ).toString(),
               style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -113,7 +111,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
                     print('Button pressed ...');
                   },
                   text: getJsonField(
-                    widget!.data,
+                    widget.data,
                     r'''$.data.normal''',
                   ).toString(),
                   options: FFButtonOptions(
@@ -165,7 +163,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
                     print('Button pressed ...');
                   },
                   text: getJsonField(
-                    widget!.data,
+                    widget.data,
                     r'''$.data.defect''',
                   ).toString(),
                   options: FFButtonOptions(
@@ -214,7 +212,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
             Builder(
               builder: (context) {
                 if (getJsonField(
-                      widget!.data,
+                      widget.data,
                       r'''$.result.defect''',
                     ) ==
                     null) {
@@ -245,7 +243,7 @@ class _RadioDefectCopyWidgetState extends State<RadioDefectCopyWidget> {
                         children: [
                           Text(
                             getJsonField(
-                              widget!.data,
+                              widget.data,
                               r'''$.result.defect.title''',
                             ).toString(),
                             style: FlutterFlowTheme.of(context)

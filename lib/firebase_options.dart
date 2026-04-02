@@ -60,7 +60,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '476556544507',
     projectId: 'bahandi-etry',
     storageBucket: 'bahandi-etry.firebasestorage.app',
-    iosBundleId: 'com.etry.bahandi1',
+    iosBundleId: 'com.etry.app',
   );
 
   static const FirebaseOptions web = FirebaseOptions(

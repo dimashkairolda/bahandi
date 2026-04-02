@@ -6,9 +6,7 @@ import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:math';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
@@ -158,7 +156,10 @@ class _MainPageWidgetState extends State<MainPageWidget>
                   Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(7.0, 0.0, 0.0, 0.0),
                     child: Text(
-                      'Главная',
+                      FFLocalizations.of(context).getVariableText(
+                        ruText: 'Главная',
+                        kkText: 'Басты бет',
+                      ),
                       style:
                           FlutterFlowTheme.of(context).headlineMedium.override(
                                 fontFamily: 'SFProText',
@@ -224,7 +225,10 @@ class _MainPageWidgetState extends State<MainPageWidget>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Обновление данных',
+                                  FFLocalizations.of(context).getVariableText(
+                                    ruText: 'Обновление данных',
+                                    kkText: 'Деректерді жаңарту',
+                                  ),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -302,10 +306,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                         focusColor: Colors.transparent,
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          context.pushNamed(
-                                              InspectionsWidget.routeName);
-                                        },
+                                        
                                         child: Container(
                                           width:
                                               MediaQuery.sizeOf(context).width *
@@ -356,7 +357,11 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                                       .fromSTEB(
                                                           0.0, 2.0, 0.0, 0.0),
                                                   child: Text(
-                                                    'Осмотры',
+                                                    FFLocalizations.of(context)
+                                                        .getVariableText(
+                                                      ruText: 'Осмотры',
+                                                      kkText: 'Тексерулер',
+                                                    ),
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .labelMedium
@@ -414,7 +419,11 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                                       .fromSTEB(
                                                           0.0, 2.0, 0.0, 0.0),
                                                   child: Text(
-                                                    'Новые дефекты',
+                                                    FFLocalizations.of(context)
+                                                        .getVariableText(
+                                                      ruText: 'Новые дефекты',
+                                                      kkText: 'Жаңа ақаулар',
+                                                    ),
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .labelMedium
@@ -546,9 +555,26 @@ class _MainPageWidgetState extends State<MainPageWidget>
                             child: FlutterFlowDropDown<String>(
                               controller: _model.dropDownValueController ??=
                                   FormFieldController<String>(
-                                _model.dropDownValue ??= 'На сегодня',
+                                _model.dropDownValue ??=
+                                    FFLocalizations.of(context).getVariableText(
+                                  ruText: 'На сегодня',
+                                  kkText: 'Бүгінге',
+                                ),
                               ),
-                              options: ['На сегодня', 'Дефекты', 'Осмотры'],
+                              options: [
+                                FFLocalizations.of(context).getVariableText(
+                                  ruText: 'На сегодня',
+                                  kkText: 'Бүгінге',
+                                ),
+                                FFLocalizations.of(context).getVariableText(
+                                  ruText: 'Дефекты',
+                                  kkText: 'Ақаулар',
+                                ),
+                                FFLocalizations.of(context).getVariableText(
+                                  ruText: 'Осмотры',
+                                  kkText: 'Тексерулер',
+                                )
+                              ],
                               onChanged: (val) => safeSetState(
                                   () => _model.dropDownValue = val),
                               width: MediaQuery.sizeOf(context).width * 0.35,
@@ -596,7 +622,10 @@ class _MainPageWidgetState extends State<MainPageWidget>
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Не отправленные осмотры',
+                                  FFLocalizations.of(context).getVariableText(
+                                    ruText: 'Не отправленные осмотры',
+                                    kkText: 'Жіберілмеген тексерулер',
+                                  ),
                                   style: FlutterFlowTheme.of(context)
                                       .bodyMedium
                                       .override(
@@ -709,26 +738,7 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                               r'''$.regulation_info.technical_place''',
                                             ) ==
                                             null) {
-                                          context.pushNamed(
-                                            InspectionsTimeListWidget.routeName,
-                                            queryParameters: {
-                                              'title': serializeParam(
-                                                getJsonField(
-                                                  inspectionsItem,
-                                                  r'''$.regulation_info.title''',
-                                                ).toString(),
-                                                ParamType.String,
-                                              ),
-                                              'json': serializeParam(
-                                                getJsonField(
-                                                  mainPageGetAllInspectionsResponse
-                                                      .jsonBody,
-                                                  r'''$.data''',
-                                                ),
-                                                ParamType.JSON,
-                                              ),
-                                            }.withoutNulls,
-                                          );
+                                         
                                         }
                                       },
                                       child: Container(
@@ -788,7 +798,10 @@ class _MainPageWidgetState extends State<MainPageWidget>
                                                                 size: 17.0,
                                                               ),
                                                               Text(
-                                                                'Осмотры',
+                                                                FFLocalizations.of(context).getVariableText(
+                                                                  ruText: 'Осмотры',
+                                                                  kkText: 'Тексерулер',
+                                                                ),
                                                                 style: FlutterFlowTheme.of(
                                                                         context)
                                                                     .bodyMedium

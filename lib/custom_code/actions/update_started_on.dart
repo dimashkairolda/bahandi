@@ -4,23 +4,31 @@
 // Begin custom action code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
-Future<void> updateStartedOn(List<dynamic> jsonData, int searchId) async {
-  bool updated = false; // Флаг для отслеживания, было ли обновление выполнено
-
-  // Проходим по массиву JSON, чтобы найти соответствующий элемент
-  for (var item in jsonData) {
-    if (item['id'] == searchId) {
-      // Устанавливаем сегодняшнюю дату в поле finished_on
-      item['started_on'] = DateTime.now().toIso8601String();
-      print('Finished_on updated for ID: $searchId to ${item['started_on']}');
-      return;
-    }
+Future<void> updateStartedOn(
+  dynamic inspectionJson, // <-- ИЗМЕНЕНО: Теперь это один JSON-объект
+  // List<dynamic> jsonData, // <-- УДАЛЕНО
+  // int searchId, // <-- УДАЛЕНО
+) async {
+  // Проверяем, что нам передали не пустой JSON и это Map
+  if (inspectionJson == null || inspectionJson is! Map<String, dynamic>) {
+    print('Ошибка: На вход подан пустой или некорректный JSON (не Map).');
+    return;
   }
 
-  if (!updated) {
+  // Самый внешний цикл и проверка по searchId УДАЛЕНЫ.
+  // Сразу работаем с 'inspectionJson'.
+
+  // Проверяем, установлено ли значение 'started_on'
+  // (Чтобы не перезаписывать его, если оно уже есть)
+  if (inspectionJson['started_on'] == null ||
+      (inspectionJson['started_on'] as String).isEmpty) {
+    // Устанавливаем сегодняшнюю дату в поле started_on
+    inspectionJson['started_on'] = DateTime.now().toIso8601String();
+
     print(
-        'No matching data found to update.'); // Выводим сообщение, если обновление не выполнено
+        'Поле started_on обновлено на ${inspectionJson['started_on']} для инспекции ID: ${inspectionJson['id']}');
+  } else {
+    print(
+        'Поле started_on уже было установлено: ${inspectionJson['started_on']}. Обновление не требуется.');
   }
 }
-// Set your action name, define your arguments and return parameter,
-// and then add the boilerplate code using the green button on the right!

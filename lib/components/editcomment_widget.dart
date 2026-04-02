@@ -3,13 +3,8 @@ import '/backend/api_requests/api_calls.dart';
 import '/defects/add_comment_copy/add_comment_copy_widget.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import 'dart:ui';
 import '/index.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import 'editcomment_model.dart';
 export 'editcomment_model.dart';
 
@@ -106,11 +101,11 @@ class _EditcommentWidgetState extends State<EditcommentWidget> {
                                 height: MediaQuery.sizeOf(context).height * 0.3,
                                 width: MediaQuery.sizeOf(context).width * 0.95,
                                 child: AddCommentCopyWidget(
-                                  id: widget!.id!,
-                                  title: widget!.title,
-                                  recommendation: widget!.recommend,
+                                  id: widget.id!,
+                                  title: widget.title,
+                                  recommendation: widget.recommend,
                                   isedit: true,
-                                  index: widget!.index,
+                                  index: widget.index,
                                 ),
                               ),
                             );
@@ -177,8 +172,8 @@ class _EditcommentWidgetState extends State<EditcommentWidget> {
                       _model.apiResult755 =
                           await DeleteDefectsCommentByIDCall.call(
                         access: currentAuthenticationToken,
-                        index: widget!.index,
-                        id: widget!.id,
+                        index: widget.index,
+                        id: widget.id,
                       );
 
                       if ((_model.apiResult755?.succeeded ?? true)) {
@@ -186,7 +181,7 @@ class _EditcommentWidgetState extends State<EditcommentWidget> {
                           DetailedDefectsOfflineWidget.routeName,
                           queryParameters: {
                             'id': serializeParam(
-                              widget!.id,
+                              widget.id,
                               ParamType.int,
                             ),
                           }.withoutNulls,

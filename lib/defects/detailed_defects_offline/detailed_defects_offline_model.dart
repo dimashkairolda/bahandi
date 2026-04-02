@@ -1,31 +1,8 @@
-import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
-import '/backend/schema/structs/index.dart';
-import '/components/edit_defect2_widget.dart';
-import '/components/editcomment_widget.dart';
-import '/defects/add_comment_copy/add_comment_copy_widget.dart';
-import '/defects/add_t_m_c/add_t_m_c_widget.dart';
-import '/defects/add_works/add_works_widget.dart';
-import '/flutter_flow/flutter_flow_button_tabbar.dart';
-import '/flutter_flow/flutter_flow_expanded_image_view.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/upload_data.dart';
-import 'dart:ui';
-import '/custom_code/actions/index.dart' as actions;
-import '/custom_code/widgets/index.dart' as custom_widgets;
-import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
 import 'detailed_defects_offline_widget.dart' show DetailedDefectsOfflineWidget;
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:provider/provider.dart';
 
 class DetailedDefectsOfflineModel
     extends FlutterFlowModel<DetailedDefectsOfflineWidget> {
@@ -49,29 +26,60 @@ class DetailedDefectsOfflineModel
   int get tabBarPreviousIndex =>
       tabBarController != null ? tabBarController!.previousIndex : 0;
 
-  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Icon widget.
+  ApiCallResponse? apiResur;
+  // State field(s) for name widget.
+  FocusNode? nameFocusNode1;
+  TextEditingController? nameTextController1;
+  String? Function(BuildContext, String?)? nameTextController1Validator;
+  // State field(s) for sum widget.
+  FocusNode? sumFocusNode1;
+  TextEditingController? sumTextController1;
+  String? Function(BuildContext, String?)? sumTextController1Validator;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Container widget.
   ApiCallResponse? apiResultg8zCopy;
-  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
-  ApiCallResponse? apiResultg8zCopyCopy;
-  bool isDataUploading_uploadDataTbt501123 = false;
-  FFUploadedFile uploadedLocalFile_uploadDataTbt501123 =
-      FFUploadedFile(bytes: Uint8List.fromList([]));
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Icon widget.
+  ApiCallResponse? apiResur2;
+  // State field(s) for name widget.
+  FocusNode? nameFocusNode2;
+  TextEditingController? nameTextController2;
+  String? Function(BuildContext, String?)? nameTextController2Validator;
+  // State field(s) for attribute widget.
+  FocusNode? attributeFocusNode;
+  TextEditingController? attributeTextController;
+  String? Function(BuildContext, String?)? attributeTextControllerValidator;
+  // State field(s) for sum widget.
+  FocusNode? sumFocusNode2;
+  TextEditingController? sumTextController2;
+  String? Function(BuildContext, String?)? sumTextController2Validator;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Container widget.
+  ApiCallResponse? wewe;
+  bool isDataUploading_uploadD1112 = false;
+  FFUploadedFile uploadedLocalFile_uploadD1112 =
+      FFUploadedFile(bytes: Uint8List.fromList([]), originalFilename: '');
 
-  // Stores action output result for [Custom Action - uploadFileAndConvertToBase64toList] action in Button widget.
-  dynamic? qq;
-  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
-  ApiCallResponse? apiRes;
+  // Stores action output result for [Backend Call - API (PostFiles)] action in Dropdown_1_Options widget.
+  ApiCallResponse? tet;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Dropdown_1_Options widget.
+  ApiCallResponse? apiResultg8zCo;
+  // Stores action output result for [Custom Action - pickCameraVideo] action in Dropdown_1_Options widget.
+  FFUploadedFile? rer;
+  // Stores action output result for [Backend Call - API (PostFiles)] action in Dropdown_1_Options widget.
+  ApiCallResponse? asas;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Dropdown_1_Options widget.
+  ApiCallResponse? apiResultg8zCopy12;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
   ApiCallResponse? apiResultss9;
-  var aa = '';
-  // Stores action output result for [Backend Call - API (GetEquipmentsBarcode)] action in Button widget.
-  ApiCallResponse? qqq123;
-  // Stores action output result for [Custom Action - addLocationData] action in Button widget.
-  List<double>? scan;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiResusdsdf;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiResultss9CopyCopy;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiResultss9Copy1Copy;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
   ApiCallResponse? apiResultss9Copy123;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
-  ApiCallResponse? apiResusdsdf;
+  ApiCallResponse? apiResusdsdfz;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
   ApiCallResponse? aaaa;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
@@ -81,11 +89,29 @@ class DetailedDefectsOfflineModel
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
   ApiCallResponse? aaaaa;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
-  ApiCallResponse? apiResuldfsdfsssCopy;
+  ApiCallResponse? apiResul;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
-  ApiCallResponse? apiResultss9CopyCopy;
+  ApiCallResponse? apiRe;
   // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
-  ApiCallResponse? apiResultss9Copy1Copy;
+  ApiCallResponse? apiResu;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? aaaaa1;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? aaaaaaaa;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? aaaaaasd;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiResuldfsdfsssas;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiResuldfsdfs;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiResultss9Copy123q;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? aaaasd;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? apiR;
+  // Stores action output result for [Backend Call - API (UpdateDefectsById)] action in Button widget.
+  ApiCallResponse? ap;
 
   @override
   void initState(BuildContext context) {}
@@ -93,5 +119,19 @@ class DetailedDefectsOfflineModel
   @override
   void dispose() {
     tabBarController?.dispose();
+    nameFocusNode1?.dispose();
+    nameTextController1?.dispose();
+
+    sumFocusNode1?.dispose();
+    sumTextController1?.dispose();
+
+    nameFocusNode2?.dispose();
+    nameTextController2?.dispose();
+
+    attributeFocusNode?.dispose();
+    attributeTextController?.dispose();
+
+    sumFocusNode2?.dispose();
+    sumTextController2?.dispose();
   }
 }

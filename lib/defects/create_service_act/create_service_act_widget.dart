@@ -7,11 +7,10 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
-import 'dart:ui';
 import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -92,7 +91,10 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
             },
           ),
           title: Text(
-            'Создать сервисный акт',
+            FFLocalizations.of(context).getVariableText(
+              ruText: 'Создать сервисный акт',
+              kkText: 'Сервис актісін жасау',
+            ),
             style: FlutterFlowTheme.of(context).titleLarge.override(
                   fontFamily: 'SFProText',
                   color: FlutterFlowTheme.of(context).primary,
@@ -142,7 +144,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                       autofocus: false,
                                       obscureText: false,
                                       decoration: InputDecoration(
-                                        labelText: 'Номер сервисного акта',
+                                        labelText: FFLocalizations.of(context)
+                                            .getVariableText(
+                                          ruText: 'Номер сервисного акта',
+                                          kkText: 'Сервис актісінің нөмірі',
+                                        ),
                                         labelStyle: FlutterFlowTheme.of(context)
                                             .labelMedium
                                             .override(
@@ -308,7 +314,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w500,
                                         ),
-                                    hintText: 'Исполнитель',
+                                    hintText: FFLocalizations.of(context)
+                                        .getVariableText(
+                                      ruText: 'Исполнитель',
+                                      kkText: 'Орындаушы',
+                                    ),
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
                                       color: FlutterFlowTheme.of(context)
@@ -384,7 +394,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                           letterSpacing: 0.0,
                                           fontWeight: FontWeight.w500,
                                         ),
-                                    hintText: 'Клиент',
+                                    hintText: FFLocalizations.of(context)
+                                        .getVariableText(
+                                      ruText: 'Клиент',
+                                      kkText: 'Клиент',
+                                    ),
                                     icon: Icon(
                                       Icons.keyboard_arrow_down_rounded,
                                       color: FlutterFlowTheme.of(context)
@@ -414,71 +428,82 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                 hoverColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
                                 onTap: () async {
-                                  final _datePicked1Time = await showTimePicker(
-                                    context: context,
-                                    initialTime: TimeOfDay.fromDateTime(
-                                        getCurrentTimestamp),
-                                    builder: (context, child) {
-                                      return wrapInMaterialTimePickerTheme(
-                                        context,
-                                        child!,
-                                        headerBackgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                        headerForegroundColor:
-                                            FlutterFlowTheme.of(context).info,
-                                        headerTextStyle: FlutterFlowTheme.of(
-                                                context)
-                                            .headlineLarge
-                                            .override(
-                                              font: GoogleFonts.outfit(
-                                                fontWeight: FontWeight.w600,
-                                                fontStyle:
+                                  await showModalBottomSheet<bool>(
+                                      context: context,
+                                      builder: (context) {
+                                        final _datePicked1CupertinoTheme =
+                                            CupertinoTheme.of(context);
+                                        return Container(
+                                          height: MediaQuery.of(context)
+                                                  .size
+                                                  .height /
+                                              3,
+                                          width:
+                                              MediaQuery.of(context).size.width,
+                                          color: FlutterFlowTheme.of(context)
+                                              .secondaryBackground,
+                                          child: CupertinoTheme(
+                                            data: _datePicked1CupertinoTheme
+                                                .copyWith(
+                                              textTheme:
+                                                  _datePicked1CupertinoTheme
+                                                      .textTheme
+                                                      .copyWith(
+                                                dateTimePickerTextStyle:
                                                     FlutterFlowTheme.of(context)
-                                                        .headlineLarge
-                                                        .fontStyle,
+                                                        .headlineMedium
+                                                        .override(
+                                                          font: GoogleFonts
+                                                              .outfit(
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .headlineMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .headlineMedium
+                                                                    .fontStyle,
+                                                          ),
+                                                          color: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .primaryText,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .headlineMedium
+                                                                  .fontWeight,
+                                                          fontStyle:
+                                                              FlutterFlowTheme.of(
+                                                                      context)
+                                                                  .headlineMedium
+                                                                  .fontStyle,
+                                                        ),
                                               ),
-                                              fontSize: 32.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w600,
-                                              fontStyle:
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineLarge
-                                                      .fontStyle,
                                             ),
-                                        pickerBackgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
-                                        pickerForegroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                        selectedDateTimeBackgroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primary,
-                                        selectedDateTimeForegroundColor:
-                                            FlutterFlowTheme.of(context).info,
-                                        actionButtonForegroundColor:
-                                            FlutterFlowTheme.of(context)
-                                                .primaryText,
-                                        iconSize: 24.0,
-                                      );
-                                    },
-                                  );
-                                  if (_datePicked1Time != null) {
-                                    safeSetState(() {
-                                      _model.datePicked1 = DateTime(
-                                        getCurrentTimestamp.year,
-                                        getCurrentTimestamp.month,
-                                        getCurrentTimestamp.day,
-                                        _datePicked1Time.hour,
-                                        _datePicked1Time.minute,
-                                      );
-                                    });
-                                  } else if (_model.datePicked1 != null) {
-                                    safeSetState(() {
-                                      _model.datePicked1 = getCurrentTimestamp;
-                                    });
-                                  }
+                                            child: CupertinoDatePicker(
+                                              mode:
+                                                  CupertinoDatePickerMode.time,
+                                              minimumDate: DateTime(1900),
+                                              initialDateTime:
+                                                  getCurrentTimestamp,
+                                              maximumDate: DateTime(2050),
+                                              backgroundColor:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                              use24hFormat: true,
+                                              onDateTimeChanged:
+                                                  (newDateTime) =>
+                                                      safeSetState(() {
+                                                _model.datePicked1 =
+                                                    newDateTime;
+                                              }),
+                                            ),
+                                          ),
+                                        );
+                                      });
                                 },
                                 child: Container(
                                   height:
@@ -506,7 +531,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                           context)
                                                       .languageCode,
                                                 ),
-                                                'Время начала',
+                                                FFLocalizations.of(context)
+                                                    .getVariableText(
+                                                  ruText: 'Время начала',
+                                                  kkText: 'Басталу уақыты',
+                                                ),
                                               ),
                                               style: FlutterFlowTheme.of(
                                                       context)
@@ -541,74 +570,82 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                   hoverColor: Colors.transparent,
                                   highlightColor: Colors.transparent,
                                   onTap: () async {
-                                    final _datePicked2Time =
-                                        await showTimePicker(
-                                      context: context,
-                                      initialTime: TimeOfDay.fromDateTime(
-                                          getCurrentTimestamp),
-                                      builder: (context, child) {
-                                        return wrapInMaterialTimePickerTheme(
-                                          context,
-                                          child!,
-                                          headerBackgroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                          headerForegroundColor:
-                                              FlutterFlowTheme.of(context).info,
-                                          headerTextStyle: FlutterFlowTheme.of(
-                                                  context)
-                                              .headlineLarge
-                                              .override(
-                                                font: GoogleFonts.outfit(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontStyle:
+                                    await showModalBottomSheet<bool>(
+                                        context: context,
+                                        builder: (context) {
+                                          final _datePicked2CupertinoTheme =
+                                              CupertinoTheme.of(context);
+                                          return Container(
+                                            height: MediaQuery.of(context)
+                                                    .size
+                                                    .height /
+                                                3,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            color: FlutterFlowTheme.of(context)
+                                                .secondaryBackground,
+                                            child: CupertinoTheme(
+                                              data: _datePicked2CupertinoTheme
+                                                  .copyWith(
+                                                textTheme:
+                                                    _datePicked2CupertinoTheme
+                                                        .textTheme
+                                                        .copyWith(
+                                                  dateTimePickerTextStyle:
                                                       FlutterFlowTheme.of(
                                                               context)
-                                                          .headlineLarge
-                                                          .fontStyle,
+                                                          .headlineMedium
+                                                          .override(
+                                                            font: GoogleFonts
+                                                                .outfit(
+                                                              fontWeight: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .headlineMedium
+                                                                  .fontWeight,
+                                                              fontStyle: FlutterFlowTheme
+                                                                      .of(context)
+                                                                  .headlineMedium
+                                                                  .fontStyle,
+                                                            ),
+                                                            color: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .primaryText,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .headlineMedium
+                                                                    .fontWeight,
+                                                            fontStyle:
+                                                                FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .headlineMedium
+                                                                    .fontStyle,
+                                                          ),
                                                 ),
-                                                fontSize: 32.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w600,
-                                                fontStyle:
-                                                    FlutterFlowTheme.of(context)
-                                                        .headlineLarge
-                                                        .fontStyle,
                                               ),
-                                          pickerBackgroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .secondaryBackground,
-                                          pickerForegroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primaryText,
-                                          selectedDateTimeBackgroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primary,
-                                          selectedDateTimeForegroundColor:
-                                              FlutterFlowTheme.of(context).info,
-                                          actionButtonForegroundColor:
-                                              FlutterFlowTheme.of(context)
-                                                  .primaryText,
-                                          iconSize: 24.0,
-                                        );
-                                      },
-                                    );
-                                    if (_datePicked2Time != null) {
-                                      safeSetState(() {
-                                        _model.datePicked2 = DateTime(
-                                          getCurrentTimestamp.year,
-                                          getCurrentTimestamp.month,
-                                          getCurrentTimestamp.day,
-                                          _datePicked2Time.hour,
-                                          _datePicked2Time.minute,
-                                        );
-                                      });
-                                    } else if (_model.datePicked2 != null) {
-                                      safeSetState(() {
-                                        _model.datePicked2 =
-                                            getCurrentTimestamp;
-                                      });
-                                    }
+                                              child: CupertinoDatePicker(
+                                                mode: CupertinoDatePickerMode
+                                                    .time,
+                                                minimumDate: DateTime(1900),
+                                                initialDateTime:
+                                                    getCurrentTimestamp,
+                                                maximumDate: DateTime(2050),
+                                                backgroundColor:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                                use24hFormat: true,
+                                                onDateTimeChanged:
+                                                    (newDateTime) =>
+                                                        safeSetState(() {
+                                                  _model.datePicked2 =
+                                                      newDateTime;
+                                                }),
+                                              ),
+                                            ),
+                                          );
+                                        });
                                   },
                                   child: Container(
                                     height: MediaQuery.sizeOf(context).height *
@@ -636,7 +673,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                             context)
                                                         .languageCode,
                                                   ),
-                                                  'Время окончания',
+                                                  FFLocalizations.of(context)
+                                                      .getVariableText(
+                                                    ruText: 'Время окончания',
+                                                    kkText: 'Аяқталу уақыты',
+                                                  ),
                                                 ),
                                                 style: FlutterFlowTheme.of(
                                                         context)
@@ -681,7 +722,10 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       15.0, 5.0, 0.0, 5.0),
                                   child: Text(
-                                    'Виды обслуживания',
+                                    FFLocalizations.of(context).getVariableText(
+                                      ruText: 'Виды обслуживания',
+                                      kkText: 'Қызмет көрсету түрлері',
+                                    ),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -709,7 +753,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     15.0, 0.0, 0.0, 0.0),
                                             child: Text(
-                                              'Аварийный вызов',
+                                              FFLocalizations.of(context)
+                                                  .getVariableText(
+                                                ruText: 'Аварийный вызов',
+                                                kkText: 'Апаттық шақыру',
+                                              ),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -764,17 +812,12 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                         _model.avarinayaValue =
                                                             newValue!);
                                                   },
-                                                  side: (FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondaryText !=
-                                                          null)
-                                                      ? BorderSide(
-                                                          width: 2,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryText!,
-                                                        )
-                                                      : null,
+                                                  side: BorderSide(
+                                                    width: 2,
+                                                    color:
+                                                        FlutterFlowTheme.of(context)
+                                                            .secondaryText,
+                                                  ),
                                                   activeColor:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -808,7 +851,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     15.0, 0.0, 0.0, 0.0),
                                             child: Text(
-                                              'Гарантия',
+                                              FFLocalizations.of(context)
+                                                  .getVariableText(
+                                                ruText: 'Гарантия',
+                                                kkText: 'Кепілдік',
+                                              ),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -863,17 +910,12 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                         _model.guaranteeValue =
                                                             newValue!);
                                                   },
-                                                  side: (FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondaryText !=
-                                                          null)
-                                                      ? BorderSide(
-                                                          width: 2,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryText!,
-                                                        )
-                                                      : null,
+                                                  side: BorderSide(
+                                                    width: 2,
+                                                    color:
+                                                        FlutterFlowTheme.of(context)
+                                                            .secondaryText,
+                                                  ),
                                                   activeColor:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -907,7 +949,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     15.0, 0.0, 0.0, 0.0),
                                             child: Text(
-                                              'Ложный вызов',
+                                              FFLocalizations.of(context)
+                                                  .getVariableText(
+                                                ruText: 'Ложный вызов',
+                                                kkText: 'Жалған шақыру',
+                                              ),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -962,17 +1008,12 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                         _model.lozhnyuValue =
                                                             newValue!);
                                                   },
-                                                  side: (FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondaryText !=
-                                                          null)
-                                                      ? BorderSide(
-                                                          width: 2,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryText!,
-                                                        )
-                                                      : null,
+                                                  side: BorderSide(
+                                                    width: 2,
+                                                    color:
+                                                        FlutterFlowTheme.of(context)
+                                                            .secondaryText,
+                                                  ),
                                                   activeColor:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -1006,7 +1047,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                 EdgeInsetsDirectional.fromSTEB(
                                                     15.0, 0.0, 0.0, 0.0),
                                             child: Text(
-                                              'Тех. обслуживания',
+                                              FFLocalizations.of(context)
+                                                  .getVariableText(
+                                                ruText: 'Тех. обслуживания',
+                                                kkText: 'Тех. қызмет көрсету',
+                                              ),
                                               style:
                                                   FlutterFlowTheme.of(context)
                                                       .bodyMedium
@@ -1061,17 +1106,12 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                                         _model.techobsValue =
                                                             newValue!);
                                                   },
-                                                  side: (FlutterFlowTheme.of(
-                                                                  context)
-                                                              .secondaryText !=
-                                                          null)
-                                                      ? BorderSide(
-                                                          width: 2,
-                                                          color: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .secondaryText!,
-                                                        )
-                                                      : null,
+                                                  side: BorderSide(
+                                                    width: 2,
+                                                    color:
+                                                        FlutterFlowTheme.of(context)
+                                                            .secondaryText,
+                                                  ),
                                                   activeColor:
                                                       FlutterFlowTheme.of(
                                                               context)
@@ -1110,7 +1150,10 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       15.0, 5.0, 0.0, 5.0),
                                   child: Text(
-                                    'Поломки',
+                                    FFLocalizations.of(context).getVariableText(
+                                      ruText: 'Поломки',
+                                      kkText: 'Ақаулар',
+                                    ),
                                     style: FlutterFlowTheme.of(context)
                                         .bodyMedium
                                         .override(
@@ -1379,7 +1422,11 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                             size: 24.0,
                                           ),
                                           Text(
-                                            'Добавить поломку',
+                                            FFLocalizations.of(context)
+                                                .getVariableText(
+                                              ruText: 'Добавить поломку',
+                                              kkText: 'Ақау қосу',
+                                            ),
                                             style: FlutterFlowTheme.of(context)
                                                 .bodyMedium
                                                 .override(
@@ -1442,7 +1489,7 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                                             e.toMap(),
                                             r'''$.equipment''',
                                           ))
-                                      .toList() as List)
+                                      .toList())
                                   .cast<int>(),
                             ).toMap(),
                           );
@@ -1452,7 +1499,10 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Дефект успешно создан!',
+                                  FFLocalizations.of(context).getVariableText(
+                                    ruText: 'Дефект успешно создан!',
+                                    kkText: 'Ақау сәтті құрылды!',
+                                  ),
                                   style: TextStyle(
                                     color: FlutterFlowTheme.of(context)
                                         .primaryText,
@@ -1486,7 +1536,10 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Отсуствует соединение к интернету!',
+                                FFLocalizations.of(context).getVariableText(
+                                  ruText: 'Отсуствует соединение к интернету!',
+                                  kkText: 'Интернетке қосылу жоқ!',
+                                ),
                                 style: TextStyle(
                                   color:
                                       FlutterFlowTheme.of(context).primaryText,
@@ -1508,7 +1561,10 @@ class _CreateServiceActWidgetState extends State<CreateServiceActWidget> {
                         safeSetState(() {});
                         if (_shouldSetState) safeSetState(() {});
                       },
-                      text: 'Создать сервисный акт',
+                      text: FFLocalizations.of(context).getVariableText(
+                        ruText: 'Создать сервисный акт',
+                        kkText: 'Сервис актісін жасау',
+                      ),
                       options: FFButtonOptions(
                         width: double.infinity,
                         height: 48.0,

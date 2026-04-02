@@ -8,6 +8,7 @@ import '/index.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import 'add_comment_copy_model.dart';
 export 'add_comment_copy_model.dart';
 
@@ -62,31 +63,34 @@ class _AddCommentCopyWidgetState extends State<AddCommentCopyWidget> {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      elevation: 5.0,
+      elevation: 5,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Form(
           key: _model.formKey,
           autovalidateMode: AutovalidateMode.always,
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(12.0, 0.0, 12.0, 0.0),
+            padding: EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
             child: Column(
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Оставить комментарий',
+                  FFLocalizations.of(context).getVariableText(
+                    ruText: 'Оставить комментарий',
+                    kkText: 'Пікір қалдыру',
+                  ),
                   style: FlutterFlowTheme.of(context).bodyMedium.override(
                         fontFamily: 'SFProText',
-                        fontSize: 20.0,
+                        fontSize: 20,
                         letterSpacing: 0.0,
                         fontWeight: FontWeight.w500,
                       ),
@@ -127,28 +131,28 @@ class _AddCommentCopyWidgetState extends State<AddCommentCopyWidget> {
                             color: FlutterFlowTheme.of(context).alternate,
                             width: 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: FlutterFlowTheme.of(context).primary,
                             width: 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: FlutterFlowTheme.of(context).error,
                             width: 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderSide: BorderSide(
                             color: FlutterFlowTheme.of(context).error,
                             width: 1.0,
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -196,7 +200,7 @@ class _AddCommentCopyWidgetState extends State<AddCommentCopyWidget> {
                                 .titleLarge
                                 .override(
                                   fontFamily: 'SFProText',
-                                  fontSize: 14.0,
+                                  fontSize: 14,
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.normal,
                                 ),
@@ -207,15 +211,15 @@ class _AddCommentCopyWidgetState extends State<AddCommentCopyWidget> {
                           checkColor: FlutterFlowTheme.of(context).info,
                           dense: false,
                           controlAffinity: ListTileControlAffinity.trailing,
-                          contentPadding: EdgeInsetsDirectional.fromSTEB(
-                              12.0, 0.0, 12.0, 0.0),
+                          contentPadding:
+                              EdgeInsetsDirectional.fromSTEB(12, 0, 12, 0),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                       ),
                     ),
-                  ].divide(SizedBox(height: 5.0)),
+                  ].divide(SizedBox(height: 5)),
                 ),
                 Column(
                   mainAxisSize: MainAxisSize.max,
@@ -223,13 +227,9 @@ class _AddCommentCopyWidgetState extends State<AddCommentCopyWidget> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Align(
-                      alignment: AlignmentDirectional(1.0, 1.0),
-                      child: InkWell(
-                        splashColor: Colors.transparent,
-                        focusColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        onTap: () async {
+                      alignment: AlignmentDirectional(1, 1),
+                      child: FFButtonWidget(
+                        onPressed: () async {
                           if (_model.formKey.currentState == null ||
                               !_model.formKey.currentState!.validate()) {
                             return;
@@ -317,24 +317,31 @@ class _AddCommentCopyWidgetState extends State<AddCommentCopyWidget> {
 
                           safeSetState(() {});
                         },
-                        child: Text(
-                          'Сохранить',
-                          style:
+                        text: 'Сохранить',
+                        options: FFButtonOptions(
+                          height: 40,
+                          padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 0),
+                          iconPadding:
+                              EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+                          color: FlutterFlowTheme.of(context).primary,
+                          textStyle:
                               FlutterFlowTheme.of(context).bodyMedium.override(
                                     fontFamily: 'SFProText',
-                                    color: FlutterFlowTheme.of(context).primary,
+                                    color: Colors.white,
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w500,
                                   ),
+                          elevation: 0,
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
                   ],
                 ),
               ]
-                  .divide(SizedBox(height: 10.0))
-                  .addToStart(SizedBox(height: 10.0))
-                  .addToEnd(SizedBox(height: 10.0)),
+                  .divide(SizedBox(height: 10))
+                  .addToStart(SizedBox(height: 10))
+                  .addToEnd(SizedBox(height: 10)),
             ),
           ),
         ),

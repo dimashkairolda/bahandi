@@ -27,31 +27,29 @@ Future<void> initializeNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 }
 
-Future<bool> showNotificationSnackbar(
-    BuildContext context, String userToken) async {
-  final completer = Completer<bool>();
-
+Future<void> showNotificationSnackbar(
+  BuildContext context,
+  String userToken,
+  Future<dynamic> Function() onMessageReceived, // <--- Новый параметр (Action)
+) async {
   try {
-    // Инициализация WebSocket соединения
+    // 1. Создаем соединение
     final channel = WebSocketChannel.connect(
-      Uri.parse('https://magnum.etry.kz/ws/notification/?token=$userToken'),
+      Uri.parse('wss://app.etry.kz/ws/notification/?token=$userToken'),
     );
 
-    // Прослушивание входящих сообщений
+    // 2. Слушаем поток вечно (пока экран жив)
     channel.stream.listen(
-      (message) {
-        // Декодирование и обработка сообщения
+      (message) async {
+        // --- Обработка сообщения ---
         final decodedMessage = jsonDecode(message);
-
-        // Извлечение title и description из сообщения
         final title = decodedMessage['message']['title'] ?? 'Новое уведомление';
         final description =
             decodedMessage['message']['description'] ?? 'Нет описания';
 
-        // Показ уведомления
+        // Показываем UI
         _showNotification(title, description);
 
-        // Отображение Snackbar
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Новое уведомление: $title \n $description'),
@@ -59,23 +57,20 @@ Future<bool> showNotificationSnackbar(
           ),
         );
 
-        // Успешная обработка
-        completer.complete(true);
+        // --- ГЛАВНОЕ: Вызываем обновление API ---
+        // Это запустит цепочку действий, которую вы настроите в FlutterFlow
+        await onMessageReceived(); 
       },
       onError: (error) {
-        // Обработка ошибок
         print('Ошибка WebSocket: $error');
-        completer.complete(false);
       },
       cancelOnError: true,
     );
   } catch (error) {
     print('Ошибка подключения к WebSocket: $error');
-    completer.complete(false);
   }
-
-  // Ожидание завершения обработки
-  return completer.future;
+  
+  // Мы ничего не возвращаем и не ждем completer, соединение работает в фоне
 }
 
 Future<void> _showNotification(String title, String description) async {
