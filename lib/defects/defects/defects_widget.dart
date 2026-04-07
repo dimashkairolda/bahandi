@@ -264,7 +264,7 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
   }
 
   Future<void> _loadDefects({bool reset = false}) async {
-    if ((reset && _model.isInitialLoading) ||
+    if ((reset && _model.isInitialLoading && _model.defectsItems.isNotEmpty) ||
         (!reset && _model.isLoadingMore)) {
       return;
     }
@@ -2072,8 +2072,13 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                                             safeSetState(
                                                                                 () {}));
                                                                       },
-                                                                      text:
-                                                                          'Назначить исполнителя',
+                                                                      text: FFLocalizations.of(context)
+                                                                          .getVariableText(
+                                                                        ruText:
+                                                                            'Назначить исполнителя',
+                                                                        kkText:
+                                                                            'Орындаушыны тағайындау',
+                                                                      ),
                                                                       icon: Icon(
                                                                         Icons
                                                                             .person_add,

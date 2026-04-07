@@ -1889,8 +1889,14 @@ class _DetailedDefectsOfflineWidgetState
                                                                       safeSetState(
                                                                           () {}));
                                                                 },
-                                                                text:
-                                                                    'Назначить исполнителя',
+                                                                text: FFLocalizations.of(
+                                                                        context)
+                                                                    .getVariableText(
+                                                                  ruText:
+                                                                      'Назначить исполнителя',
+                                                                  kkText:
+                                                                      'Орындаушыны тағайындау',
+                                                                ),
                                                                 icon: Icon(
                                                                   Icons
                                                                       .person_add,

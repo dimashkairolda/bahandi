@@ -3319,15 +3319,13 @@ Container(
                                 ),
                               ),
                             if (valueOrDefault<String>(
-                                      functions.jsonToStringCopy(getJsonField(
-                                        FFAppState().account,
-                                        r'''$.role''',
-                                      )),
-                                      '-',
-                                    ) !=
-                                    '\"engineer\"'
-                                ? false
-                                : true)
+                                  functions.jsonToStringCopy(getJsonField(
+                                    FFAppState().account,
+                                    r'''$.role''',
+                                  )),
+                                  '-',
+                                ) ==
+                                '__priority_hidden__')
                               Container(
                                 decoration: BoxDecoration(
                                   color: FlutterFlowTheme.of(context)

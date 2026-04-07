@@ -866,23 +866,13 @@ class _ScanEquipmentPageWidgetState extends State<ScanEquipmentPageWidget> {
 
 
   Widget _buildScannerSection(FlutterFlowTheme theme) {
-// 1. Получаем размеры контейнера камеры
-
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
     final double screenWidth = MediaQuery.of(context).size.width;
-
-// Учитываем padding (16 слева + 16 справа = 32)
-
     final double cameraViewWidth = screenWidth - 32;
-
     final double cameraViewHeight = 200.0;
-
-// 2. ЗАДАЕМ РАЗМЕРЫ ОБЛАСТИ СКАНИРОВАНИЯ (ПРЯМОУГОЛЬНИК)
-
-    final double scanBoxWidth = 300.0; // Сделали пошире
-
-    final double scanBoxHeight = 120.0; // Сделали поуже
-
-// 3. Создаем прямоугольник для логики сканера (центруем его)
+    final double scanBoxWidth =
+        (cameraViewWidth < 300) ? cameraViewWidth - 40 : 300.0;
+    final double scanBoxHeight = 120.0;
 
     final Rect scanWindowRect = Rect.fromCenter(
       center: Offset(cameraViewWidth / 2, cameraViewHeight / 2),
@@ -908,7 +898,7 @@ class _ScanEquipmentPageWidgetState extends State<ScanEquipmentPageWidget> {
                   MobileScanner(
                     fit: BoxFit.cover,
                     controller: cameraController,
-                    scanWindow: scanWindowRect,
+                    scanWindow: isAndroid ? null : scanWindowRect,
                     onDetect: (capture) {
                       if (_isProcessing) return;
 
@@ -916,42 +906,38 @@ class _ScanEquipmentPageWidgetState extends State<ScanEquipmentPageWidget> {
 
                       if (barcodes.isEmpty) {
                         _pendingBarcode = null;
-
                         _firstDetectionTime = null;
-
                         return;
                       }
 
                       final String? currentBarcode = barcodes.first.rawValue;
+                      if (currentBarcode == null || currentBarcode.isEmpty) {
+                        return;
+                      }
 
-                      if (currentBarcode == null) return;
+                      if (isAndroid) {
+                        // Android: без scanWindow, мгновенная обработка.
+                        _processScannedBarcode(currentBarcode);
+                        return;
+                      }
 
-// Логика задержки 1 секунда
-
-                      if (_pendingBarcode == currentBarcode) {
-                        if (_firstDetectionTime != null) {
-                          final msPassed = DateTime.now()
-                              .difference(_firstDetectionTime!)
-                              .inMilliseconds;
-
-                          if (msPassed >= 500) {
-                            _pendingBarcode = null;
-
-                            _firstDetectionTime = null;
-
-                            _processScannedBarcode(currentBarcode);
-                          }
+                      // iOS: сохраняем старую логику стабилизации считывания.
+                      if (_pendingBarcode == currentBarcode &&
+                          _firstDetectionTime != null) {
+                        final msPassed = DateTime.now()
+                            .difference(_firstDetectionTime!)
+                            .inMilliseconds;
+                        if (msPassed >= 500) {
+                          _pendingBarcode = null;
+                          _firstDetectionTime = null;
+                          _processScannedBarcode(currentBarcode);
                         }
                       } else {
                         _pendingBarcode = currentBarcode;
-
                         _firstDetectionTime = DateTime.now();
                       }
                     },
                   ),
-
-// Затемнение вокруг прямоугольника
-
                   ColorFiltered(
                     colorFilter: ColorFilter.mode(
                         Colors.black.withOpacity(0.6), BlendMode.srcOut),
@@ -966,10 +952,8 @@ class _ScanEquipmentPageWidgetState extends State<ScanEquipmentPageWidget> {
                         Align(
                           alignment: Alignment.center,
                           child: Container(
-                            width: scanBoxWidth, // Используем новую ширину
-
-                            height: scanBoxHeight, // Используем новую высоту
-
+                            width: scanBoxWidth,
+                            height: scanBoxHeight,
                             decoration: BoxDecoration(
                               color: Colors.black,
                               borderRadius: BorderRadius.circular(12),
@@ -980,15 +964,11 @@ class _ScanEquipmentPageWidgetState extends State<ScanEquipmentPageWidget> {
                     ),
                   ),
 
-// Визуальная рамка
-
                   Align(
                     alignment: Alignment.center,
                     child: Container(
-                      width: scanBoxWidth, // Используем новую ширину
-
-                      height: scanBoxHeight, // Используем новую высоту
-
+                      width: scanBoxWidth,
+                      height: scanBoxHeight,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: theme.primary,
@@ -997,14 +977,9 @@ class _ScanEquipmentPageWidgetState extends State<ScanEquipmentPageWidget> {
                         borderRadius: BorderRadius.circular(12),
                       ),
 
-// Иконка по центру
-
                       child: Center(
                         child: Opacity(
                           opacity: 0.5,
-
-// Поменял иконку на более подходящую для штрих-кода (горизонтальную)
-
                           child: Icon(Icons.linear_scale,
                               color: Colors.white, size: 40),
                         ),
