@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'flutter_flow/request_manager.dart';
 import '/backend/schema/structs/index.dart';
 import '/backend/api_requests/api_manager.dart';
@@ -251,6 +252,13 @@ class FFAppState extends ChangeNotifier {
 
   void update(VoidCallback callback) {
     callback();
+    final phase = WidgetsBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+      return;
+    }
     notifyListeners();
   }
 
@@ -1082,6 +1090,26 @@ class FFAppState extends ChangeNotifier {
 
   void insertAtIndexInPhotos(int index, dynamic value) {
     photos.insert(index, value);
+  }
+
+  /// Загрузка видео на экране заявки (сжатие → сервер → сохранение).
+  bool _videoAttachmentUploadBusy = false;
+  bool get videoAttachmentUploadBusy => _videoAttachmentUploadBusy;
+  set videoAttachmentUploadBusy(bool value) {
+    _videoAttachmentUploadBusy = value;
+  }
+
+  /// compress | upload | save | ''
+  String _videoAttachmentUploadPhase = '';
+  String get videoAttachmentUploadPhase => _videoAttachmentUploadPhase;
+  set videoAttachmentUploadPhase(String value) {
+    _videoAttachmentUploadPhase = value;
+  }
+
+  double _videoAttachmentCompressProgress = 0.0;
+  double get videoAttachmentCompressProgress => _videoAttachmentCompressProgress;
+  set videoAttachmentCompressProgress(double value) {
+    _videoAttachmentCompressProgress = value;
   }
 
   String _fcmtoken = '';

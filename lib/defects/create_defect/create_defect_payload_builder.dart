@@ -9,7 +9,7 @@ Map<String, dynamic> buildCreateDefectPayload({
   required List<dynamic> formResult,
   required int? formId,
   required bool errorMonitoring,
-  required String priorityRequest,
+  required String criticality,
 }) {
   final payload = <String, dynamic>{
     'equipment': equipmentId,
@@ -22,7 +22,7 @@ Map<String, dynamic> buildCreateDefectPayload({
     'form_result': formResult,
     'form': formId,
     'error_monitoring': errorMonitoring,
-    'priority_request': priorityRequest,
+    'criticality': criticality,
   };
 
   if (equipmentId == null) {

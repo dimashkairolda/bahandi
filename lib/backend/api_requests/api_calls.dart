@@ -147,11 +147,13 @@ class GetDefectsAPICall {
     String? contractor = '',
     String? status = '',
     String? type = '',
+    String? criticality = '',
+    String? myRequest = '',
   }) async {
     return ApiManager.instance.makeApiCall(
       callName: 'GetDefectsAPI',
       apiUrl:
-          'https://app.etry.kz/api/v1/request?per_page=10&page=${page?.isNotEmpty == true ? page : '1'}${search}${date}${department}${contractor}${status}${type}',
+          'https://app.etry.kz/api/v1/request?per_page=10&page=${page?.isNotEmpty == true ? page : '1'}${search}${date}${department}${contractor}${status}${type}${criticality ?? ''}${myRequest ?? ''}',
       callType: ApiCallType.GET,
       headers: {
         'Authorization': 'JWT ${access}',
@@ -652,7 +654,7 @@ class GetEquipManufacturerCall {
     return ApiManager.instance.makeApiCall(
       callName: 'GetEquipManufacturer',
       apiUrl:
-          'https://app.etry.kz/api/v1/equipment/manufacturer?s=1&type=${id}',
+          'https://app.etry.kz/api/v1/equipment/manufacturer?s=1',
       callType: ApiCallType.GET,
       headers: {
         'Authorization': 'JWT ${access}',
@@ -1530,6 +1532,10 @@ class PostFilesCall {
     String? access = '',
     FFUploadedFile? content,
   }) async {
+    final bytes = content?.bytes;
+    if (content == null || bytes == null || bytes.isEmpty) {
+      return const ApiCallResponse(null, {}, 400);
+    }
     return ApiManager.instance.makeApiCall(
       callName: 'PostFiles',
       apiUrl: 'https://app.etry.kz/api/v1/file',
@@ -1600,7 +1606,6 @@ class PostFilesCall {
 class ViewedNotificationCall {
   static Future<ApiCallResponse> call({
     String? access = '',
-    FFUploadedFile? content,
   }) async {
     return ApiManager.instance.makeApiCall(
       callName: 'ViewedNotification',
@@ -1609,9 +1614,9 @@ class ViewedNotificationCall {
       headers: {
         'Authorization': 'JWT ${access}',
       },
-      bodyType: BodyType.MULTIPART,
+      bodyType: BodyType.NONE,
       returnBody: true,
-      encodeBodyUtf8: true,
+      encodeBodyUtf8: false,
       decodeUtf8: true,
       cache: false,
       isStreamingApi: false,

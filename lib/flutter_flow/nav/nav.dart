@@ -294,9 +294,7 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: ServiceActWidget.routeName,
           path: ServiceActWidget.routePath,
           requireAuth: true,
-          builder: (context, params) => params.isEmpty
-              ? NavBarPage(initialPage: 'ServiceAct')
-              : ServiceActWidget(),
+          builder: (context, params) => ServiceActWidget(),
         ),
         FFRoute(
           name: SelectPodryadchikWidget.routeName,

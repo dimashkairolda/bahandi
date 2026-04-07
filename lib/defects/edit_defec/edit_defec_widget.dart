@@ -5,6 +5,7 @@ import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
 import '/defects/add_t_m_c/add_t_m_c_widget.dart';
 import '/defects/add_works/add_works_widget.dart';
+import '/defects/detailed_defects_offline/request_put_body.dart';
 import '/defects/photo_or_video/photo_or_video_widget.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_expanded_image_view.dart';
@@ -2007,19 +2008,12 @@ class _EditDefecWidgetState extends State<EditDefecWidget> {
                                 .map((e) => WorksStruct.maybeFromMap(e))
                                 .withoutNulls
                                 .toList(),
-                            fileIds: functions
-                                .combineArraysfiles(
-                                    _model.photos123
-                                        .map((e) => FilesStruct.maybeFromMap(e))
-                                        .withoutNulls
-                                        .toList(),
-                                    FFAppState()
-                                        .photos
-                                        .map((e) => FilesStruct.maybeFromMap(e))
-                                        .withoutNulls
-                                        .toList())
-                                .map((e) => e.id)
-                                .toList(),
+                            fileIds: extractAttachmentFileIds(
+                              functions.combineArrays(
+                                _model.photos123.toList(),
+                                FFAppState().photos.toList(),
+                              ),
+                            ),
                           ).toMap(),
                         );
 

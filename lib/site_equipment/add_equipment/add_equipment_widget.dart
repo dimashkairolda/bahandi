@@ -71,6 +71,9 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
   String? _selectedAreaIdForCashier;
   FormFieldController<String>? _areaControllerForCashier;
 
+  String? _selectedCategory;
+  FormFieldController<String>? _categoryController;
+
   String get _userRole => valueOrDefault<String>(
         getJsonField(
           FFAppState().account,
@@ -147,7 +150,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Добавить оборудование',
+                FFLocalizations.of(context).getVariableText(
+                  ruText: 'Добавить оборудование',
+                  kkText: 'Жабдық қосу',
+                ),
                 style: theme.bodyMedium.override(
                   fontFamily: 'SFProText',
                   fontSize: 16.0,
@@ -184,6 +190,8 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                   const SizedBox(height: 12.0),
                   _buildNameFieldWithSuggestions(theme),
                   const SizedBox(height: 12.0),
+                  _buildCategoryDropdown(theme),
+                  const SizedBox(height: 12.0),
                   _buildTypeDropdown(theme),
                   const SizedBox(height: 12.0),
                   _buildManufacturerSection(theme),
@@ -208,7 +216,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Выберите тип оборудования',
+                                    FFLocalizations.of(context).getVariableText(
+                                      ruText: 'Выберите тип оборудования',
+                                      kkText: 'Жабдық түрін таңдаңыз',
+                                    ),
                                     style: theme.bodyMedium.override(
                                       fontFamily: 'SFProText',
                                       letterSpacing: 0.0,
@@ -224,7 +235,11 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Не удалось определить участок (area)',
+                                    FFLocalizations.of(context).getVariableText(
+                                      ruText:
+                                          'Не удалось определить участок (area)',
+                                      kkText: 'Учаске анықталмады (area)',
+                                    ),
                                     style: theme.bodyMedium.override(
                                       fontFamily: 'SFProText',
                                       letterSpacing: 0.0,
@@ -252,8 +267,14 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                   ? null
                                   : int.tryParse(_selectedModel ?? '');
 
+                              final effectiveCategory = _selectedCategory ??
+                                  widget.categoryCode ??
+                                  'basic_equipment';
+
                               final Map<String, dynamic> body = {
                                 'title': _nameController.text,
+                                'status': 'in_progress',
+                                'category': effectiveCategory,
                                 'type': typeId,
                                 'departments': <dynamic>[],
                                 'barcode': _barcodeController.text.isEmpty
@@ -284,11 +305,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                 'spare_parts': <dynamic>[],
                                 'works': <dynamic>[],
                                 'catalog_group': null,
-                                'criticality':
-                                    _isCashierRole ? _criticality : null,
+                                'criticality': _criticality ?? 'medium',
+                                'provider': null,
                                 'parent': null,
                                 'productive_asset': null,
-                                'number_scheme': null,
                               };
 
                               if (_isCashierRole) {
@@ -298,7 +318,7 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                     : num.tryParse(powerText);
                               }
 
-                              final categoryCode = widget.categoryCode;
+                              final categoryCode = effectiveCategory;
                               if (categoryCode == 'basic_equipment' ||
                                   categoryCode == 'periphery') {
                                 final draftType = _isManualType
@@ -381,7 +401,12 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Оборудование успешно добавлено',
+                                      FFLocalizations.of(context)
+                                          .getVariableText(
+                                        ruText:
+                                            'Оборудование успешно добавлено',
+                                        kkText: 'Жабдық сәтті қосылды',
+                                      ),
                                       style: theme.bodyMedium.override(
                                         fontFamily: 'SFProText',
                                         letterSpacing: 0.0,
@@ -393,7 +418,11 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                 );
                                 context.safePop();
                               } else {
-                                String errorMsg = 'Ошибка при добавлении оборудования';
+                                String errorMsg = FFLocalizations.of(context)
+                                    .getVariableText(
+                                  ruText: 'Ошибка при добавлении оборудования',
+                                  kkText: 'Жабдықты қосу қатесі',
+                                );
                                 final body = response.jsonBody;
                                 if (body is Map) {
                                   final messages = <String>[];
@@ -435,7 +464,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                               }
                             }
                           },
-                    text: 'Добавить',
+                    text: FFLocalizations.of(context).getVariableText(
+                      ruText: 'Добавить',
+                      kkText: 'Қосу',
+                    ),
                     options: FFButtonOptions(
                       width: double.infinity,
                       height: 52.0,
@@ -514,72 +546,26 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.add_a_photo_outlined,
-                        color: theme.primary, size: 24),
+                        color: theme.primary, size: 28),
                     const SizedBox(height: 6),
                     Text(
                       FFLocalizations.of(context).getVariableText(
-                        ruText: 'Сфотографировать',
-                        kkText: 'Суретке түсіру',
+                        ruText: 'Камера',
+                        kkText: 'Камера',
                       ),
                       textAlign: TextAlign.center,
                       style: theme.bodySmall.override(
                         fontFamily: 'SFProText',
                         letterSpacing: 0.0,
                         color: theme.secondaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    TextButton(
-                      onPressed: () async {
-                        final selectedMedia = await selectMedia(
-                          mediaSource: MediaSource.photoGallery,
-                          multiImage: true,
-                        );
-                        if (selectedMedia == null || selectedMedia.isEmpty) {
-                          return;
-                        }
-                        final uploaded = selectedMedia.map((m) {
-                          return FFUploadedFile(
-                            name: m.storagePath.split('/').last,
-                            bytes: m.bytes,
-                            height: m.dimensions?.height,
-                            width: m.dimensions?.width,
-                            blurHash: m.blurHash,
-                            originalFilename: m.originalFilename,
-                          );
-                        }).toList();
-                        setState(() {
-                          _photoFiles.addAll(uploaded);
-                          if (_selectedAvatarIndex >= _photoFiles.length) {
-                            _selectedAvatarIndex = 0;
-                          }
-                        });
-                      },
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(0, 0),
-                        padding:
-                            const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        FFLocalizations.of(context).getVariableText(
-                          ruText: 'Галерея',
-                          kkText: 'Галерея',
-                        ),
-                        style: theme.bodySmall.override(
-                          fontFamily: 'SFProText',
-                          letterSpacing: 0.0,
-                          color: theme.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
-                        ),
+                        fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             Expanded(
               child: _photoFiles.isEmpty
                   ? Container(
@@ -624,12 +610,18 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                 ),
                               ),
                               child: Stack(
+                                fit: StackFit.expand,
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: bytes == null
                                         ? const SizedBox.shrink()
-                                        : Image.memory(bytes, fit: BoxFit.cover),
+                                        : Image.memory(
+                                            bytes,
+                                            fit: BoxFit.cover,
+                                            width: 96,
+                                            height: 96,
+                                          ),
                                   ),
                                   if (isSelected)
                                     Positioned(
@@ -659,6 +651,38 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                                         ),
                                       ),
                                     ),
+                                  Positioned(
+                                    right: 6,
+                                    top: 6,
+                                    child: InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _photoFiles.removeAt(index);
+                                          if (_photoFiles.isEmpty) {
+                                            _selectedAvatarIndex = 0;
+                                          } else if (_selectedAvatarIndex >=
+                                              _photoFiles.length) {
+                                            _selectedAvatarIndex =
+                                                _photoFiles.length - 1;
+                                          }
+                                        });
+                                      },
+                                      borderRadius: BorderRadius.circular(999),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black45,
+                                          borderRadius:
+                                              BorderRadius.circular(999),
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -678,7 +702,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Штрих‑код',
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Штрих‑код',
+            kkText: 'Штрих‑код',
+          ),
           style: theme.bodyMedium.override(
             fontFamily: 'SFProText',
             letterSpacing: 0.0,
@@ -692,7 +719,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
               child: TextFormField(
                 controller: _barcodeController,
                 decoration: InputDecoration(
-                  hintText: 'Отсканируйте или введите код',
+                  hintText: FFLocalizations.of(context).getVariableText(
+                    ruText: 'Отсканируйте или введите код',
+                    kkText: 'Кодты сканерлеңіз немесе енгізіңіз',
+                  ),
                   hintStyle: theme.bodyMedium.override(
                     fontFamily: 'SFProText',
                     letterSpacing: 0.0,
@@ -798,6 +828,11 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
   void initState() {
     super.initState();
     _nameFocusNode.addListener(_onNameFocusChanged);
+    const allowed = {'basic_equipment', 'furniture', 'periphery'};
+    final fromRoute = widget.categoryCode;
+    _selectedCategory = (fromRoute != null && allowed.contains(fromRoute))
+        ? fromRoute
+        : 'basic_equipment';
   }
 
   Widget _buildNameFieldWithSuggestions(FlutterFlowTheme theme) {
@@ -807,7 +842,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
         Text(
-          'Название',
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Название',
+            kkText: 'Атауы',
+          ),
           style: theme.bodyMedium.override(
             fontFamily: 'SFProText',
             letterSpacing: 0.0,
@@ -825,18 +863,80 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
     );
   }
 
+  Widget _buildCategoryDropdown(FlutterFlowTheme theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Категория',
+            kkText: 'Санат',
+          ),
+          style: theme.bodyMedium.override(
+            fontFamily: 'SFProText',
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8.0),
+        FlutterFlowDropDown<String>(
+          controller: _categoryController ??=
+              FormFieldController<String>(_selectedCategory),
+          options: const ['basic_equipment', 'furniture', 'periphery'],
+          optionLabels: [
+            FFLocalizations.of(context).getVariableText(
+              ruText: 'Основное оборудование',
+              kkText: 'Негізгі жабдық',
+            ),
+            FFLocalizations.of(context).getVariableText(
+              ruText: 'Мебель',
+              kkText: 'Жиһаз',
+            ),
+            FFLocalizations.of(context).getVariableText(
+              ruText: 'Периферия',
+              kkText: 'Периферия',
+            ),
+          ],
+          onChanged: (val) {
+            setState(() {
+              _selectedCategory = val;
+            });
+          },
+          width: double.infinity,
+          height: 48.0,
+          textStyle: theme.bodyMedium.override(
+            fontFamily: 'SFProText',
+            letterSpacing: 0.0,
+          ),
+          hintText: FFLocalizations.of(context).getVariableText(
+            ruText: 'Выберите категорию',
+            kkText: 'Санатты таңдаңыз',
+          ),
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: theme.secondaryText,
+            size: 24.0,
+          ),
+          fillColor: theme.secondaryBackground,
+          elevation: 0.0,
+          borderColor: theme.alternate,
+          borderWidth: 1.0,
+          borderRadius: 12.0,
+          margin: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
+          hidesUnderline: true,
+          isSearchable: false,
+          isMultiSelect: false,
+        ),
+      ],
+    );
+  }
+
   void _setManualType(bool manual) {
     setState(() {
       _isManualType = manual;
       if (manual) {
         _selectedType = null;
         _typeController?.value = null;
-        _isManualManufacturer = true;
-        _isManualModel = true;
-        _selectedManufacturer = null;
-        _manufacturerController?.value = null;
-        _selectedModel = null;
-        _modelController?.value = null;
       } else {
         _manualTypeController.clear();
       }
@@ -887,7 +987,15 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           ),
           const SizedBox(width: 4.0),
           Text(
-            isManual ? 'Из списка' : 'Ввести вручную',
+            isManual
+                ? FFLocalizations.of(context).getVariableText(
+                    ruText: 'Из списка',
+                    kkText: 'Тізімнен',
+                  )
+                : FFLocalizations.of(context).getVariableText(
+                    ruText: 'Ввести вручную',
+                    kkText: 'Қолмен енгізу',
+                  ),
             style: theme.bodySmall.override(
               fontFamily: 'SFProText',
               letterSpacing: 0.0,
@@ -936,7 +1044,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Тип',
+              FFLocalizations.of(context).getVariableText(
+                ruText: 'Тип',
+                kkText: 'Түрі',
+              ),
               style: theme.bodyMedium.override(
                 fontFamily: 'SFProText',
                 letterSpacing: 0.0,
@@ -1003,10 +1114,6 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                 onChanged: (val) {
                   setState(() {
                     _selectedType = val;
-                    _selectedManufacturer = null;
-                    _manufacturerController?.value = null;
-                    _selectedModel = null;
-                    _modelController?.value = null;
                   });
                 },
                 width: double.infinity,
@@ -1016,7 +1123,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                   fontFamily: 'SFProText',
                   letterSpacing: 0.0,
                 ),
-                hintText: 'Выберите тип оборудования',
+                hintText: FFLocalizations.of(context).getVariableText(
+                  ruText: 'Выберите тип оборудования',
+                  kkText: 'Жабдық түрін таңдаңыз',
+                ),
                 isSearchable: true,
                 searchHintText: 'Поиск типа оборудования',
                 icon: Icon(
@@ -1041,7 +1151,6 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
 
   Widget _buildManufacturerSection(FlutterFlowTheme theme) {
     final token = authManager.authenticationToken;
-    final forceManual = _isManualType;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1050,23 +1159,25 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Производитель',
+              FFLocalizations.of(context).getVariableText(
+                ruText: 'Производитель',
+                kkText: 'Өндіруші',
+              ),
               style: theme.bodyMedium.override(
                 fontFamily: 'SFProText',
                 letterSpacing: 0.0,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (!forceManual)
-              _buildManualToggle(
-                theme,
-                isManual: _isManualManufacturer,
-                onChanged: _setManualManufacturer,
-              ),
+            _buildManualToggle(
+              theme,
+              isManual: _isManualManufacturer,
+              onChanged: _setManualManufacturer,
+            ),
           ],
         ),
         const SizedBox(height: 8.0),
-        if (_isManualManufacturer || forceManual)
+        if (_isManualManufacturer)
           TextFormField(
             controller: _manualManufacturerController,
             decoration: _manualInputDecoration(
@@ -1078,12 +1189,9 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
               letterSpacing: 0.0,
             ),
           )
-        else if (_selectedType != null)
+        else
           FutureBuilder<ApiCallResponse>(
-            future: GetEquipManufacturerCall.call(
-              access: token,
-              id: _selectedType,
-            ),
+            future: GetEquipManufacturerCall.call(access: token),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return Container(
@@ -1144,7 +1252,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                   fontFamily: 'SFProText',
                   letterSpacing: 0.0,
                 ),
-                hintText: 'Выберите производителя',
+                hintText: FFLocalizations.of(context).getVariableText(
+                  ruText: 'Выберите производителя',
+                  kkText: 'Өндірушіні таңдаңыз',
+                ),
                 isSearchable: true,
                 searchHintText: 'Поиск производителя',
                 icon: Icon(
@@ -1162,15 +1273,6 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                 hidesUnderline: true,
               );
             },
-          )
-        else
-          Text(
-            'Сначала выберите тип',
-            style: theme.bodySmall.override(
-              fontFamily: 'SFProText',
-              letterSpacing: 0.0,
-              color: theme.secondaryText,
-            ),
           ),
       ],
     );
@@ -1178,7 +1280,7 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
 
   Widget _buildModelSection(FlutterFlowTheme theme) {
     final token = authManager.authenticationToken;
-    final forceManual = _isManualType || _isManualManufacturer;
+    final forceManual = _isManualManufacturer;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1187,7 +1289,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Модель',
+              FFLocalizations.of(context).getVariableText(
+                ruText: 'Модель',
+                kkText: 'Модель',
+              ),
               style: theme.bodyMedium.override(
                 fontFamily: 'SFProText',
                 letterSpacing: 0.0,
@@ -1217,6 +1322,7 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           )
         else if (_selectedManufacturer != null)
           FutureBuilder<ApiCallResponse>(
+            key: ValueKey<String>('model_mfr_$_selectedManufacturer'),
             future: GetEquipModelCall.call(
               access: token,
               id: _selectedManufacturer,
@@ -1274,7 +1380,10 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                   fontFamily: 'SFProText',
                   letterSpacing: 0.0,
                 ),
-                hintText: 'Выберите модель',
+                hintText: FFLocalizations.of(context).getVariableText(
+                  ruText: 'Выберите модель',
+                  kkText: 'Модельді таңдаңыз',
+                ),
                 isSearchable: true,
                 searchHintText: 'Поиск модели',
                 icon: Icon(
@@ -1340,6 +1449,18 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           ),
         ),
         const SizedBox(height: 12),
+        Text(
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Критичность',
+            kkText: 'Сындылық',
+          ),
+          style: theme.bodyMedium.override(
+            fontFamily: 'SFProText',
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8.0),
         FlutterFlowDropDown<String>(
           controller: _criticalityController ??=
               FormFieldController<String>(_criticality),
@@ -1369,16 +1490,33 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
             ruText: 'Критичность',
             kkText: 'Сындылық',
           ),
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: theme.secondaryText,
+            size: 24.0,
+          ),
           fillColor: theme.secondaryBackground,
           elevation: 0,
-          borderColor: Colors.transparent,
-          borderWidth: 0,
+          borderColor: theme.alternate,
+          borderWidth: 1.0,
           borderRadius: 12,
-          margin: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+          margin: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
           hidesUnderline: true,
           isSearchable: false,
         ),
         const SizedBox(height: 12),
+        Text(
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Дата ввода в эксплуатацию',
+            kkText: 'Пайдалануға беру күні',
+          ),
+          style: theme.bodyMedium.override(
+            fontFamily: 'SFProText',
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8.0),
         InkWell(
           onTap: () async {
             final picked = await showDatePicker(
@@ -1428,6 +1566,18 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
           ),
         ),
         const SizedBox(height: 12),
+        Text(
+          FFLocalizations.of(context).getVariableText(
+            ruText: 'Филиал',
+            kkText: 'Филиал',
+          ),
+          style: theme.bodyMedium.override(
+            fontFamily: 'SFProText',
+            letterSpacing: 0.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8.0),
         FutureBuilder<ApiCallResponse>(
           future: GetAreaCall.call(access: token),
           builder: (context, snapshot) {
@@ -1472,12 +1622,17 @@ class _AddEquipmentSimpleWidgetState extends State<AddEquipmentSimpleWidget> {
                 ruText: 'Филиал',
                 kkText: 'Филиал',
               ),
+              icon: Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: theme.secondaryText,
+                size: 24.0,
+              ),
               fillColor: theme.secondaryBackground,
               elevation: 0,
-              borderColor: Colors.transparent,
-              borderWidth: 0,
+              borderColor: theme.alternate,
+              borderWidth: 1.0,
               borderRadius: 12,
-              margin: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 0),
+              margin: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
               hidesUnderline: true,
               isSearchable: true,
             );

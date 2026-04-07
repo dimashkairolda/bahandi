@@ -16,7 +16,7 @@ void main() {
           formResult: const [],
           formId: null,
           errorMonitoring: false,
-          priorityRequest: 'medium',
+          criticality: 'medium',
         ),
         throwsA(isA<ArgumentError>()),
       );
@@ -34,7 +34,7 @@ void main() {
         formResult: const [],
         formId: 123,
         errorMonitoring: true,
-        priorityRequest: 'low',
+        criticality: 'low',
       );
       expect(payload['area'], 76);
       expect(payload['equipment'], isNull);
@@ -52,7 +52,7 @@ void main() {
         formResult: const [],
         formId: null,
         errorMonitoring: false,
-        priorityRequest: 'medium',
+        criticality: 'medium',
       );
       expect(payload.containsKey('area'), isFalse);
       expect(payload['equipment'], 950);

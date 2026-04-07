@@ -34,7 +34,7 @@ class SiteEquipmentListWidget extends StatefulWidget {
 class _SiteEquipmentListWidgetState extends State<SiteEquipmentListWidget>
     with SingleTickerProviderStateMixin {
   static const _siteEquipmentFields =
-      '&fields=id,title,area,category_code,files,img,barcode,inventory_number,dispatch_number,status,comment,type_info,manufacturer_info,model_info,draft_info';
+      '&fields=id,title,area,category,category_code,files,img,barcode,inventory_number,dispatch_number,status,comment,type,type_info,manufacturer,manufacturer_info,model,model_info,draft_info,criticality,power,operational_date,provider';
   late Future<ApiCallResponse> _equipmentsFuture;
   bool _isReloading = false;
   late AnimationController _refreshAnimationController;
@@ -222,7 +222,10 @@ class _SiteEquipmentListWidgetState extends State<SiteEquipmentListWidget>
                     );
                     await _reloadEquipments();
                   },
-                  text: 'Добавить оборудование',
+                  text: FFLocalizations.of(context).getVariableText(
+                    ruText: 'Добавить оборудование',
+                    kkText: 'Жабдық қосу',
+                  ),
                   icon: const Icon(
                     Icons.add_rounded,
                     size: 20.0,

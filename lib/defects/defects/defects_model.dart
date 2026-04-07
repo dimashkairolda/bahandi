@@ -31,6 +31,12 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
 
   int totalPages = 1;
 
+  bool isInitialLoading = false;
+
+  bool isLoadingMore = false;
+
+  String? loadErrorMessage;
+
   bool isEdited = false;
 
   DateTime? date;
@@ -39,8 +45,6 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
 
   // Stores action output result for [Custom Action - showNotificationSnackbar] action in Defects widget.
   bool? aaa;
-  bool apiRequestCompleted = false;
-  String? apiRequestLastUniqueKey;
   // Stores action output result for [Backend Call - API (Auth)] action in Defects widget.
   ApiCallResponse? authResponse1;
   var aa = '';
@@ -65,6 +69,11 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
   // State field(s) for contractor widget.
   String? contractorValue;
   FormFieldController<String>? contractorValueController;
+  // Мои заявки (API: только при true передаётся my_request=true)
+  bool myRequestsOnly = false;
+  // Критичность: high | medium | low | null (все)
+  String? criticalityFilter;
+  FormFieldController<String>? criticalityFilterController;
 
   @override
   void initState(BuildContext context) {}
@@ -84,28 +93,11 @@ class DefectsModel extends FlutterFlowModel<DefectsWidget> {
     while (true) {
       await Future.delayed(Duration(milliseconds: 50));
       final timeElapsed = stopwatch.elapsedMilliseconds;
-      final requestComplete = apiRequestCompleted;
+      final requestComplete = !isInitialLoading && !isLoadingMore;
       if (timeElapsed > maxWait || (requestComplete && timeElapsed > minWait)) {
         break;
       }
     }
   }
 
-  void applyDefectsPage({
-    required String uniqueKey,
-    required int pageNumber,
-    required List<dynamic> items,
-    required int totalPagesValue,
-  }) {
-    if (apiRequestLastUniqueKey == uniqueKey) {
-      return;
-    }
-    apiRequestLastUniqueKey = uniqueKey;
-    totalPages = totalPagesValue;
-    if (pageNumber <= 1) {
-      defectsItems = List<dynamic>.from(items);
-      return;
-    }
-    defectsItems = [...defectsItems, ...items];
-  }
 }

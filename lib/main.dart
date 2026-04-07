@@ -11,6 +11,7 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'auth/custom_auth/auth_util.dart';
 import 'auth/custom_auth/custom_auth_user_provider.dart';
+import 'backend/api_requests/api_calls.dart';
 
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'services/app_update_checker.dart';
@@ -236,14 +237,22 @@ class _NavBarPageState extends State<NavBarPage> {
       resizeToAvoidBottomInset: !widget.disableResizeToAvoidBottomInset,
       body: _currentPage ?? tabs[resolvedPageName],
       bottomNavigationBar: BottomNavigationBar(
-        onTap: (i) => safeSetState(() {
-          _currentPage = null;
-          _currentPageName = tabKeys[i];
-          MyApp.analytics.logEvent(
-    name: tabKeys[i],
-  );
-  AppMetrica.reportEvent(tabKeys[i]);
-        }),
+        onTap: (i) async {
+          safeSetState(() {
+            _currentPage = null;
+            _currentPageName = tabKeys[i];
+            MyApp.analytics.logEvent(
+              name: tabKeys[i],
+            );
+            AppMetrica.reportEvent(tabKeys[i]);
+          });
+
+          if (tabKeys[i] == 'Defects') {
+            await ViewedNotificationCall.call(
+              access: currentAuthenticationToken,
+            );
+          }
+        },
         currentIndex: currentIndex,
         
         backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,

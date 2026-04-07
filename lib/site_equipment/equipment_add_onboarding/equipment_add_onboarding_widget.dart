@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '/auth/custom_auth/auth_util.dart';
+import '/backend/api_requests/api_calls.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/site_equipment/equipment_add_onboarding/equipment_onboarding_prefs.dart';
 import '/site_equipment/sites_list/sites_list_widget.dart';
+import '/site_equipment/site_equipment_list/site_equipment_list_widget.dart';
 
 class EquipmentAddOnboardingWidget extends StatefulWidget {
   const EquipmentAddOnboardingWidget({
@@ -35,14 +38,48 @@ class _EquipmentAddOnboardingWidgetState
     super.dispose();
   }
 
+  Future<Widget> _resolveDestination() async {
+    try {
+      final token = authManager.authenticationToken;
+      final objectsRes = await GetObjectCall.call(access: token);
+      final objects = GetObjectCall.objects(objectsRes.jsonBody) ?? [];
+      final List<Map<String, dynamic>> allAreas = [];
+      for (final obj in objects) {
+        final objMap = obj as Map<String, dynamic>;
+        final objectId = objMap['id'] as int?;
+        final objectTitle = (objMap['title'] ?? '').toString().trim();
+        if (objectId == null) continue;
+        final childRes = await GetObjectChildCall.call(
+          objectId: objectId,
+          access: token,
+        );
+        final areas = GetObjectChildCall.areas(childRes.jsonBody) ?? [];
+        for (final a in areas) {
+          final areaMap = Map<String, dynamic>.from(a as Map<String, dynamic>);
+          areaMap['object_title'] = objectTitle;
+          allAreas.add(areaMap);
+        }
+      }
+      if (allAreas.length == 1) {
+        final area = allAreas.first;
+        return SiteEquipmentListWidget(
+          areaId: area['id'] as int?,
+          areaTitle: (area['title'] ?? '').toString(),
+          objectTitle: (area['object_title'] ?? '').toString(),
+        );
+      }
+    } catch (_) {}
+    return const SitesListWidget();
+  }
+
   Future<void> _finishOnboarding() async {
     await EquipmentOnboardingPrefs.setCompleted();
     if (!mounted) return;
     if (widget.openSitesListAfter) {
+      final dest = await _resolveDestination();
+      if (!mounted) return;
       await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SitesListWidget(),
-        ),
+        MaterialPageRoute(builder: (_) => dest),
       );
       return;
     }
@@ -53,10 +90,10 @@ class _EquipmentAddOnboardingWidgetState
     await EquipmentOnboardingPrefs.setCompleted();
     if (!mounted) return;
     if (widget.openSitesListAfter) {
+      final dest = await _resolveDestination();
+      if (!mounted) return;
       await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SitesListWidget(),
-        ),
+        MaterialPageRoute(builder: (_) => dest),
       );
       return;
     }

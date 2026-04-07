@@ -126,6 +126,24 @@ class _PhotoOrVideoWidgetState extends State<PhotoOrVideoWidget> {
                           }
                           return;
                         }
+                        if (fileToUpload.bytes == null ||
+                            fileToUpload.bytes!.isEmpty) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  FFLocalizations.of(context)
+                                      .getVariableText(
+                                    ruText: 'Файл пустой. Выберите другое фото.',
+                                    kkText:
+                                        'Файл бос. Басқа фото таңдаңыз.',
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          return;
+                        }
 
                         // --- 4. Загрузка файла ---
                         _model.tet = await PostFilesCall.call(
@@ -137,12 +155,15 @@ class _PhotoOrVideoWidgetState extends State<PhotoOrVideoWidget> {
 
                         // --- 5. Обработка результата ---
                         if (_model.tet != null && _model.tet!.succeeded) {
-                          // API вызов УСПЕШЕН
-                          FFAppState().addToPhotos(getJsonField(
-                            (_model.tet?.jsonBody ?? ''),
-                            r'''$[0].url''', // <--- ИСПРАВЛЕНО (КРЭШ)
-                          ));
-                          // FFAppState().update(() {}); // <-- Эта строка не нужна
+                          final body = _model.tet!.jsonBody;
+                          final firstItem = getJsonField(body, r'$[0]');
+                          final url = getJsonField(firstItem, r'$.url')
+                                  ?.toString() ??
+                              '';
+                          if (firstItem != null && url.isNotEmpty) {
+                            FFAppState().addToPhotos(firstItem);
+                            FFAppState().update(() {});
+                          }
                         } else {
                           // API вызов НЕУДАЧНЫЙ
                           print('Ошибка API: ${_model.tet?.statusCode}');
@@ -260,6 +281,7 @@ class _PhotoOrVideoWidgetState extends State<PhotoOrVideoWidget> {
                     onTap: () async {
                       // --- НАЧАЛО ИСПРАВЛЕННОГО КОДА ВИДЕО ---
                       try {
+                        await requestPermission(cameraPermission);
                         await requestPermission(microphonePermission);
 
                         // 1. ВКЛЮЧАЕМ ИНДИКАТОР
@@ -286,12 +308,15 @@ class _PhotoOrVideoWidgetState extends State<PhotoOrVideoWidget> {
 
                         // --- 4. Обработка результата ---
                         if (_model.asas != null && _model.asas!.succeeded) {
-                          // API вызов УСПЕШЕН
-                          FFAppState().addToPhotos(getJsonField(
-                            (_model.asas?.jsonBody ?? ''),
-                            r'''$[0].url''', // <--- ИСПРАВЛЕНО (КРЭШ)
-                          ));
-                          // FFAppState().update(() {}); // <-- Эта строка не нужна
+                          final body = _model.asas!.jsonBody;
+                          final firstItem = getJsonField(body, r'$[0]');
+                          final url = getJsonField(firstItem, r'$.url')
+                                  ?.toString() ??
+                              '';
+                          if (firstItem != null && url.isNotEmpty) {
+                            FFAppState().addToPhotos(firstItem);
+                            FFAppState().update(() {});
+                          }
                         } else {
                           // API вызов НЕУДАЧНЫЙ
                           print('Ошибка API: ${_model.asas?.statusCode}');

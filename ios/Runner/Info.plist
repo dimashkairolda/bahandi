@@ -45,6 +45,8 @@
 	<string>We need access to NFC to read data from NFC tags</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Разрешите программе открыть камеру?</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Нужен доступ к микрофону для записи видео со звуком.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>In order to upload data, this app requires permission to access the photo library.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

@@ -43,12 +43,10 @@ class _EquipmentsTreeWidgetState extends State<EquipmentsTreeWidget> {
       );
 
   bool get _canAddEquipment {
-    return _userRole == 'admin' ||
-        _userRole == '"admin"' ||
-        _userRole == 'director' ||
+    return _userRole == 'director' ||
         _userRole == '"director"' ||
-        _userRole == 'engineer' ||
-        _userRole == '"engineer"';
+        _userRole == 'cashier' ||
+        _userRole == '"cashier"';
   }
 
   @override
@@ -282,7 +280,10 @@ class _EquipmentsTreeWidgetState extends State<EquipmentsTreeWidget> {
               child: ListView(
                 children: [
                     if (_canAddEquipment)
-                      FFButtonWidget(
+                      Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            10.0, 0.0, 10.0, 0.0),
+                        child: FFButtonWidget(
                         onPressed: () async {
                           await _openAddEquipmentFlow();
                         },
@@ -294,7 +295,7 @@ class _EquipmentsTreeWidgetState extends State<EquipmentsTreeWidget> {
                           width: MediaQuery.sizeOf(context).width * 0.95,
                           height: 40.0,
                           padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 0.0, 16.0, 0.0),
+                              0.0, 0.0, 0.0, 0.0),
                           iconPadding: EdgeInsetsDirectional.fromSTEB(
                               0.0, 0.0, 0.0, 0.0),
                           color: FlutterFlowTheme.of(context).primary,
@@ -308,6 +309,7 @@ class _EquipmentsTreeWidgetState extends State<EquipmentsTreeWidget> {
                           elevation: 0.0,
                           borderRadius: BorderRadius.circular(8.0),
                         ),
+                      ),
                       ),
                     Padding(
                       padding:
@@ -636,6 +638,7 @@ class _EquipmentsTreeWidgetState extends State<EquipmentsTreeWidget> {
                                       isMultiSelect: false,
                                     ),
                                   ),
+                                  const SizedBox(width: 10.0),
                                   Expanded(
                                     child: FlutterFlowDropDown<String>(
                                       controller:

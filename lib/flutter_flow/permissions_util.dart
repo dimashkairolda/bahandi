@@ -29,5 +29,11 @@ Future<void> requestPermission(Permission setting) async {
       await Permission.photos.request();
     }
   }
-  await setting.request();
+  final status = await setting.request();
+  // Если пользователь ранее выбрал "Don't ask again" / запреты политики,
+  // системный диалог больше не появится — только настройки приложения.
+  if (status == PermissionStatus.permanentlyDenied ||
+      status == PermissionStatus.restricted) {
+    await openAppSettings();
+  }
 }

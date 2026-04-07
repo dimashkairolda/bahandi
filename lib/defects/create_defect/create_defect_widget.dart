@@ -10,6 +10,7 @@ import '/flutter_flow/flutter_flow_video_player.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import '/flutter_flow/upload_data.dart';
+import 'package:Etry/video_player/video_player_widget.dart';
 import '/inspections/checkboxes/checkboxes_widget.dart';
 import '/inspections/date/date_widget.dart';
 import '/inspections/diapason/diapason_widget.dart';
@@ -119,6 +120,7 @@ class _CreateDefectWidgetState extends State<CreateDefectWidget> {
     context.watch<FFAppState>();
 
     return GestureDetector(
+      behavior: HitTestBehavior.translucent,
       onTap: () {
         FocusScope.of(context).unfocus();
         FocusManager.instance.primaryFocus?.unfocus();
@@ -789,7 +791,10 @@ Container(
               size: 20,
             ),
             Text(
-              'Информация о поломке',
+              FFLocalizations.of(context).getVariableText(
+                ruText: 'Информация о поломке',
+                kkText: 'Ақау туралы ақпарат',
+              ),
               style: FlutterFlowTheme.of(context).bodyMedium.override(
                     fontFamily: 'SFProText',
                     fontSize: 17,
@@ -803,7 +808,10 @@ Container(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Название заявки',
+              FFLocalizations.of(context).getVariableText(
+                ruText: 'Название заявки',
+                kkText: 'Өтінім атауы',
+              ),
               style: FlutterFlowTheme.of(context).bodyMedium.override(
                     fontFamily: 'SFProText',
                     letterSpacing: 0.0,
@@ -821,7 +829,10 @@ Container(
                       letterSpacing: 0.0,
                       fontWeight: FontWeight.w500,
                     ),
-                hintText: 'Например: Не включается',
+                hintText: FFLocalizations.of(context).getVariableText(
+                  ruText: 'Например: Не включается',
+                  kkText: 'Мысалы: Қосылмайды',
+                ),
                 hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                       font: GoogleFonts.readexPro(
                         fontWeight: FlutterFlowTheme.of(context)
@@ -1013,44 +1024,63 @@ Container(
                   imageQuality: 71,
                   multiImage: false,
                 );
-                if (selectedMedia != null &&
-                    selectedMedia.every(
-                        (m) => validateFileFormat(m.storagePath, context))) {
-                  safeSetState(
-                      () => _model.isDataUploading_uploadD111 = true);
-                  var selectedUploadedFiles = <FFUploadedFile>[];
-                  try {
-                    selectedUploadedFiles = selectedMedia
-                        .map((m) => FFUploadedFile(
-                              name: m.storagePath.split('/').last,
-                              bytes: m.bytes,
-                              height: m.dimensions?.height,
-                              width: m.dimensions?.width,
-                              blurHash: m.blurHash,
-                              originalFilename: m.originalFilename,
-                            ))
-                        .toList();
-                  } finally {
-                    _model.isDataUploading_uploadD111 = false;
-                  }
-                  if (selectedUploadedFiles.length == selectedMedia.length) {
-                    safeSetState(() {
-                      _model.uploadedLocalFile_uploadD111 =
-                          selectedUploadedFiles.first;
-                    });
-                  } else {
-                    safeSetState(() {});
-                    return;
-                  }
+                if (selectedMedia == null || selectedMedia.isEmpty) {
+                  return;
                 }
+                if (!selectedMedia.every(
+                    (m) => validateFileFormat(m.storagePath, context))) {
+                  return;
+                }
+                safeSetState(
+                    () => _model.isDataUploading_uploadD111 = true);
+                List<FFUploadedFile> selectedUploadedFiles = [];
+                try {
+                  selectedUploadedFiles = selectedMedia
+                      .map((m) => FFUploadedFile(
+                            name: m.storagePath.split('/').last,
+                            bytes: m.bytes,
+                            height: m.dimensions?.height,
+                            width: m.dimensions?.width,
+                            blurHash: m.blurHash,
+                            originalFilename: m.originalFilename,
+                          ))
+                      .toList();
+                } finally {
+                  safeSetState(() {
+                    _model.isDataUploading_uploadD111 = false;
+                  });
+                }
+                if (selectedUploadedFiles.length != selectedMedia.length) {
+                  return;
+                }
+                final uploaded = selectedUploadedFiles.first;
+                if (uploaded.bytes == null || uploaded.bytes!.isEmpty) {
+                  return;
+                }
+                safeSetState(() {
+                  _model.uploadedLocalFile_uploadD111 = uploaded;
+                });
                 _model.tet = await PostFilesCall.call(
                   access: currentAuthenticationToken,
-                  content: _model.uploadedLocalFile_uploadD111,
+                  content: uploaded,
                 );
-                FFAppState().addToPhotos(getJsonField(
-                  (_model.tet?.jsonBody ?? ''),
-                  r'''$[0]''',
-                ));
+                if (!(_model.tet?.succeeded ?? false)) {
+                  safeSetState(() {});
+                  return;
+                }
+                final body = _model.tet?.jsonBody;
+                if (body == null) {
+                  safeSetState(() {});
+                  return;
+                }
+                final firstItem = getJsonField(body, r'''$[0]''');
+                final url =
+                    getJsonField(firstItem, r'''$.url''')?.toString() ?? '';
+                if (firstItem == null || url.isEmpty) {
+                  safeSetState(() {});
+                  return;
+                }
+                FFAppState().addToPhotos(firstItem);
                 FFAppState().update(() {});
                 safeSetState(() {});
               },
@@ -1122,18 +1152,60 @@ Container(
               hoverColor: Colors.transparent,
               highlightColor: Colors.transparent,
               onTap: () async {
-                await requestPermission(microphonePermission);
-                _model.rer = await actions.pickCameraVideo();
-                _model.asas = await PostFilesCall.call(
-                  access: currentAuthenticationToken,
-                  content: _model.rer,
-                );
-                FFAppState().addToPhotos(getJsonField(
-                  (_model.asas?.jsonBody ?? ''),
-                  r'''$[0]''',
-                ));
-                FFAppState().update(() {});
-                safeSetState(() {});
+                try {
+                  await requestPermission(cameraPermission);
+                  await requestPermission(microphonePermission);
+                  _model.rer = await actions.pickCameraVideo();
+
+                  final videoFile = _model.rer;
+                  if (videoFile == null ||
+                      videoFile.bytes == null ||
+                      videoFile.bytes!.isEmpty) {
+                    safeSetState(() {});
+                    return;
+                  }
+
+                  // После сжатия держим оверлей до завершения загрузки.
+                  FFAppState().update(() {
+                    FFAppState().videoAttachmentUploadBusy = true;
+                    FFAppState().videoAttachmentUploadPhase = 'upload';
+                  });
+
+                  _model.asas = await PostFilesCall.call(
+                    access: currentAuthenticationToken,
+                    content: videoFile,
+                  );
+                  if (!(_model.asas?.succeeded ?? false)) {
+                    safeSetState(() {});
+                    return;
+                  }
+
+                  FFAppState().update(() {
+                    FFAppState().videoAttachmentUploadPhase = 'save';
+                  });
+
+                  final body = _model.asas?.jsonBody;
+                  if (body == null) {
+                    safeSetState(() {});
+                    return;
+                  }
+                  final firstItem = getJsonField(body, r'''$[0]''');
+                  final url =
+                      getJsonField(firstItem, r'''$.url''')?.toString() ?? '';
+                  if (firstItem == null || url.isEmpty) {
+                    safeSetState(() {});
+                    return;
+                  }
+                  FFAppState().addToPhotos(firstItem);
+                  FFAppState().update(() {});
+                  safeSetState(() {});
+                } finally {
+                  FFAppState().update(() {
+                    FFAppState().videoAttachmentUploadBusy = false;
+                    FFAppState().videoAttachmentUploadPhase = '';
+                    FFAppState().videoAttachmentCompressProgress = 0.0;
+                  });
+                }
               },
               child: Container(
                 width: MediaQuery.sizeOf(context).width * 0.4,
@@ -1210,106 +1282,153 @@ Container(
                     mainAxisSize: MainAxisSize.max,
                     children: List.generate(files.length, (filesIndex) {
                       final filesItem = files[filesIndex];
+                      final url = getJsonField(filesItem, r'''$.url''')
+                              ?.toString() ??
+                          '';
+                      final isVideo =
+                          (functions.getFileExtension(url) == 'MOV') ||
+                              (functions.getFileExtension(url) == 'mp4');
                       return Stack(
                         children: [
                           Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                                EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
                             child: Container(
-                              width: MediaQuery.sizeOf(context).width * 0.4,
-                              height: MediaQuery.sizeOf(context).height * 0.2,
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.0),
                                 border: Border.all(
-                                  color:
-                                      FlutterFlowTheme.of(context).secondary,
+                                  color: FlutterFlowTheme.of(context).secondary,
                                 ),
                               ),
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  await Navigator.push(
-                                    context,
-                                    PageTransition(
-                                      type: PageTransitionType.fade,
-                                      child: FlutterFlowExpandedImageView(
-                                        image: Image.network(
-                                          'https://app.etry.kz${getJsonField(
-                                            filesItem,
-                                            r'''$.url''',
-                                          ).toString()}',
-                                          fit: BoxFit.contain,
+                              child: isVideo
+                                  ? Align(
+                                      alignment: AlignmentDirectional(0, 0),
+                                      child: InkWell(
+                                        splashColor: Colors.transparent,
+                                        focusColor: Colors.transparent,
+                                        hoverColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        onTap: () async {
+                                          context.pushNamed(
+                                            VideoPlayerWidget.routeName,
+                                            queryParameters: {
+                                              'url': serializeParam(
+                                                url,
+                                                ParamType.String,
+                                              ),
+                                            }.withoutNulls,
+                                          );
+                                        },
+                                        child: Container(
+                                          width: MediaQuery.sizeOf(context).width *
+                                              0.3,
+                                          height:
+                                              MediaQuery.sizeOf(context).height *
+                                                  0.15,
+                                          child: Stack(
+                                            children: [
+                                              FlutterFlowVideoPlayer(
+                                                path: 'https://app.etry.kz$url',
+                                                videoType: VideoType.network,
+                                                width:
+                                                    MediaQuery.sizeOf(context).width *
+                                                        0.3,
+                                                height:
+                                                    MediaQuery.sizeOf(context).height *
+                                                        0.15,
+                                                autoPlay: false,
+                                                looping: false,
+                                                showControls: false,
+                                                allowFullScreen: false,
+                                                allowPlaybackSpeedMenu: false,
+                                                lazyLoad: false,
+                                                pauseOnNavigate: false,
+                                              ),
+                                              Align(
+                                                alignment: AlignmentDirectional(0, 0),
+                                                child: Icon(
+                                                  Icons.play_arrow,
+                                                  color: FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                                  size: 40.0,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                        allowRotation: false,
-                                        tag:
-                                            'https://app.etry.kz${getJsonField(
-                                          filesItem,
-                                          r'''$.url''',
-                                        ).toString()}',
-                                        useHeroAnimation: true,
+                                      ),
+                                    )
+                                  : InkWell(
+                                      splashColor: Colors.transparent,
+                                      focusColor: Colors.transparent,
+                                      hoverColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      onTap: () async {
+                                        await Navigator.push(
+                                          context,
+                                          PageTransition(
+                                            type: PageTransitionType.fade,
+                                            child: FlutterFlowExpandedImageView(
+                                              image: Image.network(
+                                                'https://app.etry.kz$url',
+                                                fit: BoxFit.contain,
+                                              ),
+                                              allowRotation: false,
+                                              tag: 'https://app.etry.kz$url',
+                                              useHeroAnimation: true,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Hero(
+                                        tag: 'https://app.etry.kz$url',
+                                        transitionOnUserGestures: true,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          child: Image.network(
+                                            'https://app.etry.kz$url',
+                                            width: MediaQuery.sizeOf(context).width *
+                                                0.3,
+                                            height:
+                                                MediaQuery.sizeOf(context).height *
+                                                    0.15,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  );
-                                },
-                                child: Hero(
-                                  tag: 'https://app.etry.kz${getJsonField(
-                                    filesItem,
-                                    r'''$.url''',
-                                  ).toString()}',
-                                  transitionOnUserGestures: true,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Image.network(
-                                      'https://app.etry.kz${getJsonField(
-                                        filesItem,
-                                        r'''$.url''',
-                                      ).toString()}',
-                                      width:
-                                          MediaQuery.sizeOf(context).width *
-                                              0.4,
-                                      height:
-                                          MediaQuery.sizeOf(context).height *
-                                              0.2,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ),
                             ),
                           ),
                           Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(155, 0, 0, 0),
-                            child: Container(
-                              width: MediaQuery.sizeOf(context).width * 0.05,
-                              height:
-                                  MediaQuery.sizeOf(context).height * 0.025,
-                              decoration: BoxDecoration(),
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                focusColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () async {
-                                  _model
-                                      .removeAtIndexFromPhotos123(filesIndex);
-                                  safeSetState(() {});
-                                },
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                115.0, 0.0, 0.0, 0.0),
+                            child: InkWell(
+                              splashColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              onTap: () async {
+                                _model.removeAtIndexFromPhotos123(filesIndex);
+                                safeSetState(() {});
+                              },
+                              child: Container(
+                                width: MediaQuery.sizeOf(context).width * 0.05,
+                                height:
+                                    MediaQuery.sizeOf(context).height * 0.025,
+                                decoration: BoxDecoration(),
                                 child: Icon(
                                   Icons.close,
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryText,
-                                  size: 24,
+                                  color:
+                                      FlutterFlowTheme.of(context).secondaryText,
+                                  size: 24.0,
                                 ),
                               ),
                             ),
                           ),
                         ],
                       );
-                    }),
+                    }).divide(SizedBox(width: 5.0)),
                   );
                 },
               ),
@@ -1323,56 +1442,86 @@ Container(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: List.generate(fotki.length, (fotkiIndex) {
                         final fotkiItem = fotki[fotkiIndex];
+                        final url = getJsonField(fotkiItem, r'''$.url''')
+                                ?.toString() ??
+                            '';
+                        final isVideo =
+                            (functions.getFileExtension(url) == 'MOV') ||
+                                (functions.getFileExtension(url) == 'mp4');
                         return Stack(
                           children: [
                             Padding(
-                              padding:
-                                  EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                              padding: EdgeInsetsDirectional.fromSTEB(
+                                  0.0, 10.0, 0.0, 0.0),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
-                                    color: FlutterFlowTheme.of(context)
-                                        .secondary,
+                                    color: FlutterFlowTheme.of(context).secondary,
                                   ),
                                 ),
-                                child: Builder(
-                                  builder: (context) {
-                                    if ((functions.getFileExtension(
-                                                getJsonField(
-                                              fotkiItem,
-                                              r'''$.url''',
-                                            ).toString()) ==
-                                            'MOV') ||
-                                        (functions.getFileExtension(
-                                                getJsonField(
-                                              fotkiItem,
-                                              r'''$.url''',
-                                            ).toString()) ==
-                                            'mp4')) {
-                                      return FlutterFlowVideoPlayer(
-                                        path:
-                                            'https://app.etry.kz${getJsonField(
-                                          fotkiItem,
-                                          r'''$.url''',
-                                        ).toString()}',
-                                        videoType: VideoType.network,
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                                0.4,
-                                        height: MediaQuery.sizeOf(context)
-                                                .height *
-                                            0.15,
-                                        autoPlay: false,
-                                        looping: false,
-                                        showControls: false,
-                                        allowFullScreen: false,
-                                        allowPlaybackSpeedMenu: false,
-                                        lazyLoad: true,
-                                        pauseOnNavigate: false,
-                                      );
-                                    } else {
-                                      return InkWell(
+                                child: isVideo
+                                    ? Align(
+                                        alignment: AlignmentDirectional(0, 0),
+                                        child: InkWell(
+                                          splashColor: Colors.transparent,
+                                          focusColor: Colors.transparent,
+                                          hoverColor: Colors.transparent,
+                                          highlightColor: Colors.transparent,
+                                          onTap: () async {
+                                            context.pushNamed(
+                                              VideoPlayerWidget.routeName,
+                                              queryParameters: {
+                                                'url': serializeParam(
+                                                  url,
+                                                  ParamType.String,
+                                                ),
+                                              }.withoutNulls,
+                                            );
+                                          },
+                                          child: Container(
+                                            width:
+                                                MediaQuery.sizeOf(context).width *
+                                                    0.3,
+                                            height:
+                                                MediaQuery.sizeOf(context).height *
+                                                    0.15,
+                                            child: Stack(
+                                              children: [
+                                                FlutterFlowVideoPlayer(
+                                                  path: 'https://app.etry.kz$url',
+                                                  videoType: VideoType.network,
+                                                  width: MediaQuery.sizeOf(context)
+                                                          .width *
+                                                      0.3,
+                                                  height: MediaQuery.sizeOf(context)
+                                                          .height *
+                                                      0.15,
+                                                  autoPlay: false,
+                                                  looping: false,
+                                                  showControls: false,
+                                                  allowFullScreen: false,
+                                                  allowPlaybackSpeedMenu: false,
+                                                  lazyLoad: false,
+                                                  pauseOnNavigate: false,
+                                                ),
+                                                Align(
+                                                  alignment:
+                                                      AlignmentDirectional(0, 0),
+                                                  child: Icon(
+                                                    Icons.play_arrow,
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryText,
+                                                    size: 40.0,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : InkWell(
                                         splashColor: Colors.transparent,
                                         focusColor: Colors.transparent,
                                         hoverColor: Colors.transparent,
@@ -1382,70 +1531,49 @@ Container(
                                             context,
                                             PageTransition(
                                               type: PageTransitionType.fade,
-                                              child:
-                                                  FlutterFlowExpandedImageView(
+                                              child: FlutterFlowExpandedImageView(
                                                 image: Image.network(
-                                                  'https://app.etry.kz${getJsonField(
-                                                    fotkiItem,
-                                                    r'''$.url''',
-                                                  ).toString()}',
+                                                  'https://app.etry.kz$url',
                                                   fit: BoxFit.contain,
                                                 ),
                                                 allowRotation: false,
-                                                tag:
-                                                    'https://app.etry.kz${getJsonField(
-                                                  fotkiItem,
-                                                  r'''$.url''',
-                                                ).toString()}',
+                                                tag: 'https://app.etry.kz$url',
                                                 useHeroAnimation: true,
                                               ),
                                             ),
                                           );
                                         },
                                         child: Hero(
-                                          tag:
-                                              'https://app.etry.kz${getJsonField(
-                                            fotkiItem,
-                                            r'''$.url''',
-                                          ).toString()}',
+                                          tag: 'https://app.etry.kz$url',
                                           transitionOnUserGestures: true,
                                           child: ClipRRect(
                                             borderRadius:
-                                                BorderRadius.circular(8),
+                                                BorderRadius.circular(8.0),
                                             child: Image.network(
-                                              'https://app.etry.kz${getJsonField(
-                                                fotkiItem,
-                                                r'''$.url''',
-                                              ).toString()}',
+                                              'https://app.etry.kz$url',
                                               width:
-                                                  MediaQuery.sizeOf(context)
-                                                          .width *
-                                                      0.4,
-                                              height:
-                                                  MediaQuery.sizeOf(context)
-                                                          .height *
-                                                      0.2,
+                                                  MediaQuery.sizeOf(context).width *
+                                                      0.3,
+                                              height: MediaQuery.sizeOf(context)
+                                                      .height *
+                                                  0.15,
                                               fit: BoxFit.cover,
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }
-                                  },
-                                ),
+                                      ),
                               ),
                             ),
                             Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
-                                  155, 0, 0, 0),
+                                  115.0, 0.0, 0.0, 0.0),
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 focusColor: Colors.transparent,
                                 hoverColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
                                 onTap: () async {
-                                  FFAppState()
-                                      .removeAtIndexFromPhotos(fotkiIndex);
+                                  FFAppState().removeAtIndexFromPhotos(fotkiIndex);
                                   safeSetState(() {});
                                 },
                                 child: Container(
@@ -1458,14 +1586,14 @@ Container(
                                     Icons.close,
                                     color: FlutterFlowTheme.of(context)
                                         .secondaryText,
-                                    size: 24,
+                                    size: 24.0,
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         );
-                      }).divide(SizedBox(width: 5)),
+                      }).divide(SizedBox(width: 5.0)),
                     );
                   },
                 ),
@@ -1556,7 +1684,10 @@ Container(
                                                 alignment: const AlignmentDirectional(
                                                     0.0, 0.0),
                                                 child: Text(
-                                                  'ТМЦ',
+                                                  FFLocalizations.of(context).getVariableText(
+                                                    ruText: 'ТМЦ',
+                                                    kkText: 'ТМҚ',
+                                                  ),
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
@@ -1602,7 +1733,10 @@ Container(
                                                 alignment: const AlignmentDirectional(
                                                     0.0, 0.0),
                                                 child: Text(
-                                                  'Работы',
+                                                  FFLocalizations.of(context).getVariableText(
+                                                    ruText: 'Работы',
+                                                    kkText: 'Жұмыстар',
+                                                  ),
                                                   style: FlutterFlowTheme.of(
                                                           context)
                                                       .bodyMedium
@@ -1700,7 +1834,10 @@ Container(
                                                                             0.0,
                                                                             0.0),
                                                                     child: Text(
-                                                                      'Добавить материал',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Добавить материал',
+                                                                        kkText: 'Материал қосу',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -1750,7 +1887,10 @@ Container(
                                                                           .start,
                                                                   children: [
                                                                     Text(
-                                                                      'Название ТМЦ',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Название ТМЦ',
+                                                                        kkText: 'ТМҚ атауы',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -1873,7 +2013,10 @@ Container(
                                                                           .start,
                                                                   children: [
                                                                     Text(
-                                                                      'Артикул',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Артикул',
+                                                                        kkText: 'Артикул',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -1996,7 +2139,10 @@ Container(
                                                                           .start,
                                                                   children: [
                                                                     Text(
-                                                                      'Количество ТМЦ',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Количество ТМЦ',
+                                                                        kkText: 'ТМҚ саны',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2208,7 +2354,10 @@ Container(
                                                                           24.0,
                                                                     ),
                                                                     Text(
-                                                                      'Добавить ТМЦ',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Добавить ТМЦ',
+                                                                        kkText: 'ТМҚ қосу',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2275,7 +2424,10 @@ Container(
                                                                         0.0,
                                                                         10.0),
                                                             child: Text(
-                                                              'Список материалов',
+                                                              FFLocalizations.of(context).getVariableText(
+                                                                ruText: 'Список материалов',
+                                                                kkText: 'Материалдар тізімі',
+                                                              ),
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium
@@ -2523,7 +2675,10 @@ Container(
                                                                             0.0,
                                                                             0.0),
                                                                     child: Text(
-                                                                      'Добавить работу',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Добавить работу',
+                                                                        kkText: 'Жұмыс қосу',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2573,7 +2728,10 @@ Container(
                                                                           .start,
                                                                   children: [
                                                                     Text(
-                                                                      'Название работы',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Название работы',
+                                                                        kkText: 'Жұмыс атауы',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2696,7 +2854,10 @@ Container(
                                                                           .start,
                                                                   children: [
                                                                     Text(
-                                                                      'Количество работы',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Количество работы',
+                                                                        kkText: 'Жұмыс саны',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2912,7 +3073,10 @@ Container(
                                                                           24.0,
                                                                     ),
                                                                     Text(
-                                                                      'Добавить работу',
+                                                                      FFLocalizations.of(context).getVariableText(
+                                                                        ruText: 'Добавить работу',
+                                                                        kkText: 'Жұмыс қосу',
+                                                                      ),
                                                                       style: FlutterFlowTheme.of(
                                                                               context)
                                                                           .bodyMedium
@@ -2978,7 +3142,10 @@ Container(
                                                                         0.0,
                                                                         10.0),
                                                             child: Text(
-                                                              'Список работ',
+                                                              FFLocalizations.of(context).getVariableText(
+                                                                ruText: 'Список работ',
+                                                                kkText: 'Жұмыстар тізімі',
+                                                              ),
                                                               style: FlutterFlowTheme
                                                                       .of(context)
                                                                   .bodyMedium
@@ -3191,7 +3358,10 @@ Container(
                                                       .fromSTEB(
                                                           15.0, 0.0, 0.0, 0.0),
                                                   child: Text(
-                                                    'Приоритет',
+                                                    FFLocalizations.of(context).getVariableText(
+                                                      ruText: 'Приоритет',
+                                                      kkText: 'Басымдық',
+                                                    ),
                                                     style: FlutterFlowTheme.of(
                                                             context)
                                                         .bodyMedium
@@ -3348,7 +3518,7 @@ Container(
                                     widget.ispravil,
                                     false,
                                   ),
-                                  priorityRequest: _model.priority,
+                                  criticality: _model.priority,
                                 ).toMap());
                               if (widget.equipId == null && payloadMap is Map<String, dynamic>) {
                                 payloadMap['area'] = _model.selectedAreaId;
@@ -3498,6 +3668,76 @@ Container(
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                ),
+              if (FFAppState().videoAttachmentUploadBusy)
+                Positioned.fill(
+                  child: Material(
+                    color: Colors.grey.shade800.withValues(alpha: 0.92),
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (FFAppState().videoAttachmentUploadPhase ==
+                                'compress')
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 12.0),
+                                child: SizedBox(
+                                  width:
+                                      MediaQuery.sizeOf(context).width * 0.65,
+                                  child: LinearProgressIndicator(
+                                    value: (FFAppState()
+                                                .videoAttachmentCompressProgress >
+                                            0.0)
+                                        ? FFAppState()
+                                            .videoAttachmentCompressProgress
+                                        : null,
+                                    backgroundColor:
+                                        FlutterFlowTheme.of(context).alternate,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      FlutterFlowTheme.of(context).primary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 0.0, 0.0, 12.0),
+                                child: SizedBox(
+                                  width: 40.0,
+                                  height: 40.0,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      FlutterFlowTheme.of(context).primary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            Text(
+                              FFAppState().videoAttachmentUploadPhase ==
+                                      'compress'
+                                  ? 'Сжатие видео…'
+                                  : (FFAppState().videoAttachmentUploadPhase ==
+                                          'save'
+                                      ? 'Сохранение…'
+                                      : 'Загрузка…'),
+                              textAlign: TextAlign.center,
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'SFProText',
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

@@ -1,9 +1,10 @@
+import 'dart:async';
+
 import 'package:Etry/api/firebase_api.dart';
 import 'package:Etry/components/scan_equipment_page.dart';
 import 'package:app_badger/app_badger.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:appmetrica_plugin/appmetrica_plugin.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import '/auth/custom_auth/auth_util.dart';
 import '/backend/api_requests/api_calls.dart';
 import '/backend/schema/structs/index.dart';
@@ -36,11 +37,28 @@ class DefectsWidget extends StatefulWidget {
 class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserver {
   late DefectsModel _model;
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  WebSocketChannel? _channel;
-  
-  // Плагин уведомлений
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  WebSocketChannel? _wsChannel;
+  StreamSubscription<dynamic>? _wsSubscription;
+
+  void _connectWebSocket() {
+    final token = currentAuthenticationToken;
+    if (token == null || token.isEmpty) return;
+    _wsSubscription?.cancel();
+    _wsSubscription = null;
+    try {
+      _wsChannel?.sink.close();
+    } catch (_) {}
+    _wsChannel = null;
+    try {
+      final uri = Uri.parse('wss://app.etry.kz/ws/notification/')
+          .replace(queryParameters: <String, String>{'token': token});
+      _wsChannel = WebSocketChannel.connect(uri);
+      _wsSubscription = _wsChannel!.stream.listen((_) {
+        if (mounted) _refreshDefectsList();
+      });
+    } catch (_) {}
+  }
+
   @override
   void initState() {
     super.initState();
@@ -48,24 +66,13 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
     WidgetsBinding.instance.addObserver(this); 
     
     FirebaseApi().initNotifications(context);
-    _initLocalNotifications(); // Инициализация локальных уведомлений
     _model = createModel(context, () => DefectsModel());
 
     // On page load action.
     SchedulerBinding.instance.addPostFrameCallback((_) async {
       await _initialAuthAndLoad();
-      // Запускаем WebSocket ПОСЛЕ загрузки токена
       _connectWebSocket();
       onUserLogin();
-      
-
-
-
-
-      
-  
-
-
     });
     
   
@@ -75,11 +82,13 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
 
   @override
   void dispose() {
-    // Важно: закрываем соединение при уходе со страницы
-    _channel?.sink.close();
-    // Убираем наблюдателя
     WidgetsBinding.instance.removeObserver(this);
-    
+    _wsSubscription?.cancel();
+    _wsSubscription = null;
+    try {
+      _wsChannel?.sink.close();
+    } catch (_) {}
+    _wsChannel = null;
     _model.dispose();
     super.dispose();
   }
@@ -95,15 +104,19 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
       access: currentAuthenticationToken,
     );
   AppBadger.removeBadge();
-      // Можно также переподключить сокет, если он умер
-      if (_channel?.closeCode != null) {
-         _connectWebSocket();
-      }
+      _connectWebSocket();
     }
   }
 
   // --- Логика Инициализации ---
   Future<void> _initialAuthAndLoad() async {
+      if (mounted && _model.defectsItems.isEmpty) {
+        safeSetState(() {
+          _model.isInitialLoading = true;
+          _model.loadErrorMessage = null;
+        });
+      }
+      try {
       _model.authResponse1 = await AuthCall.call(
         username: FFAppState().rememberEmail,
         password: FFAppState().rememberPassword,
@@ -115,94 +128,27 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
           (_model.authResponse1?.jsonBody ?? ''),
         ),
       );
-      _refreshDefectsList();
+      FFAppState().clearDefectCache();
+      await _loadDefects(reset: true);
       ViewedNotificationCall.call(
       access: currentAuthenticationToken,
     );
   AppBadger.removeBadge();
-      await _model.waitForApiRequestCompleted();
-  }
-
-  // --- Логика WebSocket ---
-  void _connectWebSocket() {
-    if (currentAuthenticationToken == null) return;
-
-    try {
-      // Закрываем старый, если был
-      _channel?.sink.close();
-
-      print('Connecting WebSocket...');
-      _channel = WebSocketChannel.connect(
-        Uri.parse('wss://app.etry.kz/ws/notification/?token=$currentAuthenticationToken'),
-      );
-
-      _channel!.stream.listen(
-        (message) {
-          print('WS Message: $message');
-          final decodedMessage = jsonDecode(message);
-          
-          // Проверяем структуру (адаптируйте под ваш JSON)
-          final msgData = decodedMessage['message'] ?? {}; 
-          final title = msgData['title'] ?? 'Обновление';
-          final description = msgData['description'] ?? 'Статус заявки изменен';
-
-          // 1. Показываем уведомление (если нужно)
-          _showLocalNotification(title, description);
-
-          // 2. Показываем SnackBar
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('$title: $description'),
-                duration: const Duration(seconds: 2),
-                backgroundColor: FlutterFlowTheme.of(context).primary,
-                action: SnackBarAction(
-                  label: 'Обновить',
-                  textColor: Colors.white,
-                  onPressed: _refreshDefectsList,
-                ),
-              ),
-            );
-          }
-
-          // 3. ОБНОВЛЯЕМ СПИСОК (Самое важное)
-          _refreshDefectsList();
-        },
-        onError: (error) {
-          print('WebSocket Error: $error');
-          // Простая логика реконнекта через 5 секунд
-          Future.delayed(Duration(seconds: 5), () {
-             if (mounted) _connectWebSocket(); 
+      _connectWebSocket();
+      } finally {
+        if (mounted) {
+          safeSetState(() {
+            _model.isInitialLoading = false;
           });
-        },
-        onDone: () {
-          print('WebSocket Closed');
-        },
-      );
-    } catch (e) {
-      print('WebSocket Connection Failed: $e');
-    }
+        }
+      }
   }
 
   // --- Функция обновления списка (UI) ---
   void _refreshDefectsList() {
     if (!mounted) return;
-    safeSetState(() {
-      FFAppState().clearDefectCache();
-      _model.apiRequestCompleted = false; // Это заставит FutureBuilder пересоздаться
-    });
-  }
-  
-  // --- Local Notifications Init ---
-  Future<void> _initLocalNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher'); // Стандартная иконка Flutter
-
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
-
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    FFAppState().clearDefectCache();
+    _loadDefects(reset: true);
   }
 
  Future onUserLogin() async {
@@ -242,23 +188,6 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
   print('AppMetrica: Profile updated for $userId ($fullName)');
 }
 
-  Future<void> _showLocalNotification(String title, String description) async {
-    const AndroidNotificationDetails androidDetails =
-      AndroidNotificationDetails(
-        'defect_updates', 
-        'Defect Updates',
-        importance: Importance.max,
-        priority: Priority.high,
-      );
-    const NotificationDetails details = NotificationDetails(android: androidDetails);
-    await flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecond, 
-      title, 
-      description, 
-      details
-    );
-  }
-
   // ... [ОСТАЛЬНЫЕ ВАШИ МЕТОДЫ: _reLoginAndRefreshToken, _getDefectsWithInterceptor] ...
   // Вставьте сюда ваши методы _reLoginAndRefreshToken и _getDefectsWithInterceptor без изменений
   
@@ -283,7 +212,17 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
     }
   }
 
-  Future<ApiCallResponse> _getDefectsWithInterceptor() async {
+  String _defectListDateQuery() {
+    if (_model.date == null) return '';
+    final s = dateTimeFormat(
+      'y-MM-dd',
+      _model.date,
+      locale: FFLocalizations.of(context).languageCode,
+    );
+    return '&date[]=$s&date[]=$s';
+  }
+
+  Future<ApiCallResponse> _getDefectsWithInterceptor({required int page}) async {
      // ... ваш код ...
      Future<ApiCallResponse> makeRequest() async {
       return GetDefectsAPICall.call(
@@ -291,10 +230,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
         search: _model.textController.text != ''
             ? '&search=${_model.textController.text}'
             : '',
-        page: _model.page.toString(),
-        date: _model.date != null
-            ? '&date[]=${dateTimeFormat("y-MM-dd", _model.date, locale: FFLocalizations.of(context).languageCode)}'
-            : '',
+        page: page.toString(),
+        date: _defectListDateQuery(),
         department: _model.filialValue != null && _model.filialValue != ''
             ? '&area=${_model.filialValue}'
             : '',
@@ -307,6 +244,12 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
         type: _model.typeValue != null && _model.typeValue != ''
             ? '&type=${_model.typeValue}'
             : '',
+        criticality: (_model.criticalityFilter != null &&
+                _model.criticalityFilter!.isNotEmpty)
+            ? '&criticality=${_model.criticalityFilter}'
+            : '',
+        myRequest:
+            _model.myRequestsOnly ? '&my_request=true' : '',
       );
     }
 
@@ -320,12 +263,134 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
     return response;
   }
 
+  Future<void> _loadDefects({bool reset = false}) async {
+    if ((reset && _model.isInitialLoading) ||
+        (!reset && _model.isLoadingMore)) {
+      return;
+    }
+
+    final nextPage = reset ? 1 : (_model.page + 1);
+    if (!reset && nextPage > _model.totalPages) {
+      return;
+    }
+
+    safeSetState(() {
+      _model.loadErrorMessage = null;
+      if (reset) {
+        _model.isInitialLoading = true;
+      } else {
+        _model.isLoadingMore = true;
+      }
+    });
+
+    try {
+      final response = await _getDefectsWithInterceptor(page: nextPage);
+      if (!mounted) return;
+
+      final pageItems =
+          getJsonField(response.jsonBody, r'''$.data''').toList();
+      final totalPages = valueOrDefault<int>(
+        castToType<int>(
+          getJsonField(
+            response.jsonBody,
+            r'''$.pagination.num_pages''',
+          ),
+        ),
+        1,
+      );
+
+      final existingIds = reset
+          ? <String>{}
+          : _model.defectsItems
+              .map((item) => getJsonField(item, r'''$.id''')?.toString())
+              .whereType<String>()
+              .toSet();
+      final mergedItems = reset
+          ? List<dynamic>.from(pageItems)
+          : [
+              ..._model.defectsItems,
+              ...pageItems.where((item) {
+                final id = getJsonField(item, r'''$.id''')?.toString();
+                return id == null || !existingIds.contains(id);
+              }),
+            ];
+
+      safeSetState(() {
+        _model.page = nextPage;
+        _model.totalPages = totalPages;
+        _model.defectsItems = mergedItems;
+      });
+    } catch (_) {
+      if (mounted) {
+        safeSetState(() {
+          _model.loadErrorMessage =
+              FFLocalizations.of(context).getVariableText(
+            ruText: 'Ошибка загрузки заявок',
+            kkText: 'Өтінімдерді жүктеу қатесі',
+          );
+        });
+      }
+    } finally {
+      if (mounted) {
+        safeSetState(() {
+          _model.isInitialLoading = false;
+          _model.isLoadingMore = false;
+        });
+      }
+    }
+  }
+
   String _formatSlaDuration(Duration d) {
     if (d.inHours > 0) {
       final mins = d.inMinutes.remainder(60);
       return '${d.inHours}ч ${mins} мин';
     }
     return '${d.inMinutes} мин';
+  }
+
+  static String? _nonEmptyField(dynamic v) {
+    if (v == null) return null;
+    final t = v.toString().trim();
+    if (t.isEmpty || t == 'null') return null;
+    return t;
+  }
+
+  /// Локация: [object_info…] · [area_info.title], из вложенного equipment или корня заявки.
+  String _defectAreaLocationText(dynamic item) {
+    dynamic areaNode =
+        getJsonField(item, r'''$.equipment_info.area_info''');
+    final eqNull = areaNode == null ||
+        areaNode.toString() == 'null' ||
+        (areaNode is Map && areaNode.isEmpty);
+    if (eqNull) {
+      areaNode = getJsonField(item, r'''$.area_info''');
+    }
+    if (areaNode == null || areaNode.toString() == 'null') {
+      return '';
+    }
+    if (areaNode is! Map) {
+      return '';
+    }
+    final m = Map<String, dynamic>.from(areaNode);
+
+    final areaTitle = _nonEmptyField(m['title']);
+    String? objectTitle;
+    final oi = m['object_info'];
+    if (oi is List) {
+      for (final e in oi) {
+        if (e is Map) {
+          objectTitle = _nonEmptyField(e['title']);
+          if (objectTitle != null) break;
+        }
+      }
+    } else if (oi is Map) {
+      objectTitle = _nonEmptyField(oi['title']);
+    }
+
+    final parts = <String>[];
+    if (objectTitle != null) parts.add(objectTitle);
+    if (areaTitle != null) parts.add(areaTitle);
+    return parts.join(' · ');
   }
 
   Widget _buildSlaBadge(dynamic defectsItem) {
@@ -395,66 +460,33 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     context.watch<FFAppState>();
 
-    final defectsUniqueQueryKey = [
-      _model.page.toString(),
-      _model.date?.millisecondsSinceEpoch.toString() ?? '',
-      _model.statusValue ?? '',
-      _model.typeValue ?? '',
-      _model.filialValue ?? '',
-      _model.contractorValue ?? '',
-      _model.textController?.text ?? '',
-    ].join('|');
-
-    return FutureBuilder<ApiCallResponse>(
-      // ИЗМЕНЕНИЕ ЗДЕСЬ: используем нашу обертку вместо прямого вызова
-      future: FFAppState().defect(
-        uniqueQueryKey: defectsUniqueQueryKey,
-        requestFn: () => _getDefectsWithInterceptor(),
-      )
-      .then((result) {
-        _model.apiRequestCompleted = true;
-        return result;
-      }),
-      builder: (context, snapshot) {
-        // Customize what your widget looks like when it's loading.
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-            body: Center(
-              child: SizedBox(
-                width: 50.0,
-                height: 50.0,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    FlutterFlowTheme.of(context).primary,
-                  ),
-                ),
+    if (_model.isInitialLoading && _model.defectsItems.isEmpty) {
+      return Scaffold(
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        body: Center(
+          child: SizedBox(
+            width: 50.0,
+            height: 50.0,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                FlutterFlowTheme.of(context).primary,
               ),
             ),
-          );
-        }
-        final defectsGetDefectsAPIResponse = snapshot.data!;
-        final defectsPageItems = getJsonField(
-          defectsGetDefectsAPIResponse.jsonBody,
-          r'''$.data''',
-        ).toList();
-        final defectsTotalPages = valueOrDefault<int>(
-          castToType<int>(
-            getJsonField(
-              defectsGetDefectsAPIResponse.jsonBody,
-              r'''$.pagination.num_pages''',
-            ),
           ),
-          1,
-        );
-        _model.applyDefectsPage(
-          uniqueKey: defectsUniqueQueryKey,
-          pageNumber: _model.page,
-          items: defectsPageItems,
-          totalPagesValue: defectsTotalPages,
-        );
+        ),
+      );
+    }
 
-        return GestureDetector(
+    if (_model.loadErrorMessage != null && _model.defectsItems.isEmpty) {
+      return Scaffold(
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        body: Center(
+          child: Text(_model.loadErrorMessage!),
+        ),
+      );
+    }
+
+    return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
             FocusManager.instance.primaryFocus?.unfocus();
@@ -496,11 +528,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                       '\"labeler\"',
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    safeSetState(() {
-                      FFAppState().clearDefectCache();
-                      _model.apiRequestCompleted = false;
-                    });
-                    await _model.waitForApiRequestCompleted();
+                    FFAppState().clearDefectCache();
+                    await _loadDefects(reset: true);
                   },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -623,14 +652,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                   _model.statusValueController
                                                       ?.reset();
                                                 });
-                                                safeSetState(() {
-                                                  FFAppState().clearDefectCache();
-                                                  _model.page = 1;
-                                                  _model.apiRequestCompleted =
-                                                      false;
-                                                });
-                                                await _model
-                                                    .waitForApiRequestCompleted();
+                                                FFAppState().clearDefectCache();
+                                                await _loadDefects(reset: true);
                                                 _model.isEdited = false;
                                                 safeSetState(() {});
                                               },
@@ -693,14 +716,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                             () async {
                                               _model.isEdited = true;
                                               safeSetState(() {});
-                                              safeSetState(() {
-                                                FFAppState().clearDefectCache();
-                                                _model.page = 1;
-                                                _model.apiRequestCompleted =
-                                                    false;
-                                              });
-                                              await _model
-                                                  .waitForApiRequestCompleted();
+                                              FFAppState().clearDefectCache();
+                                              await _loadDefects(reset: true);
                                             },
                                           ),
                                           textInputAction: TextInputAction.done,
@@ -776,15 +793,10 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                           ?.clear();
                                                       _model.isEdited = true;
                                                       safeSetState(() {});
-                                                      safeSetState(() {
-                                                        FFAppState()
-                                                            .clearDefectCache();
-                                                        _model.page = 1;
-                                                        _model.apiRequestCompleted =
-                                                            false;
-                                                      });
-                                                      await _model
-                                                          .waitForApiRequestCompleted();
+                                                      FFAppState()
+                                                          .clearDefectCache();
+                                                      await _loadDefects(
+                                                          reset: true);
                                                       safeSetState(() {});
                                                     },
                                                     child: Icon(
@@ -836,6 +848,48 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                         mainAxisAlignment:
                                             MainAxisAlignment.start,
                                         children: [
+                                          Padding(
+                                            padding:
+                                                const EdgeInsetsDirectional
+                                                    .only(start: 4.0, end: 8.0),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  FFLocalizations.of(context)
+                                                      .getVariableText(
+                                                    ruText: 'Мои заявки',
+                                                    kkText: 'Менің өтінімдерім',
+                                                  ),
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .bodySmall
+                                                      .override(
+                                                        fontFamily: 'SFProText',
+                                                        fontSize: 11.0,
+                                                        letterSpacing: 0.0,
+                                                      ),
+                                                ),
+                                                Switch(
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  value: _model.myRequestsOnly,
+                                                  onChanged: (v) async {
+                                                    safeSetState(() {
+                                                      _model.myRequestsOnly = v;
+                                                    });
+                                                    FFAppState()
+                                                        .clearDefectCache();
+                                                    await _loadDefects(
+                                                        reset: true);
+                                                    _model.isEdited = true;
+                                                    safeSetState(() {});
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                           InkWell(
                                             splashColor: Colors.transparent,
                                             focusColor: Colors.transparent,
@@ -928,14 +982,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                               _model.date = _model.datePicked;
                                               _model.isEdited = true;
                                               safeSetState(() {});
-                                              safeSetState(() {
-                                                FFAppState().clearDefectCache();
-                                                _model.page = 1;
-                                                _model.apiRequestCompleted =
-                                                    false;
-                                              });
-                                              await _model
-                                                  .waitForApiRequestCompleted();
+                                              FFAppState().clearDefectCache();
+                                              await _loadDefects(reset: true);
                                             },
                                             child: Container(
                                               width: MediaQuery.sizeOf(context)
@@ -1002,13 +1050,10 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                 FormFieldController<String>(null),
                                             options: List<String>.from([
                                               'open',
-                                              'contractor_appointed',
-                                              'contractor_accept',
                                               'at_performer',
-                                              'in_progress',
-                                              'postponed',
                                               'completed',
-                                              'closed'
+                                              'rejected',
+                                              'closed',
                                             ]),
                                             optionLabels: [
                                               FFLocalizations.of(context)
@@ -1018,28 +1063,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                               ),
                                               FFLocalizations.of(context)
                                                   .getVariableText(
-                                                ruText: 'Подрядчик назначен',
-                                                kkText: 'Мердігер тағайындалды',
-                                              ),
-                                              FFLocalizations.of(context)
-                                                  .getVariableText(
-                                                ruText: 'Принят подрядчиком',
-                                                kkText: 'Мердігер қабылдады',
-                                              ),
-                                              FFLocalizations.of(context)
-                                                  .getVariableText(
-                                                ruText: 'У исполнителя',
-                                                kkText: 'Орындаушыда',
-                                              ),
-                                              FFLocalizations.of(context)
-                                                  .getVariableText(
-                                                ruText: 'В работе',
-                                                kkText: 'Жұмыста',
-                                              ),
-                                              FFLocalizations.of(context)
-                                                  .getVariableText(
-                                                ruText: 'Отложена',
-                                                kkText: 'Кейінге қалдырылды',
+                                                ruText: 'Назначен исполнитель',
+                                                kkText: 'Орындаушы тағайындалды',
                                               ),
                                               FFLocalizations.of(context)
                                                   .getVariableText(
@@ -1048,21 +1073,20 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                               ),
                                               FFLocalizations.of(context)
                                                   .getVariableText(
+                                                ruText: 'Отклонена',
+                                                kkText: 'Қабылданбады',
+                                              ),
+                                              FFLocalizations.of(context)
+                                                  .getVariableText(
                                                 ruText: 'Закрыта',
                                                 kkText: 'Жабылды',
-                                              )
+                                              ),
                                             ],
                                             onChanged: (val) async {
                                               safeSetState(
                                                   () => _model.statusValue = val);
-                                              safeSetState(() {
-                                                FFAppState().clearDefectCache();
-                                                _model.page = 1;
-                                                _model.apiRequestCompleted =
-                                                    false;
-                                              });
-                                              await _model
-                                                  .waitForApiRequestCompleted();
+                                              FFAppState().clearDefectCache();
+                                              await _loadDefects(reset: true);
                                               _model.isEdited = true;
                                               safeSetState(() {});
                                             },
@@ -1102,6 +1126,91 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                             isSearchable: false,
                                             isMultiSelect: false,
                                           ),
+                                          FlutterFlowDropDown<String>(
+                                                controller: _model
+                                                        .criticalityFilterController ??=
+                                                    FormFieldController<String>(
+                                                        null),
+                                                options: const [
+                                                  '',
+                                                  'high',
+                                                  'medium',
+                                                  'low',
+                                                ],
+                                                optionLabels: [
+                                                  FFLocalizations.of(context)
+                                                      .getVariableText(
+                                                    ruText: 'Все',
+                                                    kkText: 'Барлығы',
+                                                  ),
+                                                  FFLocalizations.of(context)
+                                                      .getVariableText(
+                                                    ruText: 'Высокая',
+                                                    kkText: 'Жоғары',
+                                                  ),
+                                                  FFLocalizations.of(context)
+                                                      .getVariableText(
+                                                    ruText: 'Средняя',
+                                                    kkText: 'Орташа',
+                                                  ),
+                                                  FFLocalizations.of(context)
+                                                      .getVariableText(
+                                                    ruText: 'Низкая',
+                                                    kkText: 'Төмен',
+                                                  ),
+                                                ],
+                                                onChanged: (val) async {
+                                                  safeSetState(() {
+                                                    _model.criticalityFilter =
+                                                        (val == null ||
+                                                                val.isEmpty)
+                                                            ? null
+                                                            : val;
+                                                  });
+                                                  FFAppState()
+                                                      .clearDefectCache();
+                                                  await _loadDefects(
+                                                      reset: true);
+                                                  _model.isEdited = true;
+                                                  safeSetState(() {});
+                                                },
+                                                width: MediaQuery.sizeOf(context)
+                                                        .width *
+                                                    0.38,
+                                                height: 37.0,
+                                                textStyle:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily: 'SFProText',
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                hintText: FFLocalizations.of(
+                                                        context)
+                                                    .getVariableText(
+                                                  ruText: 'Критичность',
+                                                  kkText: 'Сынидық',
+                                                ),
+                                                icon: Icon(
+                                                  Icons
+                                                      .keyboard_arrow_down_rounded,
+                                                  size: 15.0,
+                                                ),
+                                                fillColor:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primaryBackground,
+                                                elevation: 2.0,
+                                                borderColor: Colors.transparent,
+                                                borderWidth: 0.0,
+                                                borderRadius: 8.0,
+                                                margin: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        8.0, 0.0, 12.0, 0.0),
+                                                hidesUnderline: true,
+                                                isOverButton: false,
+                                                isSearchable: false,
+                                                isMultiSelect: false,
+                                              ),
                                           FutureBuilder<ApiCallResponse>(
                                             future: GetAreaCall.call(
                                               access: currentAuthenticationToken,
@@ -1156,15 +1265,10 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                 onChanged: (val) async {
                                                   safeSetState(() =>
                                                       _model.filialValue = val);
-                                                  safeSetState(() {
-                                                    FFAppState()
-                                                        .clearDefectCache();
-                                                    _model.page = 1;
-                                                    _model.apiRequestCompleted =
-                                                        false;
-                                                  });
-                                                  await _model
-                                                      .waitForApiRequestCompleted();
+                                                  FFAppState()
+                                                      .clearDefectCache();
+                                                  await _loadDefects(
+                                                      reset: true);
                                                   _model.isEdited = true;
                                                   safeSetState(() {});
                                                 },
@@ -1262,15 +1366,10 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                 onChanged: (val) async {
                                                   safeSetState(() =>
                                                       _model.typeValue = val);
-                                                  safeSetState(() {
-                                                    FFAppState()
-                                                        .clearDefectCache();
-                                                    _model.page = 1;
-                                                    _model.apiRequestCompleted =
-                                                        false;
-                                                  });
-                                                  await _model
-                                                      .waitForApiRequestCompleted();
+                                                  FFAppState()
+                                                      .clearDefectCache();
+                                                  await _loadDefects(
+                                                      reset: true);
                                                   _model.isEdited = true;
                                                   safeSetState(() {});
                                                 },
@@ -1433,15 +1532,10 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                 onChanged: (val) async {
                                                   safeSetState(() => _model
                                                       .contractorValue = val);
-                                                  safeSetState(() {
-                                                    FFAppState()
-                                                        .clearDefectCache();
-                                                    _model.page = 1;
-                                                    _model.apiRequestCompleted =
-                                                        false;
-                                                  });
-                                                  await _model
-                                                      .waitForApiRequestCompleted();
+                                                  FFAppState()
+                                                      .clearDefectCache();
+                                                  await _loadDefects(
+                                                      reset: true);
                                                   _model.isEdited = true;
                                                   safeSetState(() {});
                                                 },
@@ -1498,6 +1592,8 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                       mainAxisSize: MainAxisSize.max,
                       children: List.generate(defects.length, (defectsIndex) {
                         final defectsItem = defects[defectsIndex];
+                        final defectLocationText =
+                            _defectAreaLocationText(defectsItem);
                         return Align(
                           alignment: AlignmentDirectional(0, 0),
                           child: Padding(
@@ -1700,86 +1796,54 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                                                                       ),
                                                                     ),
                                                                   ),
-                                                                  Container(
-                                                                    width: MediaQuery.sizeOf(
-                                                                                context)
-                                                                            .width *
-                                                                        0.85,
-                                                                    decoration:
-                                                                        BoxDecoration(),
-                                                                    child: Row(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .max,
-                                                                      children: [
-                                                                        Align(
-                                                                          alignment: AlignmentDirectional(
-                                                                              -1.0,
-                                                                              0.0),
-                                                                          child:
-                                                                              Icon(
-                                                                            Icons
-                                                                                .location_on_outlined,
-                                                                            color:
-                                                                                FlutterFlowTheme.of(context).primaryText,
-                                                                            size:
-                                                                                15.0,
+                                                                  if (defectLocationText
+                                                                      .isNotEmpty)
+                                                                    Container(
+                                                                      width: MediaQuery.sizeOf(
+                                                                                  context)
+                                                                              .width *
+                                                                          0.85,
+                                                                      decoration:
+                                                                          BoxDecoration(),
+                                                                      child: Row(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment
+                                                                                .start,
+                                                                        mainAxisSize:
+                                                                            MainAxisSize.max,
+                                                                        children: [
+                                                                          Padding(
+                                                                            padding: const EdgeInsetsDirectional.only(
+                                                                                top: 2.0),
+                                                                            child:
+                                                                                Icon(
+                                                                              Icons.location_on_outlined,
+                                                                              color: FlutterFlowTheme.of(context)
+                                                                                  .primaryText,
+                                                                              size: 15.0,
+                                                                            ),
                                                                           ),
-                                                                        ),
-                                                                        RichText(
-                                                                          textScaler:
-                                                                              MediaQuery.of(context).textScaler,
-                                                                          text:
-                                                                              TextSpan(
-                                                                            children: [
-                                                                              TextSpan(
-                                                                                text: valueOrDefault<String>(
-                                                                                  getJsonField(
-                                                                                    defectsItem,
-                                                                                    r'''$.equipment_info.area_info.title''',
-                                                                                  )?.toString(),
-                                                                                  '-',
-                                                                                ),
-                                                                                style: FlutterFlowTheme.of(context).bodyMedium.override(
-                                                                                      fontFamily: 'SFProText',
-                                                                                      fontSize: 14.0,
-                                                                                      letterSpacing: 0.0,
-                                                                                      fontWeight: FontWeight.normal,
-                                                                                    ),
-                                                                              ),
-                                                                              TextSpan(
-                                                                                text: ' ',
-                                                                                style: TextStyle(),
-                                                                              ),
-                                                                              TextSpan(
-                                                                                text: valueOrDefault<String>(
-                                                                                  getJsonField(
-                                                                                    defectsItem,
-                                                                                    r'''$.equipment_info.area_info.object_info.title''',
-                                                                                  )?.toString(),
-                                                                                  '-',
-                                                                                ),
-                                                                                style: TextStyle(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 14.0,
-                                                                                ),
-                                                                              )
-                                                                            ],
-                                                                            style: FlutterFlowTheme.of(context)
-                                                                                .bodyMedium
-                                                                                .override(
-                                                                                  fontFamily: 'SFProText',
-                                                                                  fontSize: 12.0,
-                                                                                  letterSpacing: 0.0,
-                                                                                  fontWeight: FontWeight.normal,
-                                                                                ),
+                                                                          Expanded(
+                                                                            child:
+                                                                                Text(
+                                                                              defectLocationText,
+                                                                              maxLines: 3,
+                                                                              overflow: TextOverflow.ellipsis,
+                                                                              style: FlutterFlowTheme.of(context)
+                                                                                  .bodyMedium
+                                                                                  .override(
+                                                                                    fontFamily: 'SFProText',
+                                                                                    fontSize: 14.0,
+                                                                                    letterSpacing: 0.0,
+                                                                                    fontWeight: FontWeight.normal,
+                                                                                  ),
+                                                                            ),
                                                                           ),
-                                                                        ),
-                                                                      ].divide(SizedBox(
-                                                                          width:
-                                                                              4.0)),
+                                                                        ].divide(const SizedBox(
+                                                                            width:
+                                                                                4.0)),
+                                                                      ),
                                                                     ),
-                                                                  ),
                                                                   Row(
                                                                     mainAxisSize:
                                                                         MainAxisSize
@@ -2106,13 +2170,7 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
                           EdgeInsetsDirectional.fromSTEB(10.0, 0.0, 10.0, 20.0),
                       child: FFButtonWidget(
                         onPressed: () async {
-                          safeSetState(() {
-                            _model.page = _model.page + 1;
-                            _model.apiRequestCompleted = false;
-                          });
-                          await _model.waitForApiRequestCompleted(
-                            minWait: 2500,
-                          );
+                          await _loadDefects(reset: false);
                         },
                         text: FFLocalizations.of(context).getVariableText(
                           ruText: 'Показать ещё',
@@ -2146,7 +2204,5 @@ class _DefectsWidgetState extends State<DefectsWidget> with WidgetsBindingObserv
             ),
           ),
         );
-      },
-    );
   }
 }

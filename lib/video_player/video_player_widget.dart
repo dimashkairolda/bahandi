@@ -13,6 +13,16 @@ import 'package:provider/provider.dart';
 import 'video_player_model.dart';
 export 'video_player_model.dart';
 
+String absoluteEtryMediaUrl(String? raw) {
+  if (raw == null) return '';
+  final t = raw.trim();
+  if (t.isEmpty || t == 'null') return '';
+  if (t.startsWith('http://') || t.startsWith('https://')) {
+    return t;
+  }
+  return 'https://app.etry.kz${t.startsWith('/') ? t : '/$t'}';
+}
+
 class VideoPlayerWidget extends StatefulWidget {
   const VideoPlayerWidget({
     super.key,
@@ -48,6 +58,47 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaUrl = absoluteEtryMediaUrl(widget.url);
+    if (mediaUrl.isEmpty) {
+      return Scaffold(
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        appBar: AppBar(
+          backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+          leading: FlutterFlowIconButton(
+            borderColor: Colors.transparent,
+            borderRadius: 30,
+            borderWidth: 1,
+            buttonSize: 60,
+            icon: Icon(
+              Icons.chevron_left_sharp,
+              color: Color(0xFF2A61ED),
+              size: 30,
+            ),
+            onPressed: () => context.safePop(),
+          ),
+          title: Text(
+            'Вложение',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+                  fontFamily: 'SFProText',
+                  color: Color(0xFF2A61ED),
+                  fontSize: 16,
+                  letterSpacing: 0.0,
+                ),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Text(
+              'Ссылка на видео недоступна',
+              textAlign: TextAlign.center,
+              style: FlutterFlowTheme.of(context).bodyMedium,
+            ),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -91,11 +142,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                 hoverColor: Colors.transparent,
                 highlightColor: Colors.transparent,
                 onTap: () async {
+                  final href = absoluteEtryMediaUrl(widget.url);
+                  if (href.isEmpty) return;
                   _model.isDownloading = true;
                   safeSetState(() {});
-                  await actions.downloadVideoToGallery(
-                    'https://app.etry.kz${widget!.url}',
-                  );
+                  await actions.downloadVideoToGallery(href);
                   _model.isDownloading = false;
                   safeSetState(() {});
                 },
@@ -119,7 +170,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     FlutterFlowVideoPlayer(
-                      path: 'https://app.etry.kz${widget!.url}',
+                      path: mediaUrl,
                       videoType: VideoType.network,
                       width: MediaQuery.sizeOf(context).width,
                       height: MediaQuery.sizeOf(context).height * 0.9,

@@ -343,9 +343,14 @@ class _CreateEquipmentWidgetState extends State<CreateEquipmentWidget> {
                                                   () => _model.typeValue = val);
                                               FFAppState().typeId =
                                                   _model.typeValue!;
+                                              _model.proizvoditelValue1 = null;
+                                              _model.modelValue1 = null;
+                                              FFAppState().manufacturerId = '';
                                               safeSetState(() {});
                                               safeSetState(() => _model
                                                   .apiRequestCompleter1 = null);
+                                              safeSetState(() => _model
+                                                  .apiRequestCompleter2 = null);
                                               await _model
                                                   .waitForApiRequestCompleted1();
                                             },
@@ -451,17 +456,16 @@ class _CreateEquipmentWidgetState extends State<CreateEquipmentWidget> {
                                         .divide(SizedBox(height: 5.0))
                                         .addToEnd(SizedBox(height: 10.0)),
                                   ),
-                                  FutureBuilder<ApiCallResponse>(
-                                    future: (_model.apiRequestCompleter1 ??=
-                                            Completer<ApiCallResponse>()
-                                              ..complete(
-                                                  GetEquipManufacturerCall.call(
-                                                access:
-                                                    currentAuthenticationToken,
-                                                id: FFAppState().typeId,
-                                              )))
-                                        .future,
-                                    builder: (context, snapshot) {
+                                    FutureBuilder<ApiCallResponse>(
+                                      future: (_model.apiRequestCompleter1 ??=
+                                              Completer<ApiCallResponse>()
+                                                ..complete(
+                                                    GetEquipManufacturerCall.call(
+                                                  access:
+                                                      currentAuthenticationToken,
+                                                )))
+                                          .future,
+                                      builder: (context, snapshot) {
                                       // Customize what your widget looks like when it's loading.
                                       if (!snapshot.hasData) {
                                         return Center(
@@ -483,14 +487,12 @@ class _CreateEquipmentWidgetState extends State<CreateEquipmentWidget> {
 
                                       return Builder(
                                         builder: (context) {
-                                          if ((FFAppState().typeId != null &&
-                                                  FFAppState().typeId != '') &&
-                                              (getJsonField(
+                                          if (getJsonField(
                                                     conditionalBuilderGetEquipManufacturerResponse
                                                         .jsonBody,
                                                     r'''$.data[:].id''',
                                                   ) !=
-                                                  null)) {
+                                                  null) {
                                             return Column(
                                               mainAxisSize: MainAxisSize.max,
                                               crossAxisAlignment:
@@ -540,6 +542,7 @@ class _CreateEquipmentWidgetState extends State<CreateEquipmentWidget> {
                                                     safeSetState(() => _model
                                                             .proizvoditelValue1 =
                                                         val);
+                                                    _model.modelValue1 = null;
                                                     FFAppState()
                                                             .manufacturerId =
                                                         _model
@@ -817,16 +820,39 @@ class _CreateEquipmentWidgetState extends State<CreateEquipmentWidget> {
                                       );
                                     },
                                   ),
-                                  FutureBuilder<ApiCallResponse>(
-                                    future: (_model.apiRequestCompleter2 ??=
-                                            Completer<ApiCallResponse>()
-                                              ..complete(GetEquipModelCall.call(
-                                                access:
-                                                    currentAuthenticationToken,
-                                                id: _model.proizvoditelValue1,
-                                              )))
-                                        .future,
-                                    builder: (context, snapshot) {
+                                  if (_model.proizvoditelValue1 == null ||
+                                      _model.proizvoditelValue1!.trim().isEmpty)
+                                    Padding(
+                                      padding:
+                                          const EdgeInsetsDirectional.only(
+                                              bottom: 10.0),
+                                      child: Text(
+                                        'Сначала выберите производителя',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily: 'SFProText',
+                                              fontSize: 14.0,
+                                              letterSpacing: 0.0,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryText,
+                                            ),
+                                      ),
+                                    )
+                                  else
+                                    FutureBuilder<ApiCallResponse>(
+                                      key: ValueKey<String>(
+                                          _model.proizvoditelValue1!),
+                                      future: (_model.apiRequestCompleter2 ??=
+                                              Completer<ApiCallResponse>()
+                                                ..complete(GetEquipModelCall.call(
+                                                  access:
+                                                      currentAuthenticationToken,
+                                                  id: _model.proizvoditelValue1,
+                                                )))
+                                          .future,
+                                      builder: (context, snapshot) {
                                       // Customize what your widget looks like when it's loading.
                                       if (!snapshot.hasData) {
                                         return Center(

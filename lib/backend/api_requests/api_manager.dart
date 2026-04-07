@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:http/http.dart' as http;
@@ -362,16 +361,24 @@ class ApiManager {
           ? param as List<FFUploadedFile>
           : [param as FFUploadedFile];
       for (var uploadedFile in uploadedFiles) {
+        final b = uploadedFile.bytes;
+        if (b == null || b.isEmpty) {
+          continue;
+        }
         files.add(
           http.MultipartFile.fromBytes(
             e.key,
-            uploadedFile.bytes ?? Uint8List.fromList([]),
+            b,
             filename: uploadedFile.name,
             contentType: _getMediaType(uploadedFile.name),
           ),
         );
       }
     });
+
+    if (files.isEmpty) {
+      return ApiCallResponse(null, {}, 400);
+    }
 
     final request = http.MultipartRequest(
         type.toString().split('.').last, Uri.parse(apiUrl))

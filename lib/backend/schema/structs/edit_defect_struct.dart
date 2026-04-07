@@ -22,7 +22,7 @@ class EditDefectStruct extends BaseStruct {
     List<int>? fileIds,
     List<int>? newFileIds,
     int? form,
-    String priorityRequest = 'medium',
+    String criticality = 'medium',
     List<FormResultStruct>? formResult,
   })  : _equipment = equipment,
         _title = title,
@@ -40,7 +40,7 @@ class EditDefectStruct extends BaseStruct {
         _fileIds = fileIds,
         _newFileIds = newFileIds,
         _form = form,
-        _priorityRequest = priorityRequest,
+        _criticality = criticality,
         _formResult = formResult;
 
   // "equipment" field.
@@ -59,11 +59,11 @@ class EditDefectStruct extends BaseStruct {
 
   bool hasTitle() => _title != null;
 
-  String? _priorityRequest;
-  String get priorityRequest => _priorityRequest ?? 'medium';
-  set priorityRequest(String? val) => _priorityRequest = val;
+  String? _criticality;
+  String get criticality => _criticality ?? 'medium';
+  set criticality(String? val) => _criticality = val;
 
-  bool hasPriorityRequest() => _priorityRequest != null;
+  bool hasCriticality() => _criticality != null;
 
   // "files" field.
   List<FilesStruct>? _files;
@@ -231,7 +231,8 @@ class EditDefectStruct extends BaseStruct {
         fileIds: getDataList(data['file_ids']),
         newFileIds: getDataList(data['new_file_ids']),
         form: castToType<int>(data['form']),
-        priorityRequest: data['priority_request'] as String? ?? 'medium',
+        criticality: (data['criticality'] ?? data['priority_request']) as String? ??
+            'medium',
         formResult: getStructList(
           data['form_result'],
           FormResultStruct.fromMap,
@@ -259,7 +260,7 @@ class EditDefectStruct extends BaseStruct {
         'file_ids': _fileIds,
         'new_file_ids': _newFileIds,
         'form': _form,
-        'priority_request': _priorityRequest,
+        'criticality': _criticality,
         'form_result': _formResult?.map((e) => e.toMap()).toList(),
       }.withoutNulls;
 
@@ -336,8 +337,8 @@ class EditDefectStruct extends BaseStruct {
           _form,
           ParamType.int,
         ),
-        'priority_request': serializeParam(
-          _priorityRequest,
+        'criticality': serializeParam(
+          _criticality,
           ParamType.String,
         ),
         'form_result': serializeParam(
@@ -432,8 +433,8 @@ class EditDefectStruct extends BaseStruct {
           ParamType.int,
           false,
         ),
-        priorityRequest: deserializeParam(
-          data['priority_request'],
+        criticality: deserializeParam(
+          data['criticality'] ?? data['priority_request'],
           ParamType.String,
           false,
         ),
@@ -468,7 +469,7 @@ class EditDefectStruct extends BaseStruct {
         listEquality.equals(fileIds, other.fileIds) &&
         listEquality.equals(newFileIds, other.newFileIds) &&
         form == other.form &&
-        priorityRequest == other.priorityRequest &&
+        criticality == other.criticality &&
         listEquality.equals(formResult, other.formResult);
   }
 
@@ -490,7 +491,7 @@ class EditDefectStruct extends BaseStruct {
         fileIds,
         newFileIds,
         form,
-        priorityRequest,
+        criticality,
         formResult
       ]);
 }
@@ -505,7 +506,7 @@ EditDefectStruct createEditDefectStruct({
   bool? errorMonitoring,
   String? note,
   int? form,
-  String priorityRequest = 'medium',
+  String criticality = 'medium',
 }) =>
     EditDefectStruct(
       equipment: equipment,
@@ -517,5 +518,5 @@ EditDefectStruct createEditDefectStruct({
       errorMonitoring: errorMonitoring,
       note: note,
       form: form,
-      priorityRequest: priorityRequest,
+      criticality: criticality,
     );

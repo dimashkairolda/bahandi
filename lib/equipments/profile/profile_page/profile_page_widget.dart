@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/site_equipment/equipment_add_onboarding/equipment_add_onboarding_widget.dart';
 import '/site_equipment/equipment_add_onboarding/equipment_onboarding_prefs.dart';
+import '/site_equipment/site_equipment_list/site_equipment_list_widget.dart';
 import 'dart:ui';
 import '/flutter_flow/custom_functions.dart' as functions;
 import '/index.dart';
@@ -33,8 +34,43 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
   late ProfilePageModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isOpeningEquipmentFlow = false;
 
   final animationsMap = <String, AnimationInfo>{};
+
+  Future<Widget> _resolveEquipmentDestination() async {
+    try {
+      final token = authManager.authenticationToken;
+      final objectsRes = await GetObjectCall.call(access: token);
+      final objects = GetObjectCall.objects(objectsRes.jsonBody) ?? [];
+      final List<Map<String, dynamic>> allAreas = [];
+      for (final obj in objects) {
+        final objMap = obj as Map<String, dynamic>;
+        final objectId = objMap['id'] as int?;
+        final objectTitle = (objMap['title'] ?? '').toString().trim();
+        if (objectId == null) continue;
+        final childRes = await GetObjectChildCall.call(
+          objectId: objectId,
+          access: token,
+        );
+        final areas = GetObjectChildCall.areas(childRes.jsonBody) ?? [];
+        for (final a in areas) {
+          final areaMap = Map<String, dynamic>.from(a as Map<String, dynamic>);
+          areaMap['object_title'] = objectTitle;
+          allAreas.add(areaMap);
+        }
+      }
+      if (allAreas.length == 1) {
+        final area = allAreas.first;
+        return SiteEquipmentListWidget(
+          areaId: area['id'] as int?,
+          areaTitle: (area['title'] ?? '').toString(),
+          objectTitle: (area['object_title'] ?? '').toString(),
+        );
+      }
+    } catch (_) {}
+    return const SitesListWidget();
+  }
 
   @override
   void initState() {
@@ -199,7 +235,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
         return 'Қазақша';
       case 'ru':
       default:
-        return 'Орысша';
+        return 'Русский';
     }
   }
 
@@ -229,7 +265,7 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
               const SizedBox(height: 12),
               ListTile(
                 leading: const Icon(Icons.language),
-                title: const Text('Орысша'),
+                title: const Text('Русский'),
                 onTap: () {
                   setAppLanguage(context, 'ru');
                   Navigator.pop(ctx);
@@ -608,7 +644,10 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
                       hoverColor: Colors.transparent,
                       highlightColor: Colors.transparent,
                       onTap: () async {
+                      if (_isOpeningEquipmentFlow) return;
+                      setState(() => _isOpeningEquipmentFlow = true);
                         final navigator = Navigator.of(context);
+                      try {
                         final isCompleted =
                             await EquipmentOnboardingPrefs.isCompleted();
                         if (!mounted) return;
@@ -622,11 +661,16 @@ class _ProfilePageWidgetState extends State<ProfilePageWidget>
                           );
                           return;
                         }
+                        final dest = await _resolveEquipmentDestination();
+                        if (!mounted) return;
                         await navigator.push(
-                          MaterialPageRoute(
-                            builder: (_) => const SitesListWidget(),
-                          ),
+                          MaterialPageRoute(builder: (_) => dest),
                         );
+                      } finally {
+                        if (mounted) {
+                          setState(() => _isOpeningEquipmentFlow = false);
+                        }
+                      }
                       },
                       child: Container(
                         width: double.infinity,
